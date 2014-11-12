@@ -97,6 +97,6 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
 
 QByteArray Encryptor::getPasswordHash()
 {
-    QByteArray pwdByteArray = password.toUtf8();
+    QByteArray pwdByteArray = password.toLocal8Bit();
     return QCryptographicHash::hash(pwdByteArray, QCryptographicHash::Md5);
 }
