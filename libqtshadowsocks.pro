@@ -2,18 +2,23 @@ QT       += core network
 
 QT       -= gui
 
-TARGET = libqtshadowsocks
-CONFIG   += console
-CONFIG   -= app_bundle
+TARGET = qtshadowsocks
 
-TEMPLATE = app
+TEMPLATE = lib
 
+DEFINES += QTSHADOWSOCKS_LIBRARY
 
-SOURCES += main.cpp \
+SOURCES += \
     local.cpp \
     encryptor.cpp
 
 HEADERS += \
     local.h \
     sprofile.h \
-    encryptor.h
+    encryptor.h \
+    qtshadowsocks_global.h
+
+unix {
+    target.path = /usr/lib
+    INSTALLS += target
+}

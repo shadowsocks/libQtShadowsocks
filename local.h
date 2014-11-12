@@ -4,10 +4,11 @@
 #include <QObject>
 #include <QByteArray>
 #include <QTcpSocket>
+#include "qtshadowsocks_global.h"
 #include "encryptor.h"
 #include "sprofile.h"
 
-class Local : public QObject
+class QTSHADOWSOCKS_EXPORT Local : public QObject
 {
     Q_OBJECT
 public:

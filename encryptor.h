@@ -4,8 +4,9 @@
 #include <QObject>
 #include <QVector>
 #include <QCryptographicHash>
+#include "qtshadowsocks_global.h"
 
-class Encryptor : public QObject
+class QTSHADOWSOCKS_EXPORT Encryptor : public QObject
 {
     Q_OBJECT
 public:
