@@ -14,17 +14,17 @@ public:
 
     void setup(const QString &m, const QString &pwd);
 
-    static int randomCompare(char, char, quint64, quint32);
+    static int randomCompare(quint8, quint8, quint64, quint32);
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
 
 private:
     QString method;
     QString password;
-    QByteArray encTable;
-    QByteArray decTable;
+    QVector<quint8> encTable;
+    QVector<quint8> decTable;
     void tableInit();
-    QByteArray mergeSort(QByteArray &, quint64, quint32);
+    QVector<quint8> mergeSort(QVector<quint8> &, quint64, quint32);
     QByteArray getPasswordHash();
 };
 

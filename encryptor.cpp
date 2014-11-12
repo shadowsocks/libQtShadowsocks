@@ -40,7 +40,7 @@ void Encryptor::tableInit()
     }
 }
 
-QByteArray Encryptor::mergeSort(QByteArray &array, quint64 a, quint32 j)
+QVector<quint8> Encryptor::mergeSort(QVector<quint8> &array, quint64 a, quint32 j)
 {
     int length = array.size();
     int middle = length / 2;
@@ -48,15 +48,16 @@ QByteArray Encryptor::mergeSort(QByteArray &array, quint64 a, quint32 j)
         return array;
     }
 
-    QByteArray left = array.left(middle);
-    QByteArray right = array.right(length - middle);
+    QVector<quint8> left = array.mid(0, middle);
+    QVector<quint8> right = array.mid(middle);
     left = mergeSort(left, a, j);
     right = mergeSort(right, a, j);
 
     int leftptr = 0;
     int rightptr = 0;
 
-    QByteArray sorted = array;
+    QVector<quint8> sorted;
+    sorted.fill(0, length);
     for (int i = 0; i < array.size(); i++) {
         if (rightptr == right.size() || (leftptr < left.size() && randomCompare(left.at(leftptr), right.at(rightptr), a, j) <= 0)) {
             sorted[i] = left.at(leftptr);
@@ -68,10 +69,8 @@ QByteArray Encryptor::mergeSort(QByteArray &array, quint64 a, quint32 j)
     return sorted;
 }
 
-int Encryptor::randomCompare(char _x, char _y, quint64 a, quint32 i)
+int Encryptor::randomCompare(quint8 x, quint8 y, quint64 a, quint32 i)
 {
-    quint8 x = quint8(_x);
-    quint8 y = quint8(_y);
     return (a % (x + i) - a % (y + i));
 }
 
