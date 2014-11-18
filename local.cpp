@@ -76,7 +76,7 @@ void Local::onLocalNewConnection()
 
 void Local::onHandshaked()
 {
-    local_buf = localTcpSocket->readAll();
+    local_buf = localTcpSocket->read(256);
     if (local_buf.isEmpty()) {
         qDebug() << "onHandshaked. Error! Received empty data from server.";
         return;
@@ -96,7 +96,7 @@ void Local::onHandshaked()
 
 void Local::onHandshaked2()
 {
-    local_buf = localTcpSocket->readAll();
+    local_buf = localTcpSocket->read(3);
     if (local_buf.isEmpty()) {
         qDebug() << "onHandshaked2. Error! Received empty data from server.";
         return;
