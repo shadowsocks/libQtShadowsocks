@@ -13,15 +13,15 @@ class QTSHADOWSOCKS_EXPORT Local : public QObject
     Q_OBJECT
 public:
     explicit Local(QObject *parent = 0);
+    ~Local();
     void setProfile(const SProfile &p);
-
-signals:
 
 public slots:
     void start();
     void stop();
 
 private:
+    bool running;
     QTcpSocket *localTcpSocket;
     QTcpSocket *serverTcpSocket;
     Encryptor *encryptor;

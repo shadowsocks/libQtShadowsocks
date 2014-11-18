@@ -16,6 +16,13 @@ Local::Local(QObject *parent) :
     connect(serverTcpSocket, &QTcpSocket::readyRead, this, &Local::onServerTcpSocketReadyRead);
 }
 
+Local::~Local()
+{
+    if (running) {
+        stop();
+    }
+}
+
 void Local::setProfile(const SProfile &p)
 {
     profile = p;
@@ -43,6 +50,7 @@ void Local::start()
 
     connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked);
     serverTcpSocket->connectToHost(profile.server, profile.server_port);
+    running = true;
 }
 
 void Local::stop()
@@ -50,6 +58,7 @@ void Local::stop()
     localTcpSocket->close();
     serverTcpSocket->close();
     disconnect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onLocalTcpSocketReadyRead);
+    running = false;
 }
 
 void Local::onHandshaked()
