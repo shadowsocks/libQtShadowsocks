@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QByteArray>
 #include <QTcpSocket>
+#include <QTcpServer>
 #include "qtshadowsocks_global.h"
 #include "encryptor.h"
 #include "sprofile.h"
@@ -22,6 +23,7 @@ public slots:
 
 private:
     bool running;
+    QTcpServer *localTcpServer;
     QTcpSocket *localTcpSocket;
     QTcpSocket *serverTcpSocket;
     Encryptor *encryptor;
@@ -31,14 +33,15 @@ private:
     QByteArray server_buf;
 
 private slots:
-    void onLocalTcpSocketError();
     void onServerTcpSocketError();
+    void onServerTcpSocketReadyRead();
+    void onServerConnected();
+    void onLocalTcpServerError();
+    void onLocalNewConnection();
+    void onLocalTcpSocketError();
+    void onLocalTcpSocketReadyRead();
     void onHandshaked();
     void onHandshaked2();
-    void onLocalTcpSocketReadyRead();
-    void onServerTcpSocketReadyRead();
-    void onLocalTcpSocketStateChanged(QAbstractSocket::SocketState);
-    void onServerConnected();
 };
 
 #endif // LOCAL_H

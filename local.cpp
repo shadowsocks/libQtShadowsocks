@@ -5,17 +5,17 @@
 Local::Local(QObject *parent) :
     QObject(parent)
 {
-    localTcpSocket = new QTcpSocket(this);//local means *local* server
+    localTcpServer = new QTcpServer(this);//local means local *server*
     serverTcpSocket = new QTcpSocket(this);//server means *remote* server
     encryptor = new Encryptor(this);
-    localTcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    localTcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
-    connect(localTcpSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Local::onLocalTcpSocketError);
-    connect(localTcpSocket, &QAbstractSocket::stateChanged, this, &Local::onLocalTcpSocketStateChanged);
+    connect(localTcpServer, &QTcpServer::acceptError, this, &Local::onLocalTcpServerError);
+    connect(localTcpServer, &QTcpServer::newConnection, this, &Local::onLocalNewConnection);
     connect(serverTcpSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Local::onServerTcpSocketError);
     connect(serverTcpSocket, &QTcpSocket::readyRead, this, &Local::onServerTcpSocketReadyRead);
     connect(serverTcpSocket, &QTcpSocket::connected, this, &Local::onServerConnected);
+
+    localTcpServer->setMaxPendingConnections(1);//for easy debug.
 }
 
 Local::~Local()
@@ -32,30 +32,27 @@ void Local::setProfile(const SProfile &p)
     encryptor->setup(profile.method, profile.password);
 }
 
+void Local::onLocalTcpServerError()
+{
+    qDebug() << "local server error:" << localTcpServer->errorString();
+}
+
 void Local::onLocalTcpSocketError()
 {
-    qDebug() << "local error:" << localTcpSocket->errorString();
+    qDebug() << "local socket error:" << localTcpSocket->errorString();
 }
 
 void Local::onServerTcpSocketError()
 {
-    qDebug() << "server error:" << serverTcpSocket->errorString();
+    qDebug() << "server socket error:" << serverTcpSocket->errorString();
 }
 
 void Local::start()
 {
-    if (profile.shareOverLAN) {
-        qDebug() << "binding local on" << QHostAddress(QHostAddress::Any).toString();
-        localTcpSocket->bind(QHostAddress::Any, profile.local_port, QAbstractSocket::ReuseAddressHint);
-    }
-    else {
-        qDebug() << "binding local on" << QHostAddress(QHostAddress::LocalHost).toString();
-        localTcpSocket->bind(QHostAddress::LocalHost, profile.local_port, QAbstractSocket::ReuseAddressHint);
-    }
-    qDebug() << "local listening at port" << localTcpSocket->localPort();
+    localTcpServer->listen(profile.shareOverLAN ? QHostAddress::Any : QHostAddress::LocalHost, profile.local_port);
+    qDebug() << "local server listen at port" << profile.local_port;
 
-    connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked);
-
+    qDebug() << "connecting to remote server" << profile.server;
     serverTcpSocket->connectToHost(profile.server, profile.server_port);
 
     running = true;
@@ -63,17 +60,25 @@ void Local::start()
 
 void Local::stop()
 {
-    localTcpSocket->close();
+    localTcpServer->close();
     serverTcpSocket->close();
-    disconnect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onLocalTcpSocketReadyRead);
     running = false;
+}
+
+void Local::onLocalNewConnection()
+{
+    localTcpSocket = localTcpServer->nextPendingConnection();
+    localTcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked);
+    connect(localTcpSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Local::onLocalTcpSocketError);
+    qDebug() << "new connection";
 }
 
 void Local::onHandshaked()
 {
     local_buf = localTcpSocket->readAll();
     if (local_buf.isEmpty()) {
-        qDebug() << "Error! Received empty data from server.";
+        qDebug() << "onHandshaked. Error! Received empty data from server.";
         return;
     }
 
@@ -93,7 +98,7 @@ void Local::onHandshaked2()
 {
     local_buf = localTcpSocket->readAll();
     if (local_buf.isEmpty()) {
-        qDebug() << "Error! Received empty data from server.";
+        qDebug() << "onHandshaked2. Error! Received empty data from server.";
         return;
     }
 
@@ -119,12 +124,7 @@ void Local::onServerTcpSocketReadyRead()
     localTcpSocket->write(dataToSend);
 }
 
-void Local::onLocalTcpSocketStateChanged(QAbstractSocket::SocketState stat)
-{
-    qDebug() << "local socket state changed to" << stat;
-}
-
 void Local::onServerConnected()
 {
-    qDebug() << "connected to" << serverTcpSocket->peerAddress() << "at port" << serverTcpSocket->peerPort();
+    qDebug() << "connected to remote server" << serverTcpSocket->peerAddress() << "at port" << serverTcpSocket->peerPort();
 }
