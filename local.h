@@ -38,6 +38,7 @@ private slots:
     void onLocalTcpSocketReadyRead();
     void onServerTcpSocketReadyRead();
     void onLocalTcpSocketStateChanged(QAbstractSocket::SocketState);
+    void onServerConnected();
 };
 
 #endif // LOCAL_H

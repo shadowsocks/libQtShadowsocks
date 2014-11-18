@@ -15,6 +15,7 @@ Local::Local(QObject *parent) :
     connect(localTcpSocket, &QAbstractSocket::stateChanged, this, &Local::onLocalTcpSocketStateChanged);
     connect(serverTcpSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Local::onServerTcpSocketError);
     connect(serverTcpSocket, &QTcpSocket::readyRead, this, &Local::onServerTcpSocketReadyRead);
+    connect(serverTcpSocket, &QTcpSocket::connected, this, &Local::onServerConnected);
 }
 
 Local::~Local()
@@ -51,12 +52,12 @@ void Local::start()
         qDebug() << "binding local on" << QHostAddress(QHostAddress::LocalHost).toString();
         localTcpSocket->bind(QHostAddress::LocalHost, profile.local_port, QAbstractSocket::ReuseAddressHint);
     }
-    qDebug() << "local listening at port" << profile.local_port;
+    qDebug() << "local listening at port" << localTcpSocket->localPort();
 
     connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked);
 
-    qDebug() << "connecting to" << profile.server << "at port" << profile.server_port;
     serverTcpSocket->connectToHost(profile.server, profile.server_port);
+
     running = true;
 }
 
@@ -121,4 +122,9 @@ void Local::onServerTcpSocketReadyRead()
 void Local::onLocalTcpSocketStateChanged(QAbstractSocket::SocketState stat)
 {
     qDebug() << "local socket state changed to" << stat;
+}
+
+void Local::onServerConnected()
+{
+    qDebug() << "connected to" << serverTcpSocket->peerAddress() << "at port" << serverTcpSocket->peerPort();
 }
