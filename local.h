@@ -37,6 +37,7 @@ private slots:
     void onHandshaked2();
     void onLocalTcpSocketReadyRead();
     void onServerTcpSocketReadyRead();
+    void onLocalTcpSocketStateChanged(QAbstractSocket::SocketState);
 };
 
 #endif // LOCAL_H

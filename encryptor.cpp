@@ -1,3 +1,4 @@
+#include <QDebug>
 #include "encryptor.h"
 
 Encryptor::Encryptor(QObject *parent) :
@@ -38,6 +39,7 @@ void Encryptor::tableInit()
     {
         decTable[int(encTable.at(i))] = char(i);
     }
+    qDebug() << "table initialised.";
 }
 
 QVector<quint8> Encryptor::mergeSort(QVector<quint8> &array, quint64 a, quint32 j)

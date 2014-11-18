@@ -5,13 +5,14 @@
 Local::Local(QObject *parent) :
     QObject(parent)
 {
-    localTcpSocket = new QTcpSocket(this);
-    serverTcpSocket = new QTcpSocket(this);
+    localTcpSocket = new QTcpSocket(this);//local means *local* server
+    serverTcpSocket = new QTcpSocket(this);//server means *remote* server
     encryptor = new Encryptor(this);
     localTcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     localTcpSocket->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
     connect(localTcpSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Local::onLocalTcpSocketError);
+    connect(localTcpSocket, &QAbstractSocket::stateChanged, this, &Local::onLocalTcpSocketStateChanged);
     connect(serverTcpSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Local::onServerTcpSocketError);
     connect(serverTcpSocket, &QTcpSocket::readyRead, this, &Local::onServerTcpSocketReadyRead);
 }
@@ -26,29 +27,35 @@ Local::~Local()
 void Local::setProfile(const SProfile &p)
 {
     profile = p;
+    qDebug() << "initialising ciphers...";
     encryptor->setup(profile.method, profile.password);
 }
 
 void Local::onLocalTcpSocketError()
 {
-    qDebug() << localTcpSocket->errorString();
+    qDebug() << "local error:" << localTcpSocket->errorString();
 }
 
 void Local::onServerTcpSocketError()
 {
-    qDebug() << serverTcpSocket->errorString();
+    qDebug() << "server error:" << serverTcpSocket->errorString();
 }
 
 void Local::start()
 {
     if (profile.shareOverLAN) {
+        qDebug() << "binding local on" << QHostAddress(QHostAddress::Any).toString();
         localTcpSocket->bind(QHostAddress::Any, profile.local_port, QAbstractSocket::ReuseAddressHint);
     }
     else {
+        qDebug() << "binding local on" << QHostAddress(QHostAddress::LocalHost).toString();
         localTcpSocket->bind(QHostAddress::LocalHost, profile.local_port, QAbstractSocket::ReuseAddressHint);
     }
+    qDebug() << "local listening at port" << profile.local_port;
 
     connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked);
+
+    qDebug() << "connecting to" << profile.server << "at port" << profile.server_port;
     serverTcpSocket->connectToHost(profile.server, profile.server_port);
     running = true;
 }
@@ -72,6 +79,7 @@ void Local::onHandshaked()
     QByteArray response;
     response.append(char(5)).append(char(0));
     if (local_buf[0] != char(5)) {//reject socket v4
+        qDebug() << "a socket v4 connection was rejected.";
         response[0] = 0;
         response[1] = 91;
     }
@@ -93,6 +101,7 @@ void Local::onHandshaked2()
     disconnect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked2);
     connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onLocalTcpSocketReadyRead);
     localTcpSocket->write(response);
+    qDebug() << "local socket hand shaked. ready to transfer data.";
 }
 
 void Local::onLocalTcpSocketReadyRead()
@@ -107,4 +116,9 @@ void Local::onServerTcpSocketReadyRead()
     server_buf = serverTcpSocket->readAll();
     QByteArray dataToSend = encryptor->decrypt(server_buf);
     localTcpSocket->write(dataToSend);
+}
+
+void Local::onLocalTcpSocketStateChanged(QAbstractSocket::SocketState stat)
+{
+    qDebug() << "local socket state changed to" << stat;
 }
