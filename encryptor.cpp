@@ -163,34 +163,27 @@ int Encryptor::randomCompare(const quint8 &x, const quint8 &y, const quint32 &i,
 
 void Encryptor::generateKeyIv()
 {
-    _key = QCA::SecureArray(keyLen);
-    _iv = QCA::SecureArray(ivLen);
+    QVector<QByteArray> m;
+    QByteArray data;
+    int i = 0;
 
-    //convert password to key
-    QByteArray result(password.length() + 16, '0');
-    int j, k, i = 0;
-    QByteArray md5sum;
-    while (i < _key.size()) {
+    while (m.size() < keyLen + ivLen) {
         if (i == 0) {
-            md5sum = getPasswordHash();
+            data = password;
         }
         else {
-            for (k = 0; k < md5sum.size(); ++k) {
-                result[k] = md5sum[k];
-            }
-            for (j = 0; k < result.size(); ++k, ++j) {
-                result[k] = password[j];
-            }
-            md5sum = QCryptographicHash::hash(result, QCryptographicHash::Md5);
+            data = m[i - 1] + password;
         }
-        j = 0;
-        for (k = i; k < _key.size(); ++k) {
-            _key[k] = md5sum[j];
-        }
-        i += md5sum.size();
+        m.append(QCryptographicHash::hash(data, QCryptographicHash::Md5));
+        i++;
+    }
+    QByteArray ms;
+    for (QVector<QByteArray>::ConstIterator it = m.begin(); it != m.end(); ++it) {
+        ms.append(*it);
     }
 
-    //TODO initialiser vector
+    _key = QCA::SecureArray(ms.mid(0, keyLen));
+    _iv = QCA::SecureArray(ms.mid(keyLen, ivLen));
 }
 
 void Encryptor::randIvLengthHeader(QByteArray &buf)
