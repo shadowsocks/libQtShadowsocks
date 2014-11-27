@@ -5,9 +5,11 @@
 #include <QByteArray>
 #include <QTcpSocket>
 #include <QTcpServer>
+#include <QList>
 #include "qtshadowsocks_global.h"
 #include "encryptor.h"
 #include "sprofile.h"
+#include "connection.h"
 
 class QTSHADOWSOCKS_EXPORT Local : public QObject
 {
@@ -16,6 +18,10 @@ public:
     explicit Local(QObject *parent = 0);
     ~Local();
     void setProfile(const SProfile &p);
+    quint16 getServerPort();
+    QString getServerAddr();
+
+    Encryptor *encryptor;
 
 public slots:
     void start();
@@ -24,24 +30,13 @@ public slots:
 private:
     bool running;
     QTcpServer *localTcpServer;
-    QTcpSocket *localTcpSocket;
-    QTcpSocket *serverTcpSocket;
-    Encryptor *encryptor;
     SProfile profile;
-
-    QByteArray local_buf;
-    QByteArray server_buf;
+    QList<Connection *> conList;
 
 private slots:
-    void onServerTcpSocketError();
-    void onServerTcpSocketReadyRead();
-    void onServerConnected();
     void onLocalTcpServerError();
     void onLocalNewConnection();
-    void onLocalTcpSocketError();
-    void onLocalTcpSocketReadyRead();
-    void onHandshaked();
-    void onHandshaked2();
+    void onConnectionDisconnected();
 };
 
 #endif // LOCAL_H
