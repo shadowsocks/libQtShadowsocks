@@ -81,7 +81,6 @@ void Encryptor::setup(const QString &m, const QString &pwd)
 
         enCipher = new QCA::Cipher(mode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, symKey, iv);
         deCipher = new QCA::Cipher(*enCipher);
-        deCipher->setup(QCA::Decode, symKey, iv);
 
         encPtrZero = true;
         decPtrZero = true;
@@ -210,12 +209,14 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
         if (encPtrZero) {
             encPtrZero = false;
 
-            out = QByteArray(in.size() + ivLen, '0');
+            /*out = QByteArray(in.size() + ivLen, '0');
             randIvLengthHeader(out);
             int j = ivLen;
             for (int i = 0; j < out.size(); ++i, ++j) {
                 out[j] = ea[i];
-            }
+            }*/
+            out = _iv.toByteArray() + ea.toByteArray();
+            qDebug() << "encrypt cipher iv" << _iv.toByteArray().toHex();
         }
         else {
             out = ea.toByteArray();
@@ -241,9 +242,17 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
         if (decPtrZero) {
             decPtrZero = false;
 
-            QByteArray realData = data.toByteArray();
-            realData.remove(0, ivLen);
-            QCA::SecureArray srd(realData);
+            QByteArray darray = data.toByteArray();
+            QCA::SecureArray div(darray.mid(0, ivLen));
+
+            qDebug() << "decipher iv" << div.toByteArray().toHex();
+
+            QCA::SymmetricKey symKey(_key);
+            QCA::InitializationVector decipher_iv(div);
+            deCipher->setup(QCA::Decode, symKey, decipher_iv);
+
+            darray.remove(0, ivLen);
+            QCA::SecureArray srd(darray);
             out = deCipher->process(srd).toByteArray();
         }
         else {
