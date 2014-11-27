@@ -34,17 +34,23 @@ void Local::setProfile(const SProfile &p)
 
 void Local::onLocalTcpServerError()
 {
-    qDebug() << "local server error:" << localTcpServer->errorString();
+    qWarning() << "local server error:" << localTcpServer->errorString();
 }
 
 void Local::onLocalTcpSocketError()
 {
-    qDebug() << "local socket error:" << localTcpSocket->errorString();
+    QTcpSocket *ts = qobject_cast<QTcpSocket *>(sender());
+    if (ts) {
+        qWarning() << "local socket error:" << ts->errorString();
+    }
+    else {
+        qCritical() << "a false sender called onLocalTcpSocketError slot function.";
+    }
 }
 
 void Local::onServerTcpSocketError()
 {
-    qDebug() << "server socket error:" << serverTcpSocket->errorString();
+    qWarning() << "server socket error:" << serverTcpSocket->errorString();
 }
 
 void Local::start()
@@ -67,16 +73,23 @@ void Local::stop()
 
 void Local::onLocalNewConnection()
 {
-    localTcpSocket = localTcpServer->nextPendingConnection();
-    localTcpSocket->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked);
-    connect(localTcpSocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Local::onLocalTcpSocketError);
+    QTcpSocket *ts = localTcpServer->nextPendingConnection();
+    ts->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    connect(ts, &QTcpSocket::readyRead, this, &Local::onHandshaked);
+    connect(ts, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Local::onLocalTcpSocketError);
+    connect(ts, &QTcpSocket::disconnected, ts, &QTcpSocket::deleteLater);
     qDebug() << "new connection";
 }
 
 void Local::onHandshaked()
 {
-    local_buf = localTcpSocket->read(256);
+    QTcpSocket *ts = qobject_cast<QTcpSocket *>(sender());
+    if (!ts) {
+        qCritical() << "a false sender called onHandshaked slot function.";
+        return;
+    }
+
+    local_buf = ts->read(256);
     if (local_buf.isEmpty()) {
         qDebug() << "onHandshaked. Error! Received empty data from server.";
         return;
@@ -89,29 +102,41 @@ void Local::onHandshaked()
         response[0] = 0;
         response[1] = 91;
     }
-    disconnect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked);
-    connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked2);
-    localTcpSocket->write(response);
+    disconnect(ts, &QTcpSocket::readyRead, this, &Local::onHandshaked);
+    connect(ts, &QTcpSocket::readyRead, this, &Local::onHandshaked2);
+    ts->write(response);
 }
 
 void Local::onHandshaked2()
 {
-    local_buf = localTcpSocket->read(3);
+    QTcpSocket *ts = qobject_cast<QTcpSocket *>(sender());
+    if (!ts) {
+        qCritical() << "a false sender called onHandshaked2 slot function.";
+        return;
+    }
+
+    local_buf = ts->read(3);
     if (local_buf.isEmpty()) {
-        qDebug() << "onHandshaked2. Error! Received empty data from server.";
+        qWarning() << "onHandshaked2. Error! Received empty data from server.";
         return;
     }
 
     static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 0, 0 };
     QByteArray response = QByteArray::fromRawData(res, sizeof(res));
-    disconnect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onHandshaked2);
-    connect(localTcpSocket, &QTcpSocket::readyRead, this, &Local::onLocalTcpSocketReadyRead);
-    localTcpSocket->write(response);
+    disconnect(ts, &QTcpSocket::readyRead, this, &Local::onHandshaked2);
+    connect(ts, &QTcpSocket::readyRead, this, &Local::onLocalTcpSocketReadyRead);
+    ts->write(response);
     qDebug() << "local socket hand shaked. ready to transfer data.";
 }
 
 void Local::onLocalTcpSocketReadyRead()
 {
+    localTcpSocket = qobject_cast<QTcpSocket *>(sender());
+    if (!localTcpSocket) {
+        qCritical() << "a false sender called onLocalTcpSocketReadyRead slot function.";
+        return;
+    }
+
     local_buf = localTcpSocket->readAll();
     QByteArray dataToSend = encryptor->encrypt(local_buf);
     serverTcpSocket->write(dataToSend);
