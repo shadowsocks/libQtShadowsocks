@@ -24,7 +24,6 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
     connect(local, &QTcpSocket::readyRead, this, &Connection::onHandshaked, Qt::DirectConnection);
 
     connect(server, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onServerTcpSocketError);
-    connect(server, &QTcpSocket::connected, this, &Connection::onServerConnected);
     connect(server, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
     connect(server, &QTcpSocket::readyRead, this, &Connection::onServerTcpSocketReadyRead, Qt::DirectConnection);
 }
@@ -105,9 +104,4 @@ void Connection::onServerTcpSocketReadyRead()
     QByteArray buf = server->readAll();
     QByteArray dataToSend = encryptor->decrypt(buf);
     local->write(dataToSend);
-}
-
-void Connection::onServerConnected()
-{
-    qDebug() << "connected to remote server" << server->peerAddress() << "at port" << server->peerPort();
 }

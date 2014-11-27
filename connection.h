@@ -28,7 +28,6 @@ private:
 private slots:
     void onServerTcpSocketError();
     void onServerTcpSocketReadyRead();
-    void onServerConnected();
     void onLocalTcpSocketError();
     void onLocalTcpSocketReadyRead();
     void onHandshaked();
