@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     SProfile profile;
     readConfig(parser.value(configFile), &profile);
     profile.shareOverLAN = parser.isSet(shareOverLan);
-    Local lc(&a);
+    Local lc;
 
     lc.setProfile(profile);
     lc.start();
