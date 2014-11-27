@@ -25,4 +25,9 @@ HEADERS += \
 unix {
     target.path = /usr/lib
     INSTALLS += target
+
+    CONFIG    += link_pkgconfig
+    PKGCONFIG += qca2
 }
+
+LIBS  += -lqca
