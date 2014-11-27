@@ -15,7 +15,7 @@ Current Status
 
 - Table
 
-Because QCA doesn't release a Qt5 version, there is no elegant way to implement other encrypt methods.
+QCA just release their v2.1.0 a few weeks ago, which supports Qt5. I will look into QCA and add supports for other methods.
 
 Warning
 -------
