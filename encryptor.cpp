@@ -20,8 +20,14 @@ QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
     map.insert("aes128-cfb", {16, 16});
     map.insert("aes192-cfb", {24, 16});
     map.insert("aes256-cfb", {32, 16});
+    map.insert("blowfish-cfb", {16, 8});
+    map.insert("cast5-cfb", {16, 8});
+    map.insert("des-cfb", {8, 8});
+    map.insert("idea-cfb", {16, 8});
+    map.insert("rc2-cfb", {16, 8});
     map.insert("rc4", {16, 0});
     map.insert("rc4-md5", {16, 16});
+    map.insert("seed-cfb", {16, 16});
     return map;
 }
 
@@ -54,7 +60,7 @@ void Encryptor::setup(const QString &m, const QString &pwd)
             mode = QString(method.mid(0, 6));
         }
         else if (method.contains("bf")) {
-            method.remove(2, 1);
+            method = QByteArray("blowfish-cfb");
             mode = QString("blowfish");
         }
         else {
