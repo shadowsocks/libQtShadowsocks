@@ -14,7 +14,7 @@ public:
 
     void setup(const QString &m, const QString &pwd);
 
-    static int randomCompare(quint8, quint8, quint64, quint32);
+    static int randomCompare(const quint8 &, const quint8 &, const quint32 &salt, const quint64 &key);
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
 
@@ -24,7 +24,7 @@ private:
     QVector<quint8> encTable;
     QVector<quint8> decTable;
     void tableInit();
-    QVector<quint8> mergeSort(QVector<quint8> &, quint64, quint32);
+    QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
     QByteArray getPasswordHash();
 };
 
