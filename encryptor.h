@@ -26,6 +26,7 @@ private:
     void tableInit();
     QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
     QByteArray getPasswordHash();
+    bool selfTest();
 };
 
 #endif // ENCRYPTOR_H

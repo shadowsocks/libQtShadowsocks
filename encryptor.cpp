@@ -11,6 +11,13 @@ void Encryptor::setup(const QString &m, const QString &pwd)
     method = m;
     password = pwd;
     tableInit();
+
+    if (selfTest()) {
+        qDebug() << "encryptor self test passed.";
+    }
+    else {
+        qCritical() << "encryptor self test failed.";
+    }
 }
 
 void Encryptor::tableInit()
@@ -39,6 +46,7 @@ void Encryptor::tableInit()
     {
         decTable[encTable[i]] = static_cast<quint8>(i);
     }
+
     qDebug() << "table initialised.";
 }
 
@@ -104,4 +112,11 @@ QByteArray Encryptor::getPasswordHash()
 {
     QByteArray pwdByteArray = password.toLocal8Bit();
     return QCryptographicHash::hash(pwdByteArray, QCryptographicHash::Md5);
+}
+
+bool Encryptor::selfTest()
+{
+    QByteArray test("barfoo!");
+    QByteArray res = decrypt(encrypt(test));
+    return test == res;
 }
