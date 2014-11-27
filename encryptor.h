@@ -4,9 +4,8 @@
 #include <QObject>
 #include <QVector>
 #include <QCryptographicHash>
-#include "qtshadowsocks_global.h"
 
-class QTSHADOWSOCKS_EXPORT Encryptor : public QObject
+class Encryptor : public QObject
 {
     Q_OBJECT
 public:
@@ -17,6 +16,8 @@ public:
     static int randomCompare(const quint8 &, const quint8 &, const quint32 &salt, const quint64 &key);
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
+
+    static const QVector<quint8> octVec;
 
 private:
     QString method;

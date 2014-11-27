@@ -1,6 +1,8 @@
-QT       += core network
+QT       += core network concurrent
 
 QT       -= gui
+
+CONFIG += c++11
 
 TARGET = qtshadowsocks
 
