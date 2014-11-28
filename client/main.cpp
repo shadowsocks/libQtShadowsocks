@@ -49,8 +49,7 @@ int main(int argc, char *argv[])
     profile.shareOverLAN = parser.isSet(shareOverLan);
     Local lc;
 
-    lc.setProfile(profile);
-    lc.start();
+    lc.start(profile);
 
     return a.exec();
 }

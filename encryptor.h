@@ -14,7 +14,7 @@ public:
     explicit Encryptor(QObject *parent = 0);
     ~Encryptor();
 
-    void setup(const QString &m, const QString &pwd);//call this function only once!
+    void setup();
 
     static int randomCompare(const quint8 &, const quint8 &, const quint32 &salt, const quint64 &key);
     QByteArray decrypt(const QByteArray &);
@@ -23,30 +23,31 @@ public:
     static const QVector<quint8> octVec;
     static const QMap<QByteArray, QVector<int> > cipherMap;
     static QMap<QByteArray, QVector<int> > generateCihperMap();
+    static void initialise(const QString &m, const QString &pwd);
 
 private:
-    bool usingTable;
-    QByteArray method;
-    QByteArray password;
-    QVector<quint8> encTable;
-    QVector<quint8> decTable;
-    int keyLen;
-    int ivLen;
-    bool encPtrZero;
-    bool decPtrZero;
+    static bool usingTable;
+    static QString cipherMode;
+    static QByteArray method;
+    static QByteArray password;
+    static QVector<quint8> encTable;
+    static QVector<quint8> decTable;
+    static int keyLen;
+    static int ivLen;
+    bool ivSent;
 
-    void tableInit();
-    QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
-    QByteArray getPasswordHash();
-    void generateKeyIv();
-    void randIvLengthHeader(QByteArray &);
+    static void tableInit();
+    static QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
+    void evpBytesToKey();
+    static void randIvLengthHeader(QByteArray &);
+    static QByteArray randomIv();
     bool selfTest();
 
 protected:
-    QCA::Initializer *qcaInit;
+    //QCA::Initializer *qcaInit;
     QCA::Cipher *enCipher;
     QCA::Cipher *deCipher;
-    QCA::SecureArray _key;
+    static QCA::SymmetricKey _key;
     QCA::SecureArray _iv;//this is used for encrypt cipher
 };
 

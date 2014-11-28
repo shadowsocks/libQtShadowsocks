@@ -7,7 +7,6 @@
 #include <QTcpServer>
 #include <QList>
 #include "qtshadowsocks_global.h"
-#include "encryptor.h"
 #include "sprofile.h"
 #include "connection.h"
 
@@ -17,14 +16,11 @@ class QTSHADOWSOCKS_EXPORT Local : public QObject
 public:
     explicit Local(QObject *parent = 0);
     ~Local();
-    void setProfile(const SProfile &p);
     quint16 getServerPort();
     QString getServerAddr();
 
-    Encryptor *encryptor;
-
 public slots:
-    void start();
+    void start(const SProfile &p);
     void stop();
 
 private:

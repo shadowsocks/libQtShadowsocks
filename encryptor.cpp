@@ -5,9 +5,18 @@
 Encryptor::Encryptor(QObject *parent) :
     QObject(parent)
 {
-    qcaInit = new QCA::Initializer(QCA::Practical, 64);//how many memeory should be pre-alloacted?
     enCipher = NULL;
     deCipher = NULL;
+}
+
+Encryptor::~Encryptor()
+{
+    if (enCipher != NULL) {
+        delete enCipher;
+    }
+    if (deCipher != NULL) {
+        delete deCipher;
+    }
 }
 
 const QVector<quint8> Encryptor::octVec = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255};
@@ -31,18 +40,35 @@ QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
     return map;
 }
 
-Encryptor::~Encryptor()
+//define static member variables
+bool Encryptor::usingTable = false;
+QString Encryptor::cipherMode;
+QByteArray Encryptor::method;
+QByteArray Encryptor::password;
+QVector<quint8> Encryptor::encTable;
+QVector<quint8> Encryptor::decTable;
+int Encryptor::keyLen = 32;
+int Encryptor::ivLen = 16;
+QCA::SymmetricKey Encryptor::_key;
+
+void Encryptor::setup()
 {
+    ivSent = false;
+    evpBytesToKey();
+    QCA::InitializationVector iv(_iv);
+
+    if (deCipher != NULL) {
+        delete deCipher;
+        deCipher = NULL;
+    }
     if (enCipher != NULL) {
         delete enCipher;
     }
-    if (deCipher != NULL) {
-        delete deCipher;
-    }
-    delete qcaInit;
+
+    enCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, _key, iv);
 }
 
-void Encryptor::setup(const QString &m, const QString &pwd)
+void Encryptor::initialise(const QString &m, const QString &pwd)
 {
     method = m.toLower().toLocal8Bit();//local8bit or utf-8?
     password = pwd.toLocal8Bit();
@@ -52,19 +78,17 @@ void Encryptor::setup(const QString &m, const QString &pwd)
         tableInit();
     }
     else {
-        QString mode;
-
         //change method name according to QCA
         if (method.contains("aes")) {
             method.remove(3, 1);
-            mode = QString(method.mid(0, 6));
+            cipherMode = QString(method.mid(0, 6));
         }
         else if (method.contains("bf")) {
             method = QByteArray("blowfish-cfb");
-            mode = QString("blowfish");
+            cipherMode = QString("blowfish");
         }
         else {
-            mode = method.mid(0, method.indexOf('-'));
+            cipherMode = method.mid(0, method.indexOf('-'));
         }
 
         if (!QCA::isSupported(method.data())) {
@@ -74,23 +98,6 @@ void Encryptor::setup(const QString &m, const QString &pwd)
 
         keyLen = cipherMap.value(method)[0];
         ivLen = cipherMap.value(method)[1];
-
-        generateKeyIv();
-        QCA::SymmetricKey symKey(_key);
-        QCA::InitializationVector iv(_iv);
-
-        enCipher = new QCA::Cipher(mode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, symKey, iv);
-        deCipher = new QCA::Cipher(*enCipher);
-
-        encPtrZero = true;
-        decPtrZero = true;
-    }
-
-    if (selfTest()) {
-        qDebug() << "encryptor self test passed.";
-    }
-    else {
-        qCritical() << "encryptor self test failed.";
     }
 }
 
@@ -101,7 +108,7 @@ void Encryptor::tableInit()
 
     encTable.fill(0, 256);
     decTable.fill(0, 256);
-    QByteArray digest = getPasswordHash();
+    QByteArray digest = QCryptographicHash::hash(password, QCryptographicHash::Md5);
 
     for (i = 0; i < 8; ++i)
     {
@@ -160,7 +167,7 @@ int Encryptor::randomCompare(const quint8 &x, const quint8 &y, const quint32 &i,
     return a % (x + i) - a % (y + i);
 }
 
-void Encryptor::generateKeyIv()
+void Encryptor::evpBytesToKey()
 {
     QVector<QByteArray> m;
     QByteArray data;
@@ -181,7 +188,7 @@ void Encryptor::generateKeyIv()
         ms.append(*it);
     }
 
-    _key = QCA::SecureArray(ms.mid(0, keyLen));
+    _key = QCA::SymmetricKey(QCA::SecureArray(ms.mid(0, keyLen)));
     _iv = QCA::SecureArray(ms.mid(keyLen, ivLen));
 }
 
@@ -190,6 +197,11 @@ void Encryptor::randIvLengthHeader(QByteArray &buf)
     for (int i = 0; i < ivLen; ++i) {
         buf[i] = QCA::Random::randomChar();
     }
+}
+
+QByteArray Encryptor::randomIv()
+{
+    return QCA::Random::randomArray(ivLen).toByteArray();
 }
 
 QByteArray Encryptor::encrypt(const QByteArray &in)
@@ -204,25 +216,21 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
     }
     else {//TODO: tons of errors
         QCA::SecureArray data(in);
-        QCA::SecureArray ea = enCipher->process(data);
 
-        if (encPtrZero) {
-            encPtrZero = false;
+        if (!ivSent) {
+            ivSent = true;
+            QByteArray iv = randomIv();
+            qDebug() << "encrypt cipher iv" << iv.toHex();
 
-            /*out = QByteArray(in.size() + ivLen, '0');
-            randIvLengthHeader(out);
-            int j = ivLen;
-            for (int i = 0; j < out.size(); ++i, ++j) {
-                out[j] = ea[i];
-            }*/
-            out = _iv.toByteArray() + ea.toByteArray();
-            qDebug() << "encrypt cipher iv" << _iv.toByteArray().toHex();
+            enCipher->setup(QCA::Encode, _key, QCA::InitializationVector(iv));
+            out = iv + enCipher->process(data).toByteArray();
         }
         else {
-            out = ea.toByteArray();
+            out = enCipher->process(data).toByteArray();
         }
     }
 
+    qDebug() << "sent\n" << out.toHex();
     return out;
 }
 
@@ -239,20 +247,15 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
     else {
         QCA::SecureArray data(in);
 
-        if (decPtrZero) {
-            decPtrZero = false;
+        if (deCipher == NULL) {
+            QByteArray div(in.mid(0, ivLen));
 
-            QByteArray darray = data.toByteArray();
-            QCA::SecureArray div(darray.mid(0, ivLen));
+            qDebug() << "decipher iv" << div.toHex();
 
-            qDebug() << "decipher iv" << div.toByteArray().toHex();
+            deCipher = new QCA::Cipher(*enCipher);
+            deCipher->setup(QCA::Decode, _key, QCA::InitializationVector(div));
 
-            QCA::SymmetricKey symKey(_key);
-            QCA::InitializationVector decipher_iv(div);
-            deCipher->setup(QCA::Decode, symKey, decipher_iv);
-
-            darray.remove(0, ivLen);
-            QCA::SecureArray srd(darray);
+            QCA::SecureArray srd(in.mid(ivLen));
             out = deCipher->process(srd).toByteArray();
         }
         else {
@@ -260,20 +263,17 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
         }
     }
 
+    qDebug() << "received\n" << out.toHex();
     return out;
-}
-
-QByteArray Encryptor::getPasswordHash()
-{
-    return QCryptographicHash::hash(password, QCryptographicHash::Md5);
 }
 
 bool Encryptor::selfTest()
 {
     QByteArray test("barfoo!");
     QByteArray res = decrypt(encrypt(test));
-    encPtrZero = true;
-    decPtrZero = true;
+    ivSent = false;//selfTest is called on setup, ivSent was false
+    delete deCipher;
+    deCipher = NULL;
 
     return test == res;
 }

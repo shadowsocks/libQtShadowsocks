@@ -6,7 +6,8 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
     QObject(parent)
 {
     Local *l = qobject_cast<Local *>(parent);
-    encryptor = l->encryptor;
+    encryptor = new Encryptor(this);
+    encryptor->setup();
 
     local = localTcpSocket;
     local->setParent(this);

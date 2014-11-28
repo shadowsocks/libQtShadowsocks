@@ -1,17 +1,19 @@
 #include <QDebug>
 #include <QHostAddress>
 #include "local.h"
+#include "encryptor.h"
 
 Local::Local(QObject *parent) :
     QObject(parent)
 {
     localTcpServer = new QTcpServer(this);//local means local *server*
-    encryptor = new Encryptor(this);
 
     connect(localTcpServer, &QTcpServer::acceptError, this, &Local::onLocalTcpServerError);
     connect(localTcpServer, &QTcpServer::newConnection, this, &Local::onLocalNewConnection);
 
     localTcpServer->setMaxPendingConnections(1);//for easy debug.
+
+    QCA::init();
 }
 
 Local::~Local()
@@ -19,17 +21,15 @@ Local::~Local()
     if (running) {
         stop();
     }
+    QCA::deinit();
 }
 
-void Local::setProfile(const SProfile &p)
+void Local::start(const SProfile &p)
 {
     profile = p;
     qDebug() << "initialising ciphers...";
-    encryptor->setup(profile.method, profile.password);
-}
+    Encryptor::initialise(profile.method, profile.password);
 
-void Local::start()
-{
     localTcpServer->listen(profile.shareOverLAN ? QHostAddress::Any : QHostAddress::LocalHost, profile.local_port);
     qDebug() << "local server listen at port" << profile.local_port;
 
