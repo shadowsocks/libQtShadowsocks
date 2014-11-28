@@ -95,6 +95,7 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
         if (!QCA::isSupported(method.data())) {
             qCritical() << method << "is not supported!";
             qDebug() << "supported methods are " << QCA::supportedFeatures();
+            exit(223);
         }
 
         QVector<int> cipher = cipherMap.value(method);
