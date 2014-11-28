@@ -15,3 +15,10 @@ LIBS    += -L/home/symeon/Projects/build/libqtshadowsocks-Desktop-Debug \
             -lqtshadowsocks
 
 SOURCES += main.cpp
+
+unix: {
+    CONFIG    += link_pkgconfig
+    PKGCONFIG += qca2
+}
+
+LIBS  += -lqca

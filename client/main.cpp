@@ -4,7 +4,7 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
-#include <local.h>
+#include <localcontroller.h>
 
 void readConfig(const QString &file, SProfile *profile)
 {
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     SProfile profile;
     readConfig(parser.value(configFile), &profile);
     profile.shareOverLAN = parser.isSet(shareOverLan);
-    Local lc;
+    LocalController lc;
 
     lc.start(profile);
 

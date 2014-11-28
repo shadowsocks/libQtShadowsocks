@@ -1,11 +1,11 @@
 #include <QDebug>
 #include "connection.h"
-#include "local.h"
+#include "basecontroller.h"
 
 Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
     QObject(parent)
 {
-    Local *l = qobject_cast<Local *>(parent);
+    BaseController *c = qobject_cast<BaseController *>(parent);
     encryptor = new Encryptor(this);
     encryptor->setup();
 
@@ -16,7 +16,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
 
     server = new QTcpSocket(this);
     server->setReadBufferSize(RecvSize);
-    server->connectToHost(l->getServerAddr(), l->getServerPort());
+    server->connectToHost(c->getServerAddr(), c->getServerPort());
 
     socketDescriptor = local->socketDescriptor();
 

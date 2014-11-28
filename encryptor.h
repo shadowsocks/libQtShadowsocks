@@ -5,7 +5,7 @@
 #include <QVector>
 #include <QMap>
 #include <QCryptographicHash>
-#include <qca.h>
+#include <QtCrypto>
 
 class Encryptor : public QObject
 {
