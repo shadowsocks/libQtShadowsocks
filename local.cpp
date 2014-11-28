@@ -11,8 +11,6 @@ Local::Local(QObject *parent) :
     connect(localTcpServer, &QTcpServer::acceptError, this, &Local::onLocalTcpServerError);
     connect(localTcpServer, &QTcpServer::newConnection, this, &Local::onLocalNewConnection);
 
-    localTcpServer->setMaxPendingConnections(1);//for easy debug.
-
     QCA::init();
 }
 
@@ -29,6 +27,7 @@ void Local::start(const SProfile &p)
     profile = p;
     qDebug() << "initialising ciphers...";
     Encryptor::initialise(profile.method, profile.password);
+    qDebug() << profile.method << "initialised.";
 
     localTcpServer->listen(profile.shareOverLAN ? QHostAddress::Any : QHostAddress::LocalHost, profile.local_port);
     qDebug() << "local server listen at port" << profile.local_port;

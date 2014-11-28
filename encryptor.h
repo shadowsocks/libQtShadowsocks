@@ -5,7 +5,7 @@
 #include <QVector>
 #include <QMap>
 #include <QCryptographicHash>
-#include <QtCrypto/qca.h>
+#include <qca.h>
 
 class Encryptor : public QObject
 {
@@ -44,7 +44,6 @@ private:
     bool selfTest();
 
 protected:
-    //QCA::Initializer *qcaInit;
     QCA::Cipher *enCipher;
     QCA::Cipher *deCipher;
     static QCA::SymmetricKey _key;

@@ -53,19 +53,21 @@ QCA::SymmetricKey Encryptor::_key;
 
 void Encryptor::setup()
 {
-    ivSent = false;
-    evpBytesToKey();
-    QCA::InitializationVector iv(_iv);
+    if (!usingTable) {
+        ivSent = false;
+        evpBytesToKey();
+        QCA::InitializationVector iv(_iv);
 
-    if (deCipher != NULL) {
-        delete deCipher;
-        deCipher = NULL;
-    }
-    if (enCipher != NULL) {
-        delete enCipher;
-    }
+        if (deCipher != NULL) {
+            delete deCipher;
+            deCipher = NULL;
+        }
+        if (enCipher != NULL) {
+            delete enCipher;
+        }
 
-    enCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, _key, iv);
+        enCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, _key, iv);
+    }
 }
 
 void Encryptor::initialise(const QString &m, const QString &pwd)
@@ -125,8 +127,6 @@ void Encryptor::tableInit()
     QtConcurrent::blockingMap(octVec, [&] (const quint8 &j) {
         decTable[encTable[j]] = j;
     });
-
-    qDebug() << "table initialised.";
 }
 
 QVector<quint8> Encryptor::mergeSort(const QVector<quint8> &array, quint32 salt, quint64 key)
@@ -230,7 +230,6 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
         }
     }
 
-    qDebug() << "sent\n" << out.toHex();
     return out;
 }
 
@@ -263,7 +262,6 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
         }
     }
 
-    qDebug() << "received\n" << out.toHex();
     return out;
 }
 
