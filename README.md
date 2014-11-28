@@ -1,10 +1,10 @@
-libqtshadowsocks
+libQtShadowsocks
 ================
 
 Intro
 --------------
 
-`libqtshadowsocks` is a lightweight library for `shadowsocks`.
+`libQtShadowsocks` is a lightweight library for `shadowsocks`.
 
 It is written in C++ using Qt5 frameworks. Therefore, the major purpose of this project is to provide a developer-friendly shadowsocks library, mainly for Qt applications, i.e. [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/). While the `client` is sort of a demo to utilise this library.
 

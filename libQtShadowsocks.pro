@@ -1,0 +1,1 @@
+include(src/QtShadowsocks.pri)

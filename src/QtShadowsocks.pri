@@ -11,18 +11,18 @@ TEMPLATE  = lib
 DEFINES  += QTSHADOWSOCKS_LIBRARY
 
 SOURCES  += \
-    encryptor.cpp \
-    connection.cpp \
-    basecontroller.cpp \
-    localcontroller.cpp
+    src/encryptor.cpp \
+    src/connection.cpp \
+    src/basecontroller.cpp \
+    src/localcontroller.cpp
 
 HEADERS  += \
-    profile.h \
-    encryptor.h \
-    qtshadowsocks_global.h \
-    connection.h \
-    basecontroller.h \
-    localcontroller.h
+    src/profile.h \
+    src/encryptor.h \
+    src/qtshadowsocks_global.h \
+    src/connection.h \
+    src/basecontroller.h \
+    src/localcontroller.h
 
 LIBS     += -lqca
 
@@ -35,3 +35,4 @@ unix {
 
     VERSION     = 0.1
 }
+

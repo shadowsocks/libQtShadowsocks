@@ -8,7 +8,7 @@ CONFIG   -= app_bundle
 
 TEMPLATE = app
 
-INCLUDEPATH += ../
+INCLUDEPATH += ../src/
 
 #You have to change the directory to suit your case
 LIBS    += -L/home/symeon/Projects/build/libqtshadowsocks-Desktop-Debug \

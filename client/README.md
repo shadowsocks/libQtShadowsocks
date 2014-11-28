@@ -1,5 +1,5 @@
 ##Client##
 
-`ss-libqt` is the test client for `libqtshadowsocks`.
+`ss-libqt` is the test client for `libQtShadowsocks`.
 
-You can build this Qt project and use it to test functionality of `libqtshadowsocks`.
+You can build this Qt project and use it to test functionality of `libQtShadowsocks`.
