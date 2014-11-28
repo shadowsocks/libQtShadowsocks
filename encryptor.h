@@ -34,12 +34,10 @@ private:
     static QVector<quint8> decTable;
     static int keyLen;
     static int ivLen;
-    bool ivSent;
 
     static void tableInit();
     static QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
-    void evpBytesToKey();
-    static void randIvLengthHeader(QByteArray &);
+    static void evpBytesToKey();
     static QByteArray randomIv();
     bool selfTest();
 

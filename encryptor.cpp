@@ -32,11 +32,18 @@ QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
     map.insert("blowfish-cfb", {16, 8});
     map.insert("cast5-cfb", {16, 8});
     map.insert("des-cfb", {8, 8});
-    map.insert("idea-cfb", {16, 8});
-    map.insert("rc2-cfb", {16, 8});
+    /*
+     * below ciphers are currently unsupported.
+     */
+    /*
     map.insert("rc4", {16, 0});
     map.insert("rc4-md5", {16, 16});
+
+    //those are unlikely get supported in the future
+    map.insert("idea-cfb", {16, 8});
+    map.insert("rc2-cfb", {16, 8});
     map.insert("seed-cfb", {16, 16});
+    */
     return map;
 }
 
@@ -47,17 +54,13 @@ QByteArray Encryptor::method;
 QByteArray Encryptor::password;
 QVector<quint8> Encryptor::encTable;
 QVector<quint8> Encryptor::decTable;
-int Encryptor::keyLen = 32;
-int Encryptor::ivLen = 16;
+int Encryptor::keyLen = 0;
+int Encryptor::ivLen = 0;
 QCA::SymmetricKey Encryptor::_key;
 
 void Encryptor::setup()
 {
     if (!usingTable) {
-        ivSent = false;
-        evpBytesToKey();
-        QCA::InitializationVector iv(randomIv());
-
         if (deCipher != NULL) {
             delete deCipher;
             deCipher = NULL;
@@ -65,8 +68,6 @@ void Encryptor::setup()
         if (enCipher != NULL) {
             delete enCipher;
         }
-
-        enCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, _key, iv);
     }
 }
 
@@ -82,24 +83,26 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
     else {
         //change method name according to QCA
         if (method.contains("aes")) {
-            method.remove(3, 1);
-            cipherMode = QString(method.mid(0, 6));
+            method.remove(3, 1);//i.e. aes-256-cfb to aes256-cfb
         }
         else if (method.contains("bf")) {
             method = QByteArray("blowfish-cfb");
-            cipherMode = QString("blowfish");
         }
-        else {
-            cipherMode = method.mid(0, method.indexOf('-'));
-        }
+        cipherMode = method.mid(0, method.indexOf('-'));//drop "-cfb"
 
         if (!QCA::isSupported(method.data())) {
             qCritical() << method << "is not supported!";
             qDebug() << "supported methods are " << QCA::supportedFeatures();
         }
 
-        keyLen = cipherMap.value(method)[0];
-        ivLen = cipherMap.value(method)[1];
+        QVector<int> cipher = cipherMap.value(method);
+        if (cipher.size() < 2) {
+            qCritical() << "Abort. The method is not supported.";
+            exit(223);
+        }
+        keyLen = cipher[0];
+        ivLen = cipher[1];
+        evpBytesToKey();
     }
 }
 
@@ -189,15 +192,6 @@ void Encryptor::evpBytesToKey()
     }
 
     _key = QCA::SymmetricKey(QCA::SecureArray(ms.mid(0, keyLen)));
-    //this iv won't be uesd. no need to generate it
-    //_iv = QCA::SecureArray(ms.mid(keyLen, ivLen));
-}
-
-void Encryptor::randIvLengthHeader(QByteArray &buf)
-{
-    for (int i = 0; i < ivLen; ++i) {
-        buf[i] = QCA::Random::randomChar();
-    }
 }
 
 QByteArray Encryptor::randomIv()
@@ -215,14 +209,12 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
             out[i] = encTable.at(in[i]);
         }
     }
-    else {//TODO: tons of errors
+    else {
         QCA::SecureArray data(in);
 
-        if (!ivSent) {
-            ivSent = true;
+        if (enCipher == NULL) {
             QByteArray iv = randomIv();
-
-            enCipher->setup(QCA::Encode, _key, QCA::InitializationVector(iv));
+            enCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, _key, QCA::InitializationVector(iv));
             out = iv + enCipher->update(data).toByteArray();
         }
         else {
@@ -249,7 +241,6 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
         if (deCipher == NULL) {
             QByteArray div(in.mid(0, ivLen));
             QCA::SecureArray srd(in.mid(ivLen));
-
             deCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Decode, _key, QCA::InitializationVector(div));
             out = deCipher->update(srd).toByteArray();
         }
@@ -265,8 +256,9 @@ bool Encryptor::selfTest()
 {
     QByteArray test("barfoo!");
     QByteArray res = decrypt(encrypt(test));
-    ivSent = false;//selfTest is called on setup, ivSent was false
     if (!usingTable) {
+        delete enCipher;
+        enCipher = NULL;
         delete deCipher;
         deCipher = NULL;
     }

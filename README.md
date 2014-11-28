@@ -14,16 +14,21 @@ Current Status
 ###Supported methods###
 
 - Table
+- AES-128-CFB
+- AES-192-CFB
+- AES-256-CFB
+- BF-CFB
+- CAST5-CFB
+- DES-CFB
 
-QCA just release their v2.1.0 a few weeks ago, which supports Qt5. I will look into QCA and add supports for other methods.
+Support for more ciphers are coming.
 
 Warning
 -------
 
 This project is under heavy development.
 
-Considering fork and send some pull requests!
-
+You should expect a `v1.0` release in December this year.
 
 License
 -------
