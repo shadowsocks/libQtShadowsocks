@@ -47,7 +47,6 @@ protected:
     QCA::Cipher *enCipher;
     QCA::Cipher *deCipher;
     static QCA::SymmetricKey _key;
-    QCA::SecureArray _iv;//this is used for encrypt cipher
 };
 
 #endif // ENCRYPTOR_H

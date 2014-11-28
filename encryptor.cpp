@@ -56,7 +56,7 @@ void Encryptor::setup()
     if (!usingTable) {
         ivSent = false;
         evpBytesToKey();
-        QCA::InitializationVector iv(_iv);
+        QCA::InitializationVector iv(randomIv());
 
         if (deCipher != NULL) {
             delete deCipher;
@@ -189,7 +189,8 @@ void Encryptor::evpBytesToKey()
     }
 
     _key = QCA::SymmetricKey(QCA::SecureArray(ms.mid(0, keyLen)));
-    _iv = QCA::SecureArray(ms.mid(keyLen, ivLen));
+    //this iv won't be uesd. no need to generate it
+    //_iv = QCA::SecureArray(ms.mid(keyLen, ivLen));
 }
 
 void Encryptor::randIvLengthHeader(QByteArray &buf)
@@ -220,13 +221,12 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
         if (!ivSent) {
             ivSent = true;
             QByteArray iv = randomIv();
-            qDebug() << "encrypt cipher iv" << iv.toHex();
 
             enCipher->setup(QCA::Encode, _key, QCA::InitializationVector(iv));
-            out = iv + enCipher->process(data).toByteArray();
+            out = iv + enCipher->update(data).toByteArray();
         }
         else {
-            out = enCipher->process(data).toByteArray();
+            out = enCipher->update(data).toByteArray();
         }
     }
 
@@ -248,17 +248,13 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
 
         if (deCipher == NULL) {
             QByteArray div(in.mid(0, ivLen));
-
-            qDebug() << "decipher iv" << div.toHex();
-
-            deCipher = new QCA::Cipher(*enCipher);
-            deCipher->setup(QCA::Decode, _key, QCA::InitializationVector(div));
-
             QCA::SecureArray srd(in.mid(ivLen));
-            out = deCipher->process(srd).toByteArray();
+
+            deCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Decode, _key, QCA::InitializationVector(div));
+            out = deCipher->update(srd).toByteArray();
         }
         else {
-            out = deCipher->process(data).toByteArray();
+            out = deCipher->update(data).toByteArray();
         }
     }
 
@@ -270,8 +266,10 @@ bool Encryptor::selfTest()
     QByteArray test("barfoo!");
     QByteArray res = decrypt(encrypt(test));
     ivSent = false;//selfTest is called on setup, ivSent was false
-    delete deCipher;
-    deCipher = NULL;
+    if (!usingTable) {
+        delete deCipher;
+        deCipher = NULL;
+    }
 
     return test == res;
 }
