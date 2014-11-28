@@ -1,6 +1,6 @@
 #include "localcontroller.h"
 
-void LocalController::start(const SProfile &p)
+void LocalController::start(const Profile &p)
 {
     profile = p;
     qDebug() << "initialising ciphers...";

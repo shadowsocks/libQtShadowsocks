@@ -12,7 +12,7 @@ INCLUDEPATH += ../
 
 #You have to change the directory to suit your case
 LIBS    += -L/home/symeon/Projects/build/libqtshadowsocks-Desktop-Debug \
-            -lqtshadowsocks
+            -lQtShadowsocks
 
 SOURCES += main.cpp
 

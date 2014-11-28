@@ -5,6 +5,10 @@
 #include <QTcpSocket>
 #include "encryptor.h"
 
+using namespace QSS;
+
+namespace QSS {
+
 class Connection : public QObject
 {
     Q_OBJECT
@@ -34,4 +38,5 @@ private slots:
     void onHandshaked2();
 };
 
+}
 #endif // CONNECTION_H

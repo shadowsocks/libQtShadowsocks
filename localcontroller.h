@@ -3,6 +3,10 @@
 
 #include "basecontroller.h"
 
+using namespace QSS;
+
+namespace QSS {
+
 class QTSHADOWSOCKS_EXPORT LocalController : public BaseController
 {
     Q_OBJECT
@@ -10,10 +14,12 @@ public:
     LocalController(QObject *parent = 0) : BaseController (parent) {}
 
 public slots:
-    void start(const SProfile &p);
+    void start(const Profile &p);
 
 protected slots:
     void onNewConnection();
 };
+
+}
 
 #endif // LOCALCONTROLLER_H

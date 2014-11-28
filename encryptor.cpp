@@ -2,6 +2,8 @@
 #include <QtConcurrent>
 #include "encryptor.h"
 
+using namespace QSS;
+
 Encryptor::Encryptor(QObject *parent) :
     QObject(parent)
 {

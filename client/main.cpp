@@ -6,7 +6,9 @@
 #include <QDebug>
 #include <localcontroller.h>
 
-void readConfig(const QString &file, SProfile *profile)
+using namespace QSS;
+
+void readConfig(const QString &file, Profile *profile)
 {
     QFile c(file);
     c.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -44,7 +46,7 @@ int main(int argc, char *argv[])
     parser.addOption(shareOverLan);
     parser.process(a);
 
-    SProfile profile;
+    Profile profile;
     readConfig(parser.value(configFile), &profile);
     profile.shareOverLAN = parser.isSet(shareOverLan);
     LocalController lc;

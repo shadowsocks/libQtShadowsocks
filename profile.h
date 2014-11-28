@@ -1,9 +1,11 @@
-#ifndef SPROFILE_H
-#define SPROFILE_H
+#ifndef PROFILE_H
+#define PROFILE_H
 
 #include <QString>
 
-struct SProfile {
+namespace QSS {
+
+struct Profile {
     QString server;
     QString method;
     quint16 server_port;
@@ -11,4 +13,6 @@ struct SProfile {
     bool shareOverLAN;
     QString password;
 };
-#endif // SPROFILE_H
+
+}
+#endif // PROFILE_H

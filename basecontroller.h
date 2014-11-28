@@ -14,9 +14,13 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include "qtshadowsocks_global.h"
-#include "sprofile.h"
+#include "profile.h"
 #include "connection.h"
 #include "encryptor.h"
+
+using namespace QSS;
+
+namespace QSS {
 
 class BaseController : public QObject
 {
@@ -33,13 +37,13 @@ signals:
     void info(const QByteArray &);
 
 public slots:
-    virtual void start(const SProfile &p) = 0;
+    virtual void start(const Profile &p) = 0;
     virtual void stop();
 
 protected://children can access protected members
     bool running;
     QTcpServer *tcpServer;
-    SProfile profile;
+    Profile profile;
     QList<Connection *> conList;
 
 protected slots:
@@ -48,4 +52,5 @@ protected slots:
     virtual void onConnectionDisconnected();
 };
 
+}
 #endif // BASECONTROLLER_H

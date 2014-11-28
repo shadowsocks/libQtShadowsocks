@@ -2,34 +2,36 @@ QT       += core network concurrent
 
 QT       -= gui
 
-CONFIG += c++11
+CONFIG   += c++11
 
-TARGET = qtshadowsocks
+TARGET    = QtShadowsocks
 
-TEMPLATE = lib
+TEMPLATE  = lib
 
-DEFINES += QTSHADOWSOCKS_LIBRARY
+DEFINES  += QTSHADOWSOCKS_LIBRARY
 
-SOURCES += \
+SOURCES  += \
     encryptor.cpp \
     connection.cpp \
     basecontroller.cpp \
     localcontroller.cpp
 
-HEADERS += \
-    sprofile.h \
+HEADERS  += \
+    profile.h \
     encryptor.h \
     qtshadowsocks_global.h \
     connection.h \
     basecontroller.h \
     localcontroller.h
 
+LIBS     += -lqca
+
 unix {
     target.path = /usr/lib
-    INSTALLS += target
+    INSTALLS   += target
 
-    CONFIG    += link_pkgconfig
-    PKGCONFIG += qca2
+    CONFIG     += link_pkgconfig
+    PKGCONFIG  += qca2
+
+    VERSION     = 0.1
 }
-
-LIBS  += -lqca

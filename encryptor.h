@@ -7,6 +7,8 @@
 #include <QCryptographicHash>
 #include <QtCrypto>
 
+namespace QSS {
+
 class Encryptor : public QObject
 {
     Q_OBJECT
@@ -46,5 +48,7 @@ protected:
     QCA::Cipher *deCipher;
     static QCA::SymmetricKey _key;
 };
+
+}
 
 #endif // ENCRYPTOR_H
