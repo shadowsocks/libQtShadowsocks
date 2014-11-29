@@ -7,7 +7,6 @@ SOURCES  += \
 HEADERS  += \
     src/profile.h \
     src/encryptor.h \
-    src/qtshadowsocks_global.h \
     src/connection.h \
     src/basecontroller.h \
     src/localcontroller.h

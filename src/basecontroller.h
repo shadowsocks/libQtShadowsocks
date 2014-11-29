@@ -13,7 +13,6 @@
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
-#include "qtshadowsocks_global.h"
 #include "profile.h"
 #include "connection.h"
 #include "encryptor.h"
@@ -22,7 +21,7 @@ using namespace QSS;
 
 namespace QSS {
 
-class QTSHADOWSOCKS_EXPORT BaseController : public QObject
+class BaseController : public QObject
 {
     Q_OBJECT
 public:
@@ -45,6 +44,7 @@ protected://children can access protected members
     QTcpServer *tcpServer;
     Profile profile;
     QList<Connection *> conList;
+    QCA::Initializer qi;
 
 protected slots:
     virtual void onTcpServerError();

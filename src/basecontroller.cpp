@@ -8,7 +8,7 @@ BaseController::BaseController(QObject *parent) :
     connect(tcpServer, &QTcpServer::acceptError, this, &BaseController::onTcpServerError);
     connect(tcpServer, &QTcpServer::newConnection, this, &BaseController::onNewConnection);
 
-    QCA::init();
+    //QCA::init();
 }
 
 BaseController::~BaseController()
@@ -16,7 +16,7 @@ BaseController::~BaseController()
     if (running) {
         stop();
     }
-    QCA::deinit();
+    //QCA::deinit();
 }
 
 void BaseController::stop()

@@ -7,7 +7,7 @@ using namespace QSS;
 
 namespace QSS {
 
-class QTSHADOWSOCKS_EXPORT LocalController : public BaseController
+class LocalController : public BaseController
 {
     Q_OBJECT
 public:
