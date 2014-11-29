@@ -2,23 +2,33 @@ QT       += core network
 
 QT       -= gui
 
-TARGET = ss-libqt
+TARGET    = ss-libqt
 CONFIG   += console
-CONFIG   -= app_bundle
 
-TEMPLATE = app
+TEMPLATE  = app
 
-INCLUDEPATH += ../src/
+INCLUDEPATH += $$top_srcdir/../src
 
-#You have to change the directory to suit your case
-LIBS    += -L/home/symeon/Projects/build/libqtshadowsocks-Desktop-Debug \
-            -lQtShadowsocks
-
-SOURCES += main.cpp
+SOURCES     += main.cpp
 
 unix: {
     CONFIG    += link_pkgconfig
     PKGCONFIG += qca2
+    LIBS      += -L/home/symeon/Projects/build/libqtshadowsocks-Desktop-Debug \
+                 -lqtshadowsocks
 }
 
-LIBS  += -lqca
+win32: {
+    INCLUDEPATH += $$top_srcdir/../qca/include
+    contains(DEFINES, mingw64): {
+        DEPENDPATH += $$top_srcdir/lib/mingw64
+        LIBS += -L$$top_srcdir/../lib/mingw64
+        PRE_TARGETDEPS += $$top_srcdir/../lib/mingw64/libQtShadowsocks.a
+    }
+    else {
+        DEPENDPATH += $$top_srcdir/lib/mingw32
+        LIBS += -L$$top_srcdir/../lib/mingw32
+        PRE_TARGETDEPS += $$top_srcdir/../lib/mingw32/libQtShadowsocks.a
+    }
+    LIBS += -lqtshadowsocks
+}

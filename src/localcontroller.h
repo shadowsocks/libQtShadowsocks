@@ -11,7 +11,7 @@ class QTSHADOWSOCKS_EXPORT LocalController : public BaseController
 {
     Q_OBJECT
 public:
-    LocalController(QObject *parent = 0) : BaseController (parent) {}
+    explicit LocalController(QObject *parent = 0);
 
 public slots:
     void start(const Profile &p);

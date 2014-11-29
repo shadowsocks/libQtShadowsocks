@@ -22,11 +22,11 @@ using namespace QSS;
 
 namespace QSS {
 
-class BaseController : public QObject
+class QTSHADOWSOCKS_EXPORT BaseController : public QObject
 {
     Q_OBJECT
 public:
-    BaseController(QObject *parent = 0);
+    explicit BaseController(QObject *parent = 0);
     virtual ~BaseController();
 
     virtual quint16 getServerPort();
@@ -37,7 +37,7 @@ signals:
     void info(const QByteArray &);
 
 public slots:
-    virtual void start(const Profile &p) = 0;
+    virtual void start(const Profile &) = 0;
     virtual void stop();
 
 protected://children can access protected members

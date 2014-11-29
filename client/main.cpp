@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
     Profile profile;
     readConfig(parser.value(configFile), &profile);
     profile.shareOverLAN = parser.isSet(shareOverLan);
+
     LocalController lc;
 
     lc.start(profile);

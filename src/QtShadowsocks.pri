@@ -1,15 +1,3 @@
-QT       += core network concurrent
-
-QT       -= gui
-
-CONFIG   += c++11
-
-TARGET    = QtShadowsocks
-
-TEMPLATE  = lib
-
-DEFINES  += QTSHADOWSOCKS_LIBRARY
-
 SOURCES  += \
     src/encryptor.cpp \
     src/connection.cpp \
@@ -24,9 +12,7 @@ HEADERS  += \
     src/basecontroller.h \
     src/localcontroller.h
 
-LIBS     += -lqca
-
-unix {
+unix: {
     target.path = /usr/lib
     INSTALLS   += target
 
@@ -36,3 +22,16 @@ unix {
     VERSION     = 0.1
 }
 
+win32: {
+    INCLUDEPATH += $$top_srcdir/qca/include
+    contains(DEFINES, mingw64): {
+        LIBS += -L$$top_srcdir/qca/lib/mingw64
+        DESTDIR = $$top_srcdir/lib/mingw64
+    }
+    else {
+        LIBS += -L$$top_srcdir/qca/lib/mingw32
+        DESTDIR = $$top_srcdir/lib/mingw32
+    }
+}
+
+LIBS     += -lqca

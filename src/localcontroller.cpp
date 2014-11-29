@@ -1,5 +1,9 @@
 #include "localcontroller.h"
 
+LocalController::LocalController(QObject *parent) :
+    BaseController (parent)
+{}
+
 void LocalController::start(const Profile &p)
 {
     profile = p;
