@@ -1,15 +1,29 @@
 libQtShadowsocks
 ================
 
-Intro
---------------
+Introduction
+------------
 
 `libQtShadowsocks` is a lightweight library for `shadowsocks`.
 
-It is written in C++ using Qt5 frameworks. Therefore, the major purpose of this project is to provide a developer-friendly shadowsocks library, mainly for Qt applications, i.e. [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/). While the `client` is sort of a demo to utilise this library.
+It is written in C++ using Qt5 frameworks. Therefore, the major purpose of this project is to provide a developer-friendly shadowsocks library, mainly for Qt applications, i.e. [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
+
+The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` can also be used as a local Shadowsocks client.
+
+Dependency
+----------
+
+- Qt5 >= 5.2 (`qtbase5-dev`)
+- QCA >= 2.1.0
+
+Many distributions don't provide the latest [QCA 2.1.0] (http://delta.affinix.com/download/qca/2.0/qca-2.1.0.tar.gz) package. You may have to build it yourself. In order to support mainstream encryption methods, please install `libssl-dev` (OpenSSL development package) before compiling.
 
 Current Status
 --------------
+
+###Supported Platforms###
+
+I managed to build QCA on Windows but failed. Unfortunately, but `libQtShadowsocks` currently supports only **Linux**.
 
 ###Supported methods###
 
