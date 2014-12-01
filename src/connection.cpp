@@ -13,9 +13,9 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
     local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     local->setReadBufferSize(RecvSize);
 
-    server = new QTcpSocket(this);
-    server->setReadBufferSize(RecvSize);
-    server->connectToHost(c->getServerAddr(), c->getServerPort());
+    remote = new QTcpSocket(this);
+    remote->setReadBufferSize(RecvSize);
+    remote->connectToHost(c->getServerAddr(), c->getServerPort());
 
     socketDescriptor = local->socketDescriptor();
 
@@ -23,9 +23,9 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
     connect(local, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
     connect(local, &QTcpSocket::readyRead, this, &Connection::onHandshaked, Qt::DirectConnection);
 
-    connect(server, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onServerTcpSocketError);
-    connect(server, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
-    connect(server, &QTcpSocket::readyRead, this, &Connection::onServerTcpSocketReadyRead, Qt::DirectConnection);
+    connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
+    connect(remote, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
+    connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead, Qt::DirectConnection);
 }
 
 void Connection::appendSocket(QTcpSocket *t)
@@ -49,9 +49,9 @@ void Connection::onLocalTcpSocketError()
     emit error(str);
 }
 
-void Connection::onServerTcpSocketError()
+void Connection::onRemoteTcpSocketError()
 {
-    QString str = QString("server socket error: ") + server->errorString();
+    QString str = QString("remote socket error: ") + remote->errorString();
     emit error(str);
 }
 
@@ -98,12 +98,12 @@ void Connection::onLocalTcpSocketReadyRead()
 {
     QByteArray buf = local->readAll();
     QByteArray dataToSend = encryptor->encrypt(buf);
-    server->write(dataToSend);
+    remote->write(dataToSend);
 }
 
-void Connection::onServerTcpSocketReadyRead()
+void Connection::onRemoteTcpSocketReadyRead()
 {
-    QByteArray buf = server->readAll();
+    QByteArray buf = remote->readAll();
     QByteArray dataToSend = encryptor->decrypt(buf);
     local->write(dataToSend);
 }

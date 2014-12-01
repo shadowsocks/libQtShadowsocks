@@ -28,12 +28,12 @@ signals:
 
 private:
     QTcpSocket *local;
-    QTcpSocket *server;
+    QTcpSocket *remote;
     Encryptor *encryptor;
 
 private slots:
-    void onServerTcpSocketError();
-    void onServerTcpSocketReadyRead();
+    void onRemoteTcpSocketError();
+    void onRemoteTcpSocketReadyRead();
     void onLocalTcpSocketError();
     void onLocalTcpSocketReadyRead();
     void onHandshaked();
