@@ -20,7 +20,7 @@ public:
     static const qint64 RecvSize_udp = 65536;//64KB, same as shadowsocks-python
 
 public slots:
-    void appendSocket(QTcpSocket *);
+    void appendTcpSocket(QTcpSocket *);
 
 signals:
     void disconnected();

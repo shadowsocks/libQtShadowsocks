@@ -28,7 +28,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
     connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead, Qt::DirectConnection);
 }
 
-void Connection::appendSocket(QTcpSocket *t)
+void Connection::appendTcpSocket(QTcpSocket *t)
 {
     disconnect(local, &QTcpSocket::disconnected, this, &Connection::disconnected);
     connect(local, &QTcpSocket::disconnected, local, &QTcpSocket::deleteLater);

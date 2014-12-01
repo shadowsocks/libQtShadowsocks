@@ -60,7 +60,7 @@ void BaseController::onNewConnection()
         connect (con, &Connection::error, this, &BaseController::error);
     }
     else {
-        con->appendSocket(ts);
+        con->appendTcpSocket(ts);
     }
 }
 

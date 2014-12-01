@@ -33,4 +33,4 @@ win32: {
     }
 }
 
-LIBS     += -lqca -lqca-ossl
+LIBS     += -lqca
