@@ -1,4 +1,3 @@
-#include <QDebug>
 #include "connection.h"
 #include "basecontroller.h"
 
@@ -46,26 +45,28 @@ void Connection::appendSocket(QTcpSocket *t)
 
 void Connection::onLocalTcpSocketError()
 {
-    qWarning() << "local socket error:" << local->errorString();
+    QString str = QString("local socket error:") + local->errorString();
+    emit error(str);
 }
 
 void Connection::onServerTcpSocketError()
 {
-    qWarning() << "server socket error:" << server->errorString();
+    QString str = QString("server socket error:") + server->errorString();
+    emit error(str);
 }
 
 void Connection::onHandshaked()
 {
     QByteArray buf = local->read(256);
     if (buf.isEmpty()) {
-        qDebug() << "onHandshaked. Error! Received empty data from server.";
+        emit info("onHandshaked. Error! Received empty data from server.");
         return;
     }
 
     QByteArray response;
     response.append(char(5)).append(char(0));
     if (buf[0] != char(5)) {//reject socket v4
-        qDebug() << "a socket v4 connection was rejected.";
+        emit info("a socket v4 connection was rejected.");
         response[0] = 0;
         response[1] = 91;
     }
@@ -80,7 +81,7 @@ void Connection::onHandshaked2()
 {
     QByteArray buf = local->read(3);
     if (buf.isEmpty()) {
-        qWarning() << "onHandshaked2. Error! Received empty data from server.";
+        emit error("onHandshaked2 Error! Received empty data from server.");
         return;
     }
 

@@ -15,9 +15,6 @@ public:
 
 public slots:
     void start(const Profile &p);
-
-protected slots:
-    void onNewConnection();
 };
 
 }

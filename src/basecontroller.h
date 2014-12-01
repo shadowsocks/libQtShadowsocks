@@ -7,7 +7,6 @@
  */
 
 #include <QByteArray>
-#include <QDebug>
 #include <QHostAddress>
 #include <QList>
 #include <QObject>
@@ -32,8 +31,8 @@ public:
     virtual QString getServerAddr();
 
 signals:
-    void error(const QByteArray &);
-    void info(const QByteArray &);
+    void error(const QString &);
+    void info(const QString &);
 
 public slots:
     virtual void start(const Profile &) = 0;
@@ -48,7 +47,7 @@ protected://children can access protected members
 
 protected slots:
     virtual void onTcpServerError();
-    virtual void onNewConnection() = 0;
+    virtual void onNewConnection();
     virtual void onConnectionDisconnected();
 };
 

@@ -7,8 +7,6 @@ BaseController::BaseController(QObject *parent) :
 
     connect(tcpServer, &QTcpServer::acceptError, this, &BaseController::onTcpServerError);
     connect(tcpServer, &QTcpServer::newConnection, this, &BaseController::onNewConnection);
-
-    //QCA::init();
 }
 
 BaseController::~BaseController()
@@ -16,7 +14,6 @@ BaseController::~BaseController()
     if (running) {
         stop();
     }
-    //QCA::deinit();
 }
 
 void BaseController::stop()
@@ -38,7 +35,33 @@ QString BaseController::getServerAddr()
 
 void BaseController::onTcpServerError()
 {
-    qWarning() << "tcp server error:" << tcpServer->errorString();
+    QString str = QString("tcp server error:") + tcpServer->errorString();
+    emit error(str);
+}
+
+void BaseController::onNewConnection()
+{
+    QTcpSocket *ts = tcpServer->nextPendingConnection();
+    qintptr tsd = ts->socketDescriptor();
+
+    Connection *con = NULL;
+
+    foreach (Connection *c, conList) {
+        if (tsd == c->socketDescriptor) {
+            con = c;
+        }
+    }
+
+    if (con == NULL) {
+        con = new Connection(ts, this);
+        conList.append(con);
+        connect (con, &Connection::disconnected, this, &BaseController::onConnectionDisconnected);
+        connect (con, &Connection::info, this, &BaseController::info);
+        connect (con, &Connection::error, this, &BaseController::error);
+    }
+    else {
+        con->appendSocket(ts);
+    }
 }
 
 void BaseController::onConnectionDisconnected()
@@ -47,10 +70,11 @@ void BaseController::onConnectionDisconnected()
     if (con) {
         conList.removeOne(con);
         con->deleteLater();
-        qDebug() << "a connection closed";
-        qDebug() << "current connections: " << conList.size();
+        emit info("a connection closed");
+        QString str = QString("current connections: ") + QString::number(conList.size());
+        emit info(str);
     }
     else {
-        qCritical() << "a false sender called onConnectionDisconnected slot";
+        emit error("a false sender called onConnectionDisconnected slot");
     }
 }

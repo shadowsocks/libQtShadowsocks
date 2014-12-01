@@ -23,6 +23,8 @@ public slots:
 
 signals:
     void disconnected();
+    void info(const QString &);
+    void error(const QString &);
 
 private:
     QTcpSocket *local;
