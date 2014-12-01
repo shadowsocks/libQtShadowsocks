@@ -8,6 +8,4 @@ TARGET    = QtShadowsocks
 
 TEMPLATE  = lib
 
-DEFINES  += QTSHADOWSOCKS_LIBRARY
-
 include(src/QtShadowsocks.pri)
