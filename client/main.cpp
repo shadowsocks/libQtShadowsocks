@@ -6,6 +6,11 @@
 #include <QDebug>
 #include <localcontroller.h>
 
+#ifdef QCA_STATIC
+#include <QtPlugin>
+Q_IMPORT_PLUGIN(qca_ossl)
+#endif
+
 using namespace QSS;
 
 void readConfig(const QString &file, Profile *profile)

@@ -23,14 +23,21 @@ unix: {
 
 win32: {
     INCLUDEPATH += $$top_srcdir/qca/include
-    contains(DEFINES, mingw64): {
-        LIBS += -L$$top_srcdir/qca/lib/mingw64
-        DESTDIR = $$top_srcdir/lib/mingw64
+    DEFINES += QCA_STATIC
+    win32-msvc2013: {
+        LIBS += -L$$top_srcdir/qca/lib/msvc2013
+        DESTDIR = $$top_srcdir/lib/msvc2013
     }
-    else {
-        LIBS += -L$$top_srcdir/qca/lib/mingw32
-        DESTDIR = $$top_srcdir/lib/mingw32
+    else :{
+        contains(DEFINES, mingw64): {
+            LIBS += -L$$top_srcdir/qca/lib/mingw64
+            DESTDIR = $$top_srcdir/lib/mingw64
+        }
+        else {
+            LIBS += -L$$top_srcdir/qca/lib/mingw32
+            DESTDIR = $$top_srcdir/lib/mingw32
+        }
     }
 }
 
-LIBS     += -lqca
+LIBS     += -lqca -lqca-ossl

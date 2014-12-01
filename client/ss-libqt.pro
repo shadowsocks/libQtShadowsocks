@@ -19,20 +19,26 @@ unix: {
 
 win32: {
     INCLUDEPATH += $$top_srcdir/../qca/include
-    contains(DEFINES, mingw64): {
-        DEPENDPATH += $$top_srcdir/lib/mingw64
-        LIBS += -L$$top_srcdir/../lib/mingw64 \
-                -L$$top_srcdir/../qca/lib/mingw64
-        PRE_TARGETDEPS += $$top_srcdir/../lib/mingw64/libQtShadowsocks.a \
-                          $$top_srcdir/../qca/lib/mingw64/libqca.a
+    DEFINES += QCA_STATIC
+    win32-msvc2013: {
+        LIBS += -L$$top_srcdir/../lib/msvc2013 \
+                -L$$top_srcdir/../qca/lib/msvc2013
+        QTPLUGIN += qca-ossl
     }
-    else {
-        DEPENDPATH += $$top_srcdir/lib/mingw32
-        LIBS += -L$$top_srcdir/../lib/mingw32 \
-                -L$$top_srcdir/../qca/lib/mingw32
-        PRE_TARGETDEPS += $$top_srcdir/../lib/mingw32/libQtShadowsocks.a \
-                          $$top_srcdir/../qca/lib/mingw32/libqca.a
+    else: {
+        contains(DEFINES, mingw64): {
+            LIBS += -L$$top_srcdir/../lib/mingw64 \
+                    -L$$top_srcdir/../qca/lib/mingw64
+            PRE_TARGETDEPS += $$top_srcdir/../lib/mingw64/libQtShadowsocks.a \
+                              $$top_srcdir/../qca/lib/mingw64/libqca.a
+        }
+        else {
+            LIBS += -L$$top_srcdir/../lib/mingw32 \
+                    -L$$top_srcdir/../qca/lib/mingw32
+            PRE_TARGETDEPS += $$top_srcdir/../lib/mingw32/libQtShadowsocks.a \
+                              $$top_srcdir/../qca/lib/mingw32/libqca.a
+        }
     }
 }
 
-LIBS += -lqca -lQtShadowsocks
+LIBS += -lqca -lqca-ossl -lQtShadowsocks
