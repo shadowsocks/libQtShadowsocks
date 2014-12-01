@@ -28,15 +28,8 @@ win32: {
         LIBS += -L$$top_srcdir/qca/lib/msvc2013
         DESTDIR = $$top_srcdir/lib/msvc2013
     }
-    else :{
-        contains(DEFINES, mingw64): {
-            LIBS += -L$$top_srcdir/qca/lib/mingw64
-            DESTDIR = $$top_srcdir/lib/mingw64
-        }
-        else {
-            LIBS += -L$$top_srcdir/qca/lib/mingw32
-            DESTDIR = $$top_srcdir/lib/mingw32
-        }
+    else: {
+        error ("Only support MSVC2013 compiler on Windows platform.")
     }
 }
 

@@ -9,7 +9,7 @@ void LocalController::start(const Profile &p)
     profile = p;
     emit info("initialising ciphers...");
     Encryptor::initialise(profile.method, profile.password);
-    QString istr = profile.method + QString("initialised.");
+    QString istr = profile.method + QString(" initialised.");
     emit info(istr);
 
     tcpServer->listen(profile.shareOverLAN ? QHostAddress::Any : QHostAddress::LocalHost, profile.local_port);

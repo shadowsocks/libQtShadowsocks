@@ -35,7 +35,7 @@ QString BaseController::getServerAddr()
 
 void BaseController::onTcpServerError()
 {
-    QString str = QString("tcp server error:") + tcpServer->errorString();
+    QString str = QString("tcp server error: ") + tcpServer->errorString();
     emit error(str);
 }
 

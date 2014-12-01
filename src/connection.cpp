@@ -45,13 +45,13 @@ void Connection::appendSocket(QTcpSocket *t)
 
 void Connection::onLocalTcpSocketError()
 {
-    QString str = QString("local socket error:") + local->errorString();
+    QString str = QString("local socket error: ") + local->errorString();
     emit error(str);
 }
 
 void Connection::onServerTcpSocketError()
 {
-    QString str = QString("server socket error:") + server->errorString();
+    QString str = QString("server socket error: ") + server->errorString();
     emit error(str);
 }
 

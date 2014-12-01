@@ -1,10 +1,6 @@
 #include <QCoreApplication>
 #include <QCommandLineParser>
-#include <QFile>
-#include <QJsonDocument>
-#include <QJsonObject>
-#include <QDebug>
-#include <localcontroller.h>
+#include "client.h"
 
 #ifdef QCA_STATIC
 #include <QtPlugin>
@@ -12,30 +8,6 @@ Q_IMPORT_PLUGIN(qca_ossl)
 #endif
 
 using namespace QSS;
-
-void readConfig(const QString &file, Profile *profile)
-{
-    QFile c(file);
-    c.open(QIODevice::ReadOnly | QIODevice::Text);
-    if (!c.isOpen()) {
-        qDebug() << "config file" << file << "is not open!";
-        exit(1);
-    }
-    if (!c.isReadable()) {
-        qDebug() << "config file" << file << "is not readable!";
-        exit(1);
-    }
-    QByteArray confArray = c.readAll();
-    c.close();
-
-    QJsonDocument confJson = QJsonDocument::fromJson(confArray);
-    QJsonObject confObj = confJson.object();
-    profile->local_port = confObj["local_port"].toInt();
-    profile->method = confObj["method"].toString();
-    profile->password = confObj["password"].toString();
-    profile->server = confObj["server"].toString();
-    profile->server_port = confObj["server_port"].toInt();
-}
 
 int main(int argc, char *argv[])
 {
@@ -51,13 +23,10 @@ int main(int argc, char *argv[])
     parser.addOption(shareOverLan);
     parser.process(a);
 
-    Profile profile;
-    readConfig(parser.value(configFile), &profile);
-    profile.shareOverLAN = parser.isSet(shareOverLan);
-
-    LocalController lc;
-
-    lc.start(profile);
+    Client c;
+    c.readConfig(parser.value(configFile));
+    c.setShareOverLAN(parser.isSet(shareOverLan));
+    c.start();
 
     return a.exec();
 }
