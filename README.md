@@ -31,6 +31,7 @@ Current Status
 
 ###Supported Platforms###
 
+- Windows
 - Linux
 - xBSD (untested)
 - Mac OS X (untested)
