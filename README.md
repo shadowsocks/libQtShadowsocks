@@ -10,6 +10,14 @@ It is written in C++ using Qt5 frameworks. Therefore, the major purpose of this 
 
 The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` can also be used as a local Shadowsocks client.
 
+TODO
+----
+
+- Support use as server (server-side shadowsocks) (v1.0)
+- Stabilise ABI and code structure (v1.0)
+- Support RC4-MD5 method (v1.x)
+- Statically linked Windows build (v1.x)
+
 Dependency
 ----------
 
@@ -23,9 +31,11 @@ Current Status
 
 ###Supported Platforms###
 
-I managed to build QCA on Windows but failed. Unfortunately, but `libQtShadowsocks` currently supports only **Linux**.
+- Linux
+- xBSD (untested)
+- Mac OS X (untested)
 
-###Supported methods###
+###Supported Methods###
 
 - Table
 - AES-128-CFB
@@ -35,14 +45,10 @@ I managed to build QCA on Windows but failed. Unfortunately, but `libQtShadowsoc
 - CAST5-CFB
 - DES-CFB
 
-Support for more ciphers are coming.
-
 Warning
 -------
 
-This project is under heavy development.
-
-You should expect a `v1.0` release in December this year.
+This project is under heavy development. Please wait for a `v1.0` release before use it in production environment.
 
 License
 -------
