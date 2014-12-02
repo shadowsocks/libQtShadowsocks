@@ -14,6 +14,7 @@
 #include <QTcpSocket>
 #include "profile.h"
 #include "connection.h"
+#include "udprelay.h"
 #include "encryptor.h"
 
 using namespace QSS;
@@ -24,23 +25,27 @@ class BaseController : public QObject
 {
     Q_OBJECT
 public:
-    explicit BaseController(QObject *parent = 0);
+    explicit BaseController(const Profile &p, QObject *parent = 0);
     virtual ~BaseController();
 
     virtual quint16 getServerPort();
     virtual QString getServerAddr();
+
+    virtual quint16 getLocalPort();
+    virtual QHostAddress getLocalAddr();
 
 signals:
     void error(const QString &);
     void info(const QString &);
 
 public slots:
-    virtual void start(const Profile &) = 0;
+    virtual void start() = 0;
     virtual void stop();
 
 protected://children can access protected members
     bool running;
     QTcpServer *tcpServer;
+    UdpRelay *udpRelay;
     Profile profile;
     QList<Connection *> conList;
     QCA::Initializer qi;

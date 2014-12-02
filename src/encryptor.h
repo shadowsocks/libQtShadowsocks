@@ -16,11 +16,11 @@ public:
     explicit Encryptor(QObject *parent = 0);
     ~Encryptor();
 
-    void setup();
-
     static int randomCompare(const quint8 &, const quint8 &, const quint32 &salt, const quint64 &key);
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
+    QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
+    QByteArray encryptAll(const QByteArray &);
 
     static const QVector<quint8> octVec;
     static const QMap<QByteArray, QVector<int> > cipherMap;

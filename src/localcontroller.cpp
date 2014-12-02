@@ -1,12 +1,11 @@
 #include "localcontroller.h"
 
-LocalController::LocalController(QObject *parent) :
-    BaseController (parent)
+LocalController::LocalController(const Profile &p, QObject *parent) :
+    BaseController (p, parent)
 {}
 
-void LocalController::start(const Profile &p)
+void LocalController::start()
 {
-    profile = p;
     emit info("initialising ciphers...");
     Encryptor::initialise(profile.method, profile.password);
     QString istr = profile.method + QString(" initialised.");

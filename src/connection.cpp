@@ -6,7 +6,6 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
 {
     BaseController *c = qobject_cast<BaseController *>(parent);
     encryptor = new Encryptor(this);
-    encryptor->setup();
 
     local = localTcpSocket;
     local->setParent(this);
@@ -15,6 +14,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
 
     remote = new QTcpSocket(this);
     remote->setReadBufferSize(RecvSize);
+    remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     remote->connectToHost(c->getServerAddr(), c->getServerPort());
 
     socketDescriptor = local->socketDescriptor();

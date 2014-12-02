@@ -1,9 +1,12 @@
 #include "basecontroller.h"
 
-BaseController::BaseController(QObject *parent) :
+BaseController::BaseController(const Profile &p, QObject *parent) :
     QObject(parent)
 {
+    profile = p;
+
     tcpServer = new QTcpServer(this);
+    udpRelay = new UdpRelay(this);
 
     connect(tcpServer, &QTcpServer::acceptError, this, &BaseController::onTcpServerError);
     connect(tcpServer, &QTcpServer::newConnection, this, &BaseController::onNewConnection);
@@ -31,6 +34,16 @@ quint16 BaseController::getServerPort()
 QString BaseController::getServerAddr()
 {
     return profile.server;
+}
+
+quint16 BaseController::getLocalPort()
+{
+    return profile.local_port;
+}
+
+QHostAddress BaseController::getLocalAddr()
+{
+    return profile.shareOverLAN ? QHostAddress::Any : QHostAddress::LocalHost;
 }
 
 void BaseController::onTcpServerError()

@@ -11,10 +11,10 @@ class LocalController : public BaseController
 {
     Q_OBJECT
 public:
-    explicit LocalController(QObject *parent = 0);
+    explicit LocalController(const Profile &p, QObject *parent = 0);
 
 public slots:
-    void start(const Profile &p);
+    void start();
 };
 
 }

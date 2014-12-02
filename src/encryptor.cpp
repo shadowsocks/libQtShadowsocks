@@ -60,19 +60,6 @@ int Encryptor::keyLen = 0;
 int Encryptor::ivLen = 0;
 QCA::SymmetricKey Encryptor::_key;
 
-void Encryptor::setup()
-{
-    if (!usingTable) {
-        if (deCipher != NULL) {
-            delete deCipher;
-            deCipher = NULL;
-        }
-        if (enCipher != NULL) {
-            delete enCipher;
-        }
-    }
-}
-
 void Encryptor::initialise(const QString &m, const QString &pwd)
 {
     method = m.toLower().toLocal8Bit();//local8bit or utf-8?
@@ -250,6 +237,58 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
         else {
             out = deCipher->update(data).toByteArray();
         }
+    }
+
+    return out;
+}
+
+QByteArray Encryptor::encryptAll(const QByteArray &in)
+{
+    QByteArray out;
+
+    if (usingTable) {
+        out = QByteArray(in.size(), '0');
+        for (int i = 0; i < in.size(); ++i) {
+            out[i] = encTable.at(in[i]);
+        }
+    }
+    else {
+        QCA::SecureArray data(in);
+        QByteArray iv = randomIv();
+
+        if (enCipher == NULL) {
+            enCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, _key, QCA::InitializationVector(iv));
+        }
+        else {
+            enCipher->setup(QCA::Encode, _key, QCA::InitializationVector(iv));
+        }
+        out = iv + enCipher->update(data).toByteArray();
+    }
+
+    return out;
+}
+
+QByteArray Encryptor::decryptAll(const QByteArray &in)
+{
+    QByteArray out;
+
+    if (usingTable) {
+        out = QByteArray(in.size(), '0');
+        for (int i = 0; i < in.size(); ++i) {
+            out[i] = decTable.at(in[i]);
+        }
+    }
+    else {
+        QByteArray div(in.mid(0, ivLen));
+        QCA::SecureArray srd(in.mid(ivLen));
+
+        if (deCipher == NULL) {
+            deCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Decode, _key, QCA::InitializationVector(div));
+        }
+        else {
+            deCipher->setup(QCA::Decode, _key, QCA::InitializationVector(div));
+        }
+        out = deCipher->update(srd).toByteArray();
     }
 
     return out;

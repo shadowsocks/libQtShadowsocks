@@ -2,14 +2,18 @@ SOURCES  += \
     src/encryptor.cpp \
     src/connection.cpp \
     src/basecontroller.cpp \
-    src/localcontroller.cpp
+    src/localcontroller.cpp \
+    src/udprelay.cpp \
+    src/common.cpp
 
 HEADERS  += \
     src/profile.h \
     src/encryptor.h \
     src/connection.h \
     src/basecontroller.h \
-    src/localcontroller.h
+    src/localcontroller.h \
+    src/udprelay.h \
+    src/common.h
 
 unix: {
     target.path = /usr/lib

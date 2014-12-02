@@ -7,10 +7,7 @@
 Client::Client(QObject *parent) :
     QObject(parent)
 {
-    lc = new QSS::LocalController(this);
-
-    connect (lc, &QSS::LocalController::info, this, &Client::logHandler);
-    connect (lc, &QSS::LocalController::error, this, &Client::logHandler);
+    lc = NULL;
 }
 
 void Client::setShareOverLAN(bool s)
@@ -44,7 +41,13 @@ void Client::readConfig(const QString &file)
 
 void Client::start()
 {
-    lc->start(profile);
+    if (lc != NULL) {
+        lc->deleteLater();
+    }
+    lc = new QSS::LocalController(profile, this);
+    connect (lc, &QSS::LocalController::info, this, &Client::logHandler);
+    connect (lc, &QSS::LocalController::error, this, &Client::logHandler);
+    lc->start();
 }
 
 void Client::logHandler(const QString &log)
