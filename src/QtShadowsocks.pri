@@ -30,6 +30,7 @@ unix: {
 }
 
 win32: {
+    DEFINES    += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
     win32-msvc2013: {
         DESTDIR = $$top_srcdir/lib/msvc2013
     }

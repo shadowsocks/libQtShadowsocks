@@ -28,6 +28,7 @@ BaseController::BaseController(const Profile &p, QObject *parent) :
     profile = p;
 
     tcpServer = new QTcpServer(this);
+    tcpServer->setMaxPendingConnections(1024);//1024 is the default FD_SETSIZE value on Linux.
     udpRelay = new UdpRelay(this);
 
     connect(tcpServer, &QTcpServer::acceptError, this, &BaseController::onTcpServerError);

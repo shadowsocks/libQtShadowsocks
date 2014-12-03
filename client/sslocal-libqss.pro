@@ -27,6 +27,7 @@ unix: {
 
 win32: {
     #DEFINES += QCA_STATIC
+    DEFINES    += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
     win32-msvc2013: {
         LIBS += -L$$top_srcdir/../lib/msvc2013
         #QTPLUGIN += qca-ossl
