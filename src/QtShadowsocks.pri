@@ -1,3 +1,7 @@
+# This file is part of project libQtShadowsocks
+# Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
+# Licensed Under GPLv3
+
 SOURCES  += \
     src/encryptor.cpp \
     src/connection.cpp \
