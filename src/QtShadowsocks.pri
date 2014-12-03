@@ -30,10 +30,7 @@ unix: {
 }
 
 win32: {
-    INCLUDEPATH += $$top_srcdir/qca/include
-    DEFINES += QCA_STATIC
     win32-msvc2013: {
-        LIBS += -L$$top_srcdir/qca/lib/msvc2013
         DESTDIR = $$top_srcdir/lib/msvc2013
     }
     else: {
