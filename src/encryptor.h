@@ -38,16 +38,25 @@ public:
     explicit Encryptor(QObject *parent = 0);
     ~Encryptor();
 
-    static int randomCompare(const quint8 &, const quint8 &, const quint32 &salt, const quint64 &key);
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
     QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
     QByteArray encryptAll(const QByteArray &);
+    void reset();
 
     static const QVector<quint8> octVec;
     static const QMap<QByteArray, QVector<int> > cipherMap;
     static QMap<QByteArray, QVector<int> > generateCihperMap();
-    static void initialise(const QString &m, const QString &pwd);//only need to call this function once if the encrpytion method and password don't change.
+    static int randomCompare(const quint8 &, const quint8 &, const quint32 &salt, const quint64 &key);
+
+    /*
+     * Only need to call this function once if the encrpytion method and password don't change.
+     * If you want to change the method and password, remember to call reset() function to remove
+     * the old enCipher and(or) deCipher.
+     * It's not recommended to change method and/or password on-process. The clean way to do that
+     * is to delete and release the old library classes, then construct them with new values.
+     */
+    static void initialise(const QString &m, const QString &pwd);//
 
 private:
     static bool usingTable;

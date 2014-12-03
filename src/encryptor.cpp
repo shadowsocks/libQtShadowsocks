@@ -82,6 +82,18 @@ int Encryptor::keyLen = 0;
 int Encryptor::ivLen = 0;
 QCA::SymmetricKey Encryptor::_key;
 
+void Encryptor::reset()
+{
+    if (enCipher != NULL) {
+        delete enCipher;
+        enCipher = NULL;
+    }
+    if (deCipher != NULL) {
+        delete deCipher;
+        deCipher = NULL;
+    }
+}
+
 void Encryptor::initialise(const QString &m, const QString &pwd)
 {
     method = m.toLower().toLocal8Bit();//local8bit or utf-8?
@@ -115,15 +127,6 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
         keyLen = cipher[0];
         ivLen = cipher[1];
         evpBytesToKey();
-
-        if (enCipher != NULL) {
-            delete enCipher;
-            enCipher = NULL;
-        }
-        if (deCipher != NULL) {
-            delete deCipher;
-            deCipher = NULL;
-        }
     }
 }
 
