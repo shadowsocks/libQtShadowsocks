@@ -32,7 +32,7 @@ using namespace QSS;
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-    a.setApplicationName("Shadowsocks-libqtshadowsocks");
+    a.setApplicationName("Shadowsocks-libQtShadowsocks");
     a.setApplicationVersion("0.1");
     QCommandLineParser parser;
     parser.addHelpOption();

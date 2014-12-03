@@ -6,7 +6,7 @@ QT       += core network concurrent
 
 QT       -= gui
 
-TARGET    = ss-libqt
+TARGET    = sslocal-libqss
 CONFIG   += console crypto
 
 TEMPLATE  = app
