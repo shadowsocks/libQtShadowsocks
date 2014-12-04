@@ -25,6 +25,7 @@
 #ifndef BASECONTROLLER_H
 #define BASECONTROLLER_H
 
+#include <QtConcurrent>
 #include <QByteArray>
 #include <QHostAddress>
 #include <QList>

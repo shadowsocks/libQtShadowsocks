@@ -82,11 +82,11 @@ void BaseController::onNewConnection()
 
     Connection *con = NULL;
 
-    foreach (Connection *c, conList) {
+    QtConcurrent::blockingMap(conList, [&](Connection *c) {//would this be faster than the old foreach loop?
         if (tsd == c->socketDescriptor) {
             con = c;
         }
-    }
+    });
 
     if (con == NULL) {
         con = new Connection(ts, this);
