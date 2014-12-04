@@ -27,6 +27,12 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
     QObject(parent)
 {
     BaseController *c = qobject_cast<BaseController *>(parent);
+
+    if(c == NULL) {
+        qCritical() << "Fatal. Connection's parent must be a BaseController object.";
+        return;
+    }
+
     encryptor = new Encryptor(this);
 
     local = localTcpSocket;
@@ -67,7 +73,13 @@ void Connection::appendTcpSocket(QTcpSocket *t)
 
 void Connection::onLocalTcpSocketError()
 {
-    QString str = QString("local socket error: ") + local->errorString();
+    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    if (socket == NULL) {
+        emit error("Error. Invalid object called onLocalTcpSocketError.");
+        return;
+    }
+
+    QString str = QString("local socket error: ") + socket->errorString();
     emit error(str);
 }
 
@@ -118,7 +130,13 @@ void Connection::onHandshaked2()
 
 void Connection::onLocalTcpSocketReadyRead()
 {
-    QByteArray buf = local->readAll();
+    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    if (socket == NULL) {
+        emit error("Error. Invalid object called onLocalTcpSocketReadyRead.");
+        return;
+    }
+
+    QByteArray buf = socket->readAll();
     QByteArray dataToSend = encryptor->encrypt(buf);
     remote->write(dataToSend);
 }

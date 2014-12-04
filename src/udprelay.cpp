@@ -27,6 +27,12 @@ UdpRelay::UdpRelay(QObject *parent) :
     QObject(parent)
 {
     BaseController *c = qobject_cast<BaseController *>(parent);
+
+    if(c == NULL) {
+        qCritical() << "Fatal. UdpRelay's parent must be a BaseController object.";
+        return;
+    }
+
     encryptor = new Encryptor(this);
     local = new QUdpSocket(this);
     remote = new QUdpSocket(this);
