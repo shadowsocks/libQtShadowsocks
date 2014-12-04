@@ -24,7 +24,7 @@ unix: {
     INSTALLS   += target
 
     CONFIG     += link_pkgconfig
-    PKGCONFIG  += qca2
+    PKGCONFIG  += qca2 botan-1.10
 
     VERSION     = 0.1
 }
@@ -38,5 +38,3 @@ win32: {
         error ("Only support MSVC2013 compiler on Windows platform.")
     }
 }
-
-LIBS     += -lqca

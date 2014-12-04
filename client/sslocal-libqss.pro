@@ -21,7 +21,7 @@ SOURCES     += client.cpp \
 
 unix: {
     CONFIG    += link_pkgconfig
-    PKGCONFIG += qca2
+    PKGCONFIG += qca2 botan-1.10
     LIBS      += -L/home/symeon/Projects/build/libqtshadowsocks-Desktop-Debug
 }
 
@@ -37,4 +37,4 @@ win32: {
     }
 }
 
-LIBS += -lqca -lQtShadowsocks
+LIBS += -lqca -lbotan-1.10 -lQtShadowsocks

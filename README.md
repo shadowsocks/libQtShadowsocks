@@ -15,7 +15,8 @@ TODO
 
 - Support use as server (server-side shadowsocks) (v1.0)
 - Stabilise ABI and code structure (v1.0)
-- Support RC4-MD5 method (v1.x)
+- Get rid of QCA. Use `Botan` directly (v1.0).
+- ~~Support RC4-MD5 method (v1.x)~~
 - Statically linked Windows build (v1.x)
 
 Dependency
@@ -45,6 +46,7 @@ Current Status
 - BF-CFB
 - CAST5-CFB
 - DES-CFB
+- RC4-MD5
 
 Warning
 -------

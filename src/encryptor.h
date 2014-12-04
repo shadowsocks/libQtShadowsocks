@@ -28,6 +28,7 @@
 #include <QMap>
 #include <QCryptographicHash>
 #include <QtCrypto>
+#include <botan/arc4.h>//botan-1.10
 
 namespace QSS {
 
@@ -37,6 +38,8 @@ class Encryptor : public QObject
 public:
     explicit Encryptor(QObject *parent = 0);
     ~Encryptor();
+
+    enum TYPE {TABLE, QCA, RC4};
 
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
@@ -59,7 +62,7 @@ public:
     static void initialise(const QString &m, const QString &pwd);//
 
 private:
-    static bool usingTable;
+    static TYPE type;
     static QString cipherMode;
     static QByteArray method;
     static QByteArray password;
@@ -72,11 +75,15 @@ private:
     static QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
     static void evpBytesToKey();
     static QByteArray randomIv();
+    static Botan::ARC4 *newRC4Cipher(const QByteArray &iv);
+    static void setRC4CipherIV(Botan::ARC4 *rc4Cipher, const QByteArray &iv);
     bool selfTest();
 
 protected:
     QCA::Cipher *enCipher;
     QCA::Cipher *deCipher;
+    Botan::ARC4 *rc4enCipher;
+    Botan::ARC4 *rc4deCipher;
     static QCA::SymmetricKey _key;
 };
 
