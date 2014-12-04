@@ -24,6 +24,8 @@ Dependency
 
 - Qt5 >= 5.2 (`qtbase5-dev`)
 - QCA >= 2.1.0
+- OpenSSL (`libssl-dev`)
+- Botan = 1.10.x (`libbotan-1.10-dev`)
 
 Many distributions don't provide the latest [QCA 2.1.0] (http://delta.affinix.com/download/qca/2.0/qca-2.1.0.tar.gz) package. You may have to build it yourself. In order to support mainstream encryption methods, please install `libssl-dev` (OpenSSL development package) before compiling.
 
