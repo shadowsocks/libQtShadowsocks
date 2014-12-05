@@ -17,7 +17,7 @@ TODO
 - Stabilise ABI and code structure (v1.0)
 - ~~Get rid of QCA. Use `Botan` directly (v1.0)~~
 - ~~Support RC4-MD5 method (v1.x)~~
-- Statically linked Windows build (v1.x)
+- ~~Statically linked Windows build (v1.x)~~
 
 Dependency
 ----------

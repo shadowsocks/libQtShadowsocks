@@ -27,7 +27,8 @@ unix: {
 
 win32: {
     #DEFINES += QCA_STATIC
-    DEFINES     += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
+    DEFINES   += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
+    LIBS      += -L./
 }
 
 LIBS += -lQtShadowsocks -lbotan-1.10

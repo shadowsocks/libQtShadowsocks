@@ -29,7 +29,7 @@ void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &po
     int addrtype = static_cast<int>(data[0]);
     int header_length = 0;
     QString dest_addr;
-    quint16 dest_port;
+    quint16 dest_port = 0;
     if (addrtype == ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
             dest_addr = QString(data.mid(1, 4));
