@@ -1,6 +1,9 @@
 /*
  * encryptor.h - the header file of Encryptor class
  *
+ * high-level API to encrypt/decrypt data that send to or receive from
+ * another shadowsocks side.
+ *
  * Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
@@ -27,8 +30,7 @@
 #include <QVector>
 #include <QMap>
 #include <QCryptographicHash>
-#include <QtCrypto>
-#include <botan/arc4.h>//botan-1.10
+#include "cipher.h"
 
 namespace QSS {
 
@@ -39,8 +41,6 @@ public:
     explicit Encryptor(QObject *parent = 0);
     ~Encryptor();
 
-    enum TYPE {TABLE, QCA, RC4};
-
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
     QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
@@ -50,7 +50,7 @@ public:
     static const QVector<quint8> octVec;
     static const QMap<QByteArray, QVector<int> > cipherMap;
     static QMap<QByteArray, QVector<int> > generateCihperMap();
-    static int randomCompare(const quint8 &, const quint8 &, const quint32 &salt, const quint64 &key);
+    static int randomCompare(const quint8 &, const quint8 &, const quint32 &, const quint64 &);
 
     /*
      * Only need to call this function once if the encrpytion method and password don't change.
@@ -59,11 +59,10 @@ public:
      * It's not recommended to change method and/or password on-process. The clean way to do that
      * is to delete and release the old library classes, then construct them with new values.
      */
-    static void initialise(const QString &m, const QString &pwd);//
+    static void initialise(const QString &m, const QString &pwd);
 
 private:
-    static TYPE type;
-    static QString cipherMode;
+    static Cipher::TYPE type;
     static QByteArray method;
     static QByteArray password;
     static QVector<quint8> encTable;
@@ -74,17 +73,12 @@ private:
     static void tableInit();
     static QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
     static void evpBytesToKey();
-    static QByteArray randomIv();
-    static Botan::ARC4 *newRC4Cipher(const QByteArray &iv);
-    static void setRC4CipherIV(Botan::ARC4 *rc4Cipher, const QByteArray &iv);
     bool selfTest();
 
 protected:
-    QCA::Cipher *enCipher;
-    QCA::Cipher *deCipher;
-    Botan::ARC4 *rc4enCipher;
-    Botan::ARC4 *rc4deCipher;
-    static QCA::SymmetricKey _key;
+    Cipher *enCipher;
+    Cipher *deCipher;
+    static QByteArray key;
 };
 
 }

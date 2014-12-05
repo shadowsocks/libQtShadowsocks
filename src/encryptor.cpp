@@ -20,7 +20,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <QDebug>
 #include <QtConcurrent>
 #include "encryptor.h"
 
@@ -31,8 +30,6 @@ Encryptor::Encryptor(QObject *parent) :
 {
     enCipher = NULL;
     deCipher = NULL;
-    rc4enCipher = NULL;
-    rc4deCipher = NULL;
 }
 
 Encryptor::~Encryptor()
@@ -47,37 +44,34 @@ const QMap<QByteArray, QVector<int> > Encryptor::cipherMap = Encryptor::generate
 QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
 {
     QMap<QByteArray, QVector<int> >map;
-    map.insert("aes128-cfb", {16, 16});
-    map.insert("aes192-cfb", {24, 16});
-    map.insert("aes256-cfb", {32, 16});
-    map.insert("blowfish-cfb", {16, 8});
-    map.insert("cast5-cfb", {16, 8});
-    map.insert("des-cfb", {8, 8});
-    map.insert("rc4-md5", {16, 16});
+    map.insert("AES-128-CFB", {16, 16});
+    map.insert("AES-192-CFB", {24, 16});
+    map.insert("AES-256-CFB", {32, 16});
+    map.insert("Blowfish-CFB", {16, 8});
+    map.insert("CAST-128-CFB", {16, 8});
+    map.insert("DES-CFB", {8, 8});
+    map.insert("IDEA-CFB", {16, 8});
+    map.insert("RC2-CFB", {16, 8});
+    map.insert("RC4-MD5", {16, 16});
+    map.insert("SEED-CFB", {16, 16});
     /*
      * below ciphers are currently unsupported.
      */
     /*
-    map.insert("rc4", {16, 0});
-
-    //those are unlikely get supported in the future
-    map.insert("idea-cfb", {16, 8});
-    map.insert("rc2-cfb", {16, 8});
-    map.insert("seed-cfb", {16, 16});
+    map.insert("RC4", {16, 0});
     */
     return map;
 }
 
 //define static member variables
-Encryptor::TYPE Encryptor::type;
-QString Encryptor::cipherMode;
+Cipher::TYPE Encryptor::type;
 QByteArray Encryptor::method;
 QByteArray Encryptor::password;
 QVector<quint8> Encryptor::encTable;
 QVector<quint8> Encryptor::decTable;
 int Encryptor::keyLen = 0;
 int Encryptor::ivLen = 0;
-QCA::SymmetricKey Encryptor::_key;
+QByteArray Encryptor::key;
 
 void Encryptor::reset()
 {
@@ -89,41 +83,25 @@ void Encryptor::reset()
         delete deCipher;
         deCipher = NULL;
     }
-    if (rc4enCipher != NULL) {
-        delete rc4enCipher;
-        rc4enCipher = NULL;
-    }
-    if (rc4deCipher != NULL) {
-        delete rc4deCipher;
-        rc4deCipher = NULL;
-    }
 }
 
 void Encryptor::initialise(const QString &m, const QString &pwd)
 {
-    method = m.toLower().toLocal8Bit();//local8bit or utf-8?
+    method = m.toUpper().toLocal8Bit();//local8bit or utf-8?
     password = pwd.toLocal8Bit();
 
-    if (m.compare("table") == 0) {
-        type = TABLE;
+    if (m.compare("TABLE") == 0) {
+        type = Cipher::TABLE;
         tableInit();
         return;
     }
 
-    if (m.compare("rc4-md5", Qt::CaseInsensitive) == 0) {
-        cipherMode = method;//"rc4-md5"
-        type = RC4;
+    type = Cipher::BOTAN;
+    if (method.contains("BF")) {
+        method = "Blowfish-CFB";
     }
-    else {
-        //change method name according to QCA
-        if (method.contains("aes")) {
-            method.remove(3, 1);//i.e. aes-256-cfb to aes256-cfb
-        }
-        else if (method.contains("bf")) {
-            method = QByteArray("blowfish-cfb");
-        }
-        cipherMode = method.mid(0, method.indexOf('-'));//drop "-cfb"
-        type = QCA;
+    else if (method.contains("CAST5")) {
+        method = "CAST-128-CFB";
     }
 
     QVector<int> cipher = cipherMap.value(method);
@@ -134,14 +112,6 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
     keyLen = cipher[0];
     ivLen = cipher[1];
     evpBytesToKey();
-
-    if (type == QCA) {
-        if (!QCA::isSupported(method.data())) {
-            qCritical() << "Abort. The method" << method << "is not supported.";
-            qDebug() << "supported methods are " << QCA::supportedFeatures();
-            exit(223);
-        }
-    }
 }
 
 void Encryptor::tableInit()
@@ -229,60 +199,28 @@ void Encryptor::evpBytesToKey()
         ms.append(*it);
     }
 
-    _key = QCA::SymmetricKey(QCA::SecureArray(ms.mid(0, keyLen)));
-}
-
-QByteArray Encryptor::randomIv()
-{
-    return QCA::Random::randomArray(ivLen).toByteArray();
-}
-
-Botan::ARC4 *Encryptor::newRC4Cipher(const QByteArray &iv)
-{
-    QByteArray temp = _key.toByteArray() + iv;
-    QByteArray rc4_key = QCryptographicHash::hash(temp, QCryptographicHash::Md5);
-    Botan::ARC4 *cipher = new Botan::ARC4;
-    cipher->set_key(reinterpret_cast<unsigned char*>(rc4_key.data()), keyLen);
-    return cipher;
-}
-
-void Encryptor::setRC4CipherIV(Botan::ARC4 *rc4Cipher, const QByteArray &iv)
-{
-    QByteArray temp = _key.toByteArray() + iv;
-    QByteArray rc4_key = QCryptographicHash::hash(temp, QCryptographicHash::Md5);
-    rc4Cipher->set_key(reinterpret_cast<unsigned char*>(rc4_key.data()), keyLen);
+    key = ms.mid(0, keyLen);
 }
 
 QByteArray Encryptor::encrypt(const QByteArray &in)
 {
     QByteArray out;
-    QByteArray iv = randomIv();
+    QByteArray iv = Cipher::randomIv(ivLen);
 
     switch (type) {
-    case TABLE:
-        out = QByteArray(in.size(), '0');
+    case Cipher::TABLE:
+        out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
             out[i] = encTable.at(in[i]);
         }
         break;
-    case QCA:
+    case Cipher::BOTAN:
         if (enCipher == NULL) {
-            enCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, _key, QCA::InitializationVector(iv));
-            out = iv + enCipher->update(QCA::SecureArray(in)).toByteArray();
+            enCipher = new Cipher(method, key, iv, true, this);
+            out = iv + enCipher->update(in);
         }
         else {
-            out = enCipher->update(QCA::SecureArray(in)).toByteArray();
-        }
-        break;
-    case RC4:
-        out.resize(in.size());
-        if (rc4enCipher == NULL) {
-            rc4enCipher = newRC4Cipher(iv);
-            rc4enCipher->cipher(reinterpret_cast<const unsigned char*>(in.constData()), reinterpret_cast<unsigned char*>(out.data()), in.size());
-            out.prepend(iv);
-        }
-        else {
-            rc4enCipher->cipher(reinterpret_cast<const unsigned char*>(in.constData()), reinterpret_cast<unsigned char*>(out.data()), in.size());
+            out = enCipher->update(in);
         }
         break;
     default:
@@ -297,30 +235,19 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
     QByteArray out;
 
     switch (type) {
-    case TABLE:
-        out = QByteArray(in.size(), '0');
+    case Cipher::TABLE:
+        out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
             out[i] = decTable.at(in[i]);
         }
         break;
-    case QCA:
+    case Cipher::BOTAN:
         if (deCipher == NULL) {
-            deCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Decode, _key, QCA::InitializationVector(in.mid(0, ivLen)));
-            out = deCipher->update(QCA::SecureArray(in.mid(ivLen))).toByteArray();
+            deCipher = new Cipher(method, key, in.mid(0, ivLen), false, this);
+            out = deCipher->update(in.mid(ivLen));
         }
         else {
-            out = deCipher->update(QCA::SecureArray(in)).toByteArray();
-        }
-        break;
-    case RC4:
-        if (rc4deCipher == NULL) {
-            rc4deCipher = newRC4Cipher(in.mid(0, ivLen));
-            out.resize(in.size() - ivLen);
-            rc4deCipher->cipher(reinterpret_cast<const unsigned char*>(in.mid(ivLen).constData()), reinterpret_cast<unsigned char*>(out.data()), out.size());
-        }
-        else {
-            out.resize(in.size());
-            rc4deCipher->cipher(reinterpret_cast<const unsigned char*>(in.constData()), reinterpret_cast<unsigned char*>(out.data()), in.size());
+            out = deCipher->update(in);
         }
         break;
     default:
@@ -333,34 +260,21 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
 QByteArray Encryptor::encryptAll(const QByteArray &in)
 {
     QByteArray out;
-    QByteArray iv = randomIv();
+    QByteArray iv = Cipher::randomIv(ivLen);
 
     switch (type) {
-    case TABLE:
+    case Cipher::TABLE:
         out = QByteArray(in.size(), '0');
         for (int i = 0; i < in.size(); ++i) {
             out[i] = encTable.at(in[i]);
         }
         break;
-    case QCA:
-        if (enCipher == NULL) {
-            enCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Encode, _key, QCA::InitializationVector(iv));
+    case Cipher::BOTAN:
+        if (enCipher != NULL) {
+            delete enCipher;
         }
-        else {
-            enCipher->setup(QCA::Encode, _key, QCA::InitializationVector(iv));
-        }
-        out = iv + enCipher->update(QCA::SecureArray(in)).toByteArray();
-        break;
-    case RC4:
-        out.resize(in.size());
-        if (rc4enCipher == NULL) {
-            rc4enCipher = newRC4Cipher(iv);
-        }
-        else {
-            setRC4CipherIV(rc4enCipher, iv);
-        }
-        rc4enCipher->cipher(reinterpret_cast<const unsigned char*>(in.constData()), reinterpret_cast<unsigned char*>(out.data()), in.size());
-        out.prepend(iv);
+        enCipher = new Cipher(method, key, iv, true, this);
+        out = iv + enCipher->update(in);
         break;
     default:
         qWarning() << "Unknown encryption type";
@@ -374,30 +288,18 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
     QByteArray out;
 
     switch (type) {
-    case TABLE:
+    case Cipher::TABLE:
         out = QByteArray(in.size(), '0');
         for (int i = 0; i < in.size(); ++i) {
             out[i] = decTable.at(in[i]);
         }
         break;
-    case QCA:
-        if (deCipher == NULL) {
-            deCipher = new QCA::Cipher(cipherMode, QCA::Cipher::CFB, QCA::Cipher::DefaultPadding, QCA::Decode, _key, QCA::InitializationVector(in.mid(0, ivLen)));
+    case Cipher::BOTAN:
+        if (deCipher != NULL) {
+            delete deCipher;
         }
-        else {
-            deCipher->setup(QCA::Decode, _key, QCA::InitializationVector(in.mid(0, ivLen)));
-        }
-        out = deCipher->update(QCA::SecureArray(in.mid(ivLen))).toByteArray();
-        break;
-    case RC4:
-        out.resize(in.size() - ivLen);
-        if (rc4deCipher == NULL) {
-            rc4deCipher = newRC4Cipher(in.mid(0, ivLen));
-        }
-        else {
-            setRC4CipherIV(rc4deCipher, in.mid(0, ivLen));
-        }
-        rc4deCipher->cipher(reinterpret_cast<const unsigned char*>(in.mid(ivLen).constData()), reinterpret_cast<unsigned char*>(out.data()), out.size());
+        deCipher = new Cipher(method, key, in.mid(0, ivLen), false, this);
+        out = deCipher->update(in.mid(ivLen));
         break;
     default:
         qWarning() << "Unknown decryption type";

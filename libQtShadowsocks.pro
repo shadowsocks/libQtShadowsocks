@@ -6,7 +6,7 @@ QT       += core network concurrent
 
 QT       -= gui
 
-CONFIG   += staticlib c++11 crypto
+CONFIG   += staticlib c++11
 
 TARGET    = QtShadowsocks
 

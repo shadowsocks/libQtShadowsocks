@@ -1,4 +1,8 @@
 /*
+ * cipher.h - the header file of Cipher class
+ *
+ * communicate with lower-level encrytion library
+ *
  * Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
@@ -18,30 +22,29 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <QCoreApplication>
-#include <QCommandLineParser>
-#include "client.h"
+#ifndef CIPHER_H
+#define CIPHER_H
 
-using namespace QSS;
+#include <QObject>
+#include <botan/key_filt.h>
+#include <botan/lookup.h>
 
-int main(int argc, char *argv[])
+namespace QSS {
+
+class Cipher : public QObject
 {
-    QCoreApplication a(argc, argv);
-    a.setApplicationName("Shadowsocks-libQtShadowsocks");
-    a.setApplicationVersion("0.2");
-    QCommandLineParser parser;
-    parser.addHelpOption();
-    parser.addVersionOption();
-    QCommandLineOption configFile(QStringList() << "c" << "config-file", "specify config.json file", "config.json", "config.json");
-    QCommandLineOption shareOverLan("s", "Share over LAN");
-    parser.addOption(configFile);
-    parser.addOption(shareOverLan);
-    parser.process(a);
+    Q_OBJECT
+public:
+    explicit Cipher(QByteArray method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
+    ~Cipher();
+    enum TYPE {TABLE, BOTAN};
+    QByteArray update(const QByteArray &data);
+    static QByteArray randomIv(int length);
 
-    Client c;
-    c.readConfig(parser.value(configFile));
-    c.setShareOverLAN(parser.isSet(shareOverLan));
-    c.start();
+private:
+    Botan::Pipe *pipe;
+};
 
-    return a.exec();
 }
+
+#endif // CIPHER_H

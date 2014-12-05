@@ -32,6 +32,7 @@
 #include <QObject>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <botan/init.h>
 #include "profile.h"
 #include "connection.h"
 #include "udprelay.h"
@@ -68,7 +69,7 @@ protected://children can access protected members
     UdpRelay *udpRelay;
     Profile profile;
     QList<Connection *> conList;
-    QCA::Initializer qi;
+    Botan::LibraryInitializer init;
 
 protected slots:
     virtual void onTcpServerError();

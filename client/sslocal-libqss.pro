@@ -7,7 +7,7 @@ QT       += core network concurrent
 QT       -= gui
 
 TARGET    = sslocal-libqss
-CONFIG   += console crypto
+CONFIG   += console
 
 TEMPLATE  = app
 
@@ -21,7 +21,7 @@ SOURCES     += client.cpp \
 
 unix: {
     CONFIG    += link_pkgconfig
-    PKGCONFIG += qca2 botan-1.10
+    PKGCONFIG += botan-1.10
     LIBS      += -L/home/symeon/Projects/build/libqtshadowsocks-Desktop-Debug
 }
 
@@ -30,11 +30,10 @@ win32: {
     DEFINES    += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
     win32-msvc2013: {
         LIBS += -L$$top_srcdir/../lib/msvc2013
-        #QTPLUGIN += qca-ossl
     }
     else: {
         error ("Only support MSVC2013 compiler on Windows platform.")
     }
 }
 
-LIBS += -lqca -lbotan-1.10 -lQtShadowsocks
+LIBS += -lbotan-1.10 -lQtShadowsocks

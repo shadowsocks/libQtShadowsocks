@@ -3,30 +3,32 @@
 # Licensed Under GPLv3
 
 SOURCES  += \
-    src/encryptor.cpp \
-    src/connection.cpp \
     src/basecontroller.cpp \
+    src/cipher.cpp \
+    src/common.cpp \
+    src/connection.cpp \
+    src/encryptor.cpp \
     src/localcontroller.cpp \
-    src/udprelay.cpp \
-    src/common.cpp
+    src/udprelay.cpp
 
 HEADERS  += \
-    src/profile.h \
-    src/encryptor.h \
-    src/connection.h \
     src/basecontroller.h \
+    src/cipher.h \
+    src/common.h \
+    src/connection.h \
+    src/encryptor.h \
     src/localcontroller.h \
-    src/udprelay.h \
-    src/common.h
+    src/profile.h \
+    src/udprelay.h
 
 unix: {
     target.path = /usr/lib
     INSTALLS   += target
 
     CONFIG     += link_pkgconfig
-    PKGCONFIG  += qca2 botan-1.10
+    PKGCONFIG  += botan-1.10
 
-    VERSION     = 0.1
+    VERSION     = 0.2
 }
 
 win32: {
