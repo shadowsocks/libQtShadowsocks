@@ -9,7 +9,8 @@ SOURCES  += \
     src/connection.cpp \
     src/encryptor.cpp \
     src/localcontroller.cpp \
-    src/udprelay.cpp
+    src/udprelay.cpp \
+    $$PWD/servercontroller.cpp
 
 HEADERS  += \
     src/basecontroller.h \
@@ -19,7 +20,8 @@ HEADERS  += \
     src/encryptor.h \
     src/localcontroller.h \
     src/profile.h \
-    src/udprelay.h
+    src/udprelay.h \
+    $$PWD/servercontroller.h
 
 unix: {
     target.path = /usr/lib

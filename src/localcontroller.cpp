@@ -24,7 +24,9 @@
 
 LocalController::LocalController(const Profile &p, QObject *parent) :
     BaseController (p, parent)
-{}
+{
+    udpRelay = new UdpRelay(true, this);
+}
 
 void LocalController::start()
 {
@@ -38,4 +40,22 @@ void LocalController::start()
     emit info(sstr);
 
     running = true;
+}
+
+void LocalController::onNewConnection()
+{
+    QTcpSocket *ts = tcpServer->nextPendingConnection();
+    Connection *con = socketDescriptorInList(ts->socketDescriptor());
+
+    if (con == NULL) {
+        con = new Connection(ts, true, this);
+        conList.append(con);
+        connect (con, &Connection::disconnected, this, &LocalController::onConnectionDisconnected);
+        connect (con, &Connection::info, this, &LocalController::info);
+        connect (con, &Connection::error, this, &LocalController::error);
+        emit connectionCountChanged(conList.size());
+    }
+    else {
+        con->appendTcpSocket(ts);
+    }
 }

@@ -37,6 +37,9 @@ public:
 
 public slots:
     void start();
+
+protected slots:
+    void onNewConnection();
 };
 
 }

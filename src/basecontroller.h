@@ -33,6 +33,7 @@
 #include <QTcpServer>
 #include <QTcpSocket>
 #include <botan/init.h>
+#include "common.h"
 #include "profile.h"
 #include "connection.h"
 #include "udprelay.h"
@@ -50,7 +51,8 @@ public:
     virtual ~BaseController();
 
     virtual quint16 getServerPort();
-    virtual QString getServerAddr();
+    virtual QHostAddress getServerAddr();
+    virtual Address getAServer();
 
     virtual quint16 getLocalPort();
     virtual QHostAddress getLocalAddr();
@@ -70,11 +72,14 @@ protected://children can access protected members
     UdpRelay *udpRelay;
     Profile profile;
     QList<Connection *> conList;
+    QList<QHostAddress> serverAddrList;
     Botan::LibraryInitializer init;
+
+    virtual Connection *socketDescriptorInList(qintptr);
 
 protected slots:
     virtual void onTcpServerError();
-    virtual void onNewConnection();
+    virtual void onNewConnection() = 0;
     virtual void onConnectionDisconnected();
 };
 

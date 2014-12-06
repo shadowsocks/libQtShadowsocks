@@ -31,6 +31,7 @@ namespace QSS {
 class Common
 {
 public:
+    static QByteArray packAddress(const QHostAddress &addr, const quint16 &port);
     static void parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &port, int &length);
     static const int ADDRTYPE_IPV4 = 1;
     static const int ADDRTYPE_IPV6 = 4;

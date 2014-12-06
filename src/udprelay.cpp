@@ -23,9 +23,10 @@
 #include "udprelay.h"
 #include "basecontroller.h"
 
-UdpRelay::UdpRelay(QObject *parent) :
+UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     QObject(parent)
 {
+    isLocal = is_local;
     BaseController *c = qobject_cast<BaseController *>(parent);
 
     if(c == NULL) {
@@ -34,29 +35,50 @@ UdpRelay::UdpRelay(QObject *parent) :
     }
 
     encryptor = new Encryptor(this);
-    local = new QUdpSocket(this);
-    remote = new QUdpSocket(this);
+    listen = new QUdpSocket(this);
 
-    connect(local, &QUdpSocket::stateChanged, this, &UdpRelay::onLocalStateChanged);
-    connect(local, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead);
-    //connect(remote, &QUdpSocket::readyRead, this, &UdpRelay::onRemoteUdpSocketReadyRead);
+    connect(listen, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged);
+    connect(listen, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead);
+    connect(listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
 
-    local->bind(c->getLocalAddr(), c->getLocalPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
-    local->setReadBufferSize(RecvSize);
-    local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    if (isLocal) {
+        listen->bind(c->getLocalAddr(), c->getLocalPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
+        remote = new QUdpSocket(this);
+        connect(remote, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
+        remote->connectToHost(c->getServerAddr(), c->getServerPort());
+        remote->setReadBufferSize(RecvSize);
+        remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    }
+    else {
+        listen->bind(c->getServerAddr(), c->getServerPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
+    }
 
-    remote->connectToHost(c->getServerAddr(), c->getServerPort());
-    remote->setReadBufferSize(RecvSize);
-    remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    listen->setReadBufferSize(RecvSize);
+    listen->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 }
 
 //static member
 QMap<CacheKey, QUdpSocket *> UdpRelay::cache;
 QMap<qintptr, Address> UdpRelay::clientDescriptorToServerAddr;
 
-void UdpRelay::onLocalStateChanged(QAbstractSocket::SocketState s)
+void UdpRelay::onSocketError()
 {
-    qDebug() << "local udp socket state changed to" << s;
+    QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
+    if (sock == NULL) {
+        qCritical() << "Fatal. A false object calling onSocketError.";
+        return;
+    }
+    if (sock == listen) {
+        emit error("UDP server socket error " + sock->errorString());
+    }
+    else {
+        emit error("UDP client socket error " + sock->errorString());
+    }
+}
+
+void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
+{
+    qDebug() << "listen udp socket state changed to" << s;
 }
 
 void UdpRelay::onServerUdpSocketReadyRead()
@@ -73,16 +95,20 @@ void UdpRelay::onServerUdpSocketReadyRead()
     quint16 r_port;
     server->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
 
-    if (static_cast<int> (data[2]) != 0) {
-        qDebug() << "drop a message since frag is not 0";
-        return;
+    if (isLocal) {
+        if (static_cast<int> (data[2]) != 0) {
+            qDebug() << "drop a message since frag is not 0";
+            return;
+        }
+        data.remove(0, 2);
     }
-    data.remove(0, 2);
+    else {
+        data = encryptor->decryptAll(data);
+    }
 
     QHostAddress dest_addr;
     quint16 dest_port;
     int header_length = 0;
-
     Common::parseHeader(data, dest_addr, dest_port, header_length);
     if (header_length == 0) {
         return;
@@ -100,9 +126,16 @@ void UdpRelay::onServerUdpSocketReadyRead()
         connect(client, &QUdpSocket::disconnected, this, &UdpRelay::onClientDisconnected);
     }
 
-    data = encryptor->encryptAll(data);
+    if (isLocal) {
+        data = encryptor->encryptAll(data);
+        dest_addr = remote->peerAddress();
+        dest_port = remote->peerPort();
+    }
+    else {
+        data = data.mid(header_length);
+    }
 
-    client->writeDatagram(data, remote->peerAddress(), remote->peerPort());
+    client->writeDatagram(data, dest_addr, dest_port);
 }
 
 void UdpRelay::onClientUdpSocketReadyRead()
@@ -124,24 +157,27 @@ void UdpRelay::onClientUdpSocketReadyRead()
     quint16 r_port;
     sock->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
 
-    data = encryptor->decryptAll(data);
-    if (data.isEmpty()) {
-        return;
+    QByteArray response;
+    if (isLocal) {
+        data = encryptor->decryptAll(data);
+        QHostAddress d_addr;
+        quint16 d_port;
+        int header_length = 0;
+
+        Common::parseHeader(data, d_addr, d_port, header_length);
+        if (header_length == 0) {
+            return;
+        }
+        response = QByteArray(3, char(0)) + data;
+    }
+    else {
+        data.prepend(Common::packAddress(r_addr, r_port));
+        response = encryptor->encryptAll(data);
     }
 
-    QHostAddress d_addr;
-    quint16 d_port;
-    int header_length = 0;
-
-    Common::parseHeader(data, d_addr, d_port, header_length);
-    if (header_length == 0) {
-        return;
-    }
-
-    QByteArray response = QByteArray("\x00\x00\x00") + data;
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.port != 0) {
-        remote->writeDatagram(response, clientAddress.addr, clientAddress.port);
+        listen->writeDatagram(response, clientAddress.addr, clientAddress.port);
     }
     //else this packet is from somewhere else we know
     //simply drop that packet

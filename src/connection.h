@@ -25,6 +25,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include "common.h"
 #include "encryptor.h"
 
 using namespace QSS;
@@ -35,9 +36,10 @@ class Connection : public QObject
 {
     Q_OBJECT
 public:
-    explicit Connection(QTcpSocket *localTcpSocket, QObject *parent = 0);
+    explicit Connection(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
 
     qintptr socketDescriptor;
+    enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, REPLY, STREAM, DESTROYED};//we skip DNS stage because we always resolve hostname
 
 public slots:
     void appendTcpSocket(QTcpSocket *);
@@ -48,9 +50,18 @@ signals:
     void error(const QString &);
 
 private:
+    bool isLocal;
     QTcpSocket *local;
     QTcpSocket *remote;
     Encryptor *encryptor;
+    STAGE stage;
+    Address remoteAddress;
+    void handleDnsResolved(const QHostAddress &);
+    void handleStageHello(QByteArray &);
+    void handleStageReply(QByteArray &);
+    bool writeToLocal(const QByteArray &);
+    bool writeToRemote(const QByteArray &);
+
     static const qint64 RecvSize = 32736;//32KB, same as shadowsocks-python
 
 private slots:
@@ -58,8 +69,6 @@ private slots:
     void onRemoteTcpSocketReadyRead();
     void onLocalTcpSocketError();
     void onLocalTcpSocketReadyRead();
-    void onHandshaked();
-    void onHandshaked2();
 };
 
 }

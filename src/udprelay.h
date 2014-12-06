@@ -38,14 +38,15 @@ class UdpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit UdpRelay(QObject *parent = 0);
+    explicit UdpRelay(bool is_local = true, QObject *parent = 0);
 
 signals:
     void info(const QString &);
     void error(const QString &);
 
 private:
-    QUdpSocket *local;
+    bool isLocal;
+    QUdpSocket *listen;
     QUdpSocket *remote;
     Encryptor *encryptor;
 
@@ -54,7 +55,8 @@ private:
     static const qint64 RecvSize = 65536;//64KB, same as shadowsocks-python (udprelay)
 
 private slots:
-    void onLocalStateChanged(QAbstractSocket::SocketState);
+    void onSocketError();
+    void onListenStateChanged(QAbstractSocket::SocketState);
     void onServerUdpSocketReadyRead();
     void onClientUdpSocketReadyRead();
     void onClientDisconnected();

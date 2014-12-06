@@ -20,16 +20,18 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <QHostInfo>
 #include "basecontroller.h"
 
 BaseController::BaseController(const Profile &p, QObject *parent) :
     QObject(parent)
 {
     profile = p;
+    serverAddrList = QHostInfo::fromName(profile.server).addresses();
+    Q_ASSERT(!serverAddrList.isEmpty());
 
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(1024);//1024 is the default FD_SETSIZE value on Linux.
-    udpRelay = new UdpRelay(this);
 
     connect(tcpServer, &QTcpServer::acceptError, this, &BaseController::onTcpServerError);
     connect(tcpServer, &QTcpServer::newConnection, this, &BaseController::onNewConnection);
@@ -54,9 +56,14 @@ quint16 BaseController::getServerPort()
     return profile.server_port;
 }
 
-QString BaseController::getServerAddr()
+QHostAddress BaseController::getServerAddr()
 {
-    return profile.server;
+    return serverAddrList.first();//Todo: maybe randomly pick one?
+}
+
+Address BaseController::getAServer()
+{
+    return Address(serverAddrList.first(), profile.server_port);//TODO
 }
 
 quint16 BaseController::getLocalPort()
@@ -69,36 +76,21 @@ QHostAddress BaseController::getLocalAddr()
     return profile.shareOverLAN ? QHostAddress::Any : QHostAddress::LocalHost;
 }
 
+Connection *BaseController::socketDescriptorInList(qintptr tsd)
+{
+    Connection *found = NULL;
+    QtConcurrent::blockingMap(conList, [&](Connection *c) {//would this be faster than the old foreach loop?
+        if (tsd == c->socketDescriptor) {
+            found = c;
+        }
+    });
+    return found;
+}
+
 void BaseController::onTcpServerError()
 {
     QString str = QString("tcp server error: ") + tcpServer->errorString();
     emit error(str);
-}
-
-void BaseController::onNewConnection()
-{
-    QTcpSocket *ts = tcpServer->nextPendingConnection();
-    qintptr tsd = ts->socketDescriptor();
-
-    Connection *con = NULL;
-
-    QtConcurrent::blockingMap(conList, [&](Connection *c) {//would this be faster than the old foreach loop?
-        if (tsd == c->socketDescriptor) {
-            con = c;
-        }
-    });
-
-    if (con == NULL) {
-        con = new Connection(ts, this);
-        conList.append(con);
-        connect (con, &Connection::disconnected, this, &BaseController::onConnectionDisconnected);
-        connect (con, &Connection::info, this, &BaseController::info);
-        connect (con, &Connection::error, this, &BaseController::error);
-        emit connectionCountChanged(conList.size());
-    }
-    else {
-        con->appendTcpSocket(ts);
-    }
 }
 
 void BaseController::onConnectionDisconnected()

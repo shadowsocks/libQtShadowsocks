@@ -23,7 +23,7 @@
 #include "connection.h"
 #include "basecontroller.h"
 
-Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
+Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *parent) :
     QObject(parent)
 {
     BaseController *c = qobject_cast<BaseController *>(parent);
@@ -33,6 +33,8 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
         return;
     }
 
+    isLocal = is_local;
+    stage = INIT;
     encryptor = new Encryptor(this);
 
     local = localTcpSocket;
@@ -43,13 +45,15 @@ Connection::Connection(QTcpSocket *localTcpSocket, QObject *parent) :
     remote = new QTcpSocket(this);
     remote->setReadBufferSize(RecvSize);
     remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    remote->connectToHost(c->getServerAddr(), c->getServerPort());
+    if (isLocal) {
+        remote->connectToHost(c->getServerAddr(), c->getServerPort());
+    }
 
     socketDescriptor = local->socketDescriptor();
 
     connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onLocalTcpSocketError);
     connect(local, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
-    connect(local, &QTcpSocket::readyRead, this, &Connection::onHandshaked, Qt::DirectConnection);
+    connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead, Qt::DirectConnection);
 
     connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
     connect(remote, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
@@ -71,6 +75,86 @@ void Connection::appendTcpSocket(QTcpSocket *t)
     connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead, Qt::DirectConnection);
 }
 
+void Connection::handleStageHello(QByteArray &data)
+{
+    if (isLocal) {
+        int cmd = static_cast<int>(data.at(1));
+        if (cmd == 3) {//CMD_UDP_ASSOCIATE
+            emit info("UDP associate");
+            QByteArray header;
+            header.append(char(5));
+            header.append(char(0));
+            header.append(char(0));
+            if (local->peerAddress().protocol() == QAbstractSocket::IPv6Protocol) {
+                header.append(char(4));
+            }
+            else {
+                header.append(char(1));
+            }
+            QHostAddress addr = local->peerAddress();
+            quint16 port = local->peerPort();
+            writeToLocal(header + addr.toString().toLatin1() + QString::number(port).toLatin1());
+            stage = UDP_ASSOC;
+            return;
+        }
+        else if (cmd == 1) {//CMD_CONNECT
+            data = data.mid(3);
+        }
+        else {
+            emit error("Unknown command " + QString::number(cmd).toLocal8Bit());
+            return;
+        }
+    }
+    QHostAddress remote_addr;
+    quint16 remote_port;
+    int header_length = 0;
+    Common::parseHeader(data, remote_addr, remote_port, header_length);
+    if (header_length == 0) {
+        emit error("Can't parse header");
+        return;
+    }
+    emit info("connecting " + remote_addr.toString().toLocal8Bit() + ":" + QString::number(remote_port).toLocal8Bit());
+    remoteAddress.addr = remote_addr;
+    remoteAddress.port = remote_port;
+    stage = REPLY;//skip DNS, because remote_addr is already an IP address now.
+
+    if (isLocal) {
+        static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 1, 1 };
+        QByteArray response(res, 10);
+        writeToLocal(response);
+        data = encryptor->encrypt(data);
+        writeToRemote(data);
+    }
+    else {
+        if (data.length() > header_length) {
+            writeToRemote(data.mid(header_length));
+        }
+    }
+}
+
+void Connection::handleStageReply(QByteArray &data)
+{
+    if (isLocal) {
+        data = encryptor->encrypt(data);
+    }
+    writeToRemote(data);
+}
+
+bool Connection::writeToLocal(const QByteArray &data)
+{
+    qint64 s = local->write(data);
+    return s != -1;
+}
+
+bool Connection::writeToRemote(const QByteArray &data)
+{
+    if (remote->state() != QAbstractSocket::ConnectedState) {
+        remote->connectToHost(remoteAddress.addr, remoteAddress.port);
+    }
+    qint64 s = remote->write(data);
+    return s != -1;
+}
+
 void Connection::onLocalTcpSocketError()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
@@ -89,45 +173,6 @@ void Connection::onRemoteTcpSocketError()
     emit error(str);
 }
 
-void Connection::onHandshaked()
-{
-    QByteArray buf = local->read(256);
-    if (buf.isEmpty()) {
-        emit info("onHandshaked. Error! Received empty data from server.");
-        return;
-    }
-
-    QByteArray response;
-    response.append(char(5)).append(char(0));
-    if (buf[0] != char(5)) {//reject socket v4
-        emit info("a socket v4 connection was rejected.");
-        response[0] = 0;
-        response[1] = 91;
-    }
-
-    disconnect(local, &QTcpSocket::readyRead, this, &Connection::onHandshaked);
-    connect(local, &QTcpSocket::readyRead, this, &Connection::onHandshaked2, Qt::DirectConnection);
-
-    local->write(response);
-}
-
-void Connection::onHandshaked2()
-{
-    QByteArray buf = local->read(3);
-    if (buf.isEmpty()) {
-        emit error("onHandshaked2 Error! Received empty data from server.");
-        return;
-    }
-
-    static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 0, 0 };
-    static QByteArray response = QByteArray::fromRawData(res, sizeof(res));
-
-    disconnect(local, &QTcpSocket::readyRead, this, &Connection::onHandshaked2);
-    connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead, Qt::DirectConnection);
-
-    local->write(response);
-}
-
 void Connection::onLocalTcpSocketReadyRead()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
@@ -136,14 +181,62 @@ void Connection::onLocalTcpSocketReadyRead()
         return;
     }
 
+    if (isLocal && stage == INIT) {
+        QByteArray buf = socket->read(256);
+        QByteArray response;
+        if (buf[0] != char(5)) {
+            response.append(char(0));
+            response.append(char(91));
+        }
+        else {
+            response.append(char(5));
+            response.append(char(0));
+        }
+        writeToLocal(response);
+        stage = HELLO;
+        return;
+    }
+
     QByteArray buf = socket->readAll();
-    QByteArray dataToSend = encryptor->encrypt(buf);
-    remote->write(dataToSend);
+    if (!isLocal) {
+        buf = encryptor->decrypt(buf);
+    }
+
+    switch (stage) {
+    case STREAM:
+        if (isLocal) {
+            buf = encryptor->encrypt(buf);
+        }
+        writeToRemote(buf);
+        break;
+    case HELLO:
+        if (isLocal)    handleStageHello(buf);
+        break;
+    case INIT:
+        if (!isLocal)   handleStageHello(buf);
+        break;
+    case REPLY:
+        handleStageReply(buf);
+        break;
+    default:
+        emit error("Unknown stage");
+    }
 }
 
 void Connection::onRemoteTcpSocketReadyRead()
 {
-    QByteArray buf = remote->readAll();
-    QByteArray dataToSend = encryptor->decrypt(buf);
-    local->write(dataToSend);
+    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    if (socket == NULL) {
+        emit error("Error. Invalid object called onRemoteTcpSocketReadyRead.");
+        return;
+    }
+
+    QByteArray buf = socket->readAll();
+    if (isLocal) {
+        buf = encryptor->decrypt(buf);
+    }
+    else {
+        buf = encryptor->encrypt(buf);
+    }
+    writeToLocal(buf);
 }
