@@ -58,6 +58,7 @@ public:
 signals:
     void error(const QString &);
     void info(const QString &);
+    void connectionCountChanged(int);
 
 public slots:
     virtual void start() = 0;

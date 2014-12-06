@@ -94,6 +94,7 @@ void BaseController::onNewConnection()
         connect (con, &Connection::disconnected, this, &BaseController::onConnectionDisconnected);
         connect (con, &Connection::info, this, &BaseController::info);
         connect (con, &Connection::error, this, &BaseController::error);
+        emit connectionCountChanged(conList.size());
     }
     else {
         con->appendTcpSocket(ts);
@@ -106,9 +107,7 @@ void BaseController::onConnectionDisconnected()
     if (con) {
         conList.removeOne(con);
         con->deleteLater();
-        emit info("a connection closed");
-        QString str = QString("current connections: ") + QString::number(conList.size());
-        emit info(str);
+        emit connectionCountChanged(conList.size());
     }
     else {
         emit error("a false sender called onConnectionDisconnected slot");
