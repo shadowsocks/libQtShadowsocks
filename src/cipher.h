@@ -37,7 +37,6 @@ class Cipher : public QObject
 public:
     explicit Cipher(QByteArray method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
     ~Cipher();
-    enum TYPE {TABLE, BOTAN};
     QByteArray update(const QByteArray &data);
     static QByteArray randomIv(int length);
 

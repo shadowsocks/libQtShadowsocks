@@ -64,7 +64,7 @@ QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
 }
 
 //define static member variables
-Cipher::TYPE Encryptor::type;
+Encryptor::TYPE Encryptor::type;
 QByteArray Encryptor::method;
 QByteArray Encryptor::password;
 QVector<quint8> Encryptor::encTable;
@@ -91,12 +91,12 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
     password = pwd.toLocal8Bit();
 
     if (m.compare("TABLE") == 0) {
-        type = Cipher::TABLE;
+        type = TABLE;
         tableInit();
         return;
     }
 
-    type = Cipher::BOTAN;
+    type = BOTAN;
     if (method.contains("BF")) {
         method = "Blowfish-CFB";
     }
@@ -208,13 +208,13 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
     QByteArray iv = Cipher::randomIv(ivLen);
 
     switch (type) {
-    case Cipher::TABLE:
+    case TABLE:
         out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
             out[i] = encTable.at(in[i]);
         }
         break;
-    case Cipher::BOTAN:
+    case BOTAN:
         if (enCipher == NULL) {
             enCipher = new Cipher(method, key, iv, true, this);
             out = iv + enCipher->update(in);
@@ -235,13 +235,13 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
     QByteArray out;
 
     switch (type) {
-    case Cipher::TABLE:
+    case TABLE:
         out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
             out[i] = decTable.at(in[i]);
         }
         break;
-    case Cipher::BOTAN:
+    case BOTAN:
         if (deCipher == NULL) {
             deCipher = new Cipher(method, key, in.mid(0, ivLen), false, this);
             out = deCipher->update(in.mid(ivLen));
@@ -263,13 +263,13 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
     QByteArray iv = Cipher::randomIv(ivLen);
 
     switch (type) {
-    case Cipher::TABLE:
+    case TABLE:
         out = QByteArray(in.size(), '0');
         for (int i = 0; i < in.size(); ++i) {
             out[i] = encTable.at(in[i]);
         }
         break;
-    case Cipher::BOTAN:
+    case BOTAN:
         if (enCipher != NULL) {
             delete enCipher;
         }
@@ -288,13 +288,13 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
     QByteArray out;
 
     switch (type) {
-    case Cipher::TABLE:
+    case TABLE:
         out = QByteArray(in.size(), '0');
         for (int i = 0; i < in.size(); ++i) {
             out[i] = decTable.at(in[i]);
         }
         break;
-    case Cipher::BOTAN:
+    case BOTAN:
         if (deCipher != NULL) {
             delete deCipher;
         }

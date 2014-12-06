@@ -41,6 +41,7 @@ public:
     explicit Encryptor(QObject *parent = 0);
     ~Encryptor();
 
+    enum TYPE {TABLE, BOTAN};
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
     QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
@@ -62,7 +63,7 @@ public:
     static void initialise(const QString &m, const QString &pwd);
 
 private:
-    static Cipher::TYPE type;
+    static TYPE type;
     static QByteArray method;
     static QByteArray password;
     static QVector<quint8> encTable;
