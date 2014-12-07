@@ -59,7 +59,7 @@ void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &po
             int addrlen = static_cast<int>(data[1]);
             if (data.size() >= 2 + addrlen) {
                 QByteArray host = data.mid(2, addrlen);
-                QList<QHostAddress> addrList = QHostInfo::fromName(host).addresses();
+                QList<QHostAddress> addrList = QHostInfo::fromName(host).addresses();//TODO QHostInfo::fromName is a blocking operation. Therefore, we'd better put each Connection instance in a seperated thread to avoid blocking. Or we can use lookupHost function and implement DNS stage in Connection
                 if (addrList.isEmpty()) {
                     qWarning() << "Cannot look up the IP addresses of " << host;
                 }
