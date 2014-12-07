@@ -79,7 +79,9 @@ void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &po
     }
     else if (addrtype == ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
-            dest_addr = QHostAddress(data.mid(1, 4).toUInt());//TODO FIX
+            QByteArray dest(INET_ADDRSTRLEN, '0');
+            inet_ntop(AF_INET, reinterpret_cast<const void *>(data.mid(1, 4).constData()), dest.data(), INET_ADDRSTRLEN);
+            dest_addr = QHostAddress(QString(dest));
             dest_port = ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data()));
             header_length = 7;
         }
@@ -89,7 +91,9 @@ void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &po
     }
     else if (addrtype == ADDRTYPE_IPV6) {
         if (data.length() > 19) {
-            dest_addr = QHostAddress(data.mid(1, 16).toUInt());//TODO FIX
+            QByteArray dest(INET6_ADDRSTRLEN, '0');
+            inet_ntop(AF_INET6, reinterpret_cast<const void *>(data.mid(1, 16).constData()), dest.data(), INET6_ADDRSTRLEN);
+            dest_addr = QHostAddress(QString(dest));
             dest_port = ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data()));
             header_length = 19;
         }
