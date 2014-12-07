@@ -1,7 +1,7 @@
 /*
- * basecontroller.h - the header file of BaseController class
+ * controller.h - the header file of Controller class
  *
- * BaseController is an abstract class that should not be initialised
+ * Feel free to subclass this class if needed.
  *
  * Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
  *
@@ -43,12 +43,12 @@ using namespace QSS;
 
 namespace QSS {
 
-class BaseController : public QObject
+class Controller : public QObject
 {
     Q_OBJECT
 public:
-    explicit BaseController(const Profile &p, QObject *parent = 0);
-    virtual ~BaseController();
+    explicit Controller(const Profile &p, bool is_local = true, QObject *parent = 0);
+    virtual ~Controller();
 
     virtual quint16 getServerPort();
     virtual QHostAddress getServerAddr();
@@ -63,11 +63,12 @@ signals:
     void connectionCountChanged(int);
 
 public slots:
-    virtual void start() = 0;
+    virtual void start();
     virtual void stop();
 
 protected://children can access protected members
     bool running;
+    const bool isLocal;//run on local-side (client) or server-side (server)
     QTcpServer *tcpServer;
     UdpRelay *udpRelay;
     Profile profile;
@@ -79,7 +80,7 @@ protected://children can access protected members
 
 protected slots:
     virtual void onTcpServerError();
-    virtual void onNewConnection() = 0;
+    virtual void onNewConnection();
     virtual void onConnectionDisconnected();
 };
 

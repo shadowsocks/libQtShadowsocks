@@ -24,7 +24,7 @@
 #define CLIENT_H
 
 #include <QObject>
-#include <localcontroller.h>
+#include <controller.h>
 
 class Client : public QObject
 {
@@ -39,7 +39,7 @@ public slots:
     void start();
 
 private:
-    QSS::LocalController *lc;
+    QSS::Controller *lc;
     QSS::Profile profile;
 
 private slots:

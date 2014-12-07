@@ -21,13 +21,13 @@
  */
 
 #include "udprelay.h"
-#include "basecontroller.h"
+#include "controller.h"
 
 UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     QObject(parent)
 {
     isLocal = is_local;
-    BaseController *c = qobject_cast<BaseController *>(parent);
+    Controller *c = qobject_cast<Controller *>(parent);
 
     if(c == NULL) {
         qCritical() << "Fatal. UdpRelay's parent must be a BaseController object.";

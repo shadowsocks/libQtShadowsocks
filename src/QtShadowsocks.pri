@@ -3,25 +3,21 @@
 # Licensed Under GPLv3
 
 SOURCES  += \
-    src/basecontroller.cpp \
     src/cipher.cpp \
     src/common.cpp \
     src/connection.cpp \
+    src/controller.cpp \
     src/encryptor.cpp \
-    src/localcontroller.cpp \
-    src/udprelay.cpp \
-    $$PWD/servercontroller.cpp
+    src/udprelay.cpp
 
 HEADERS  += \
-    src/basecontroller.h \
     src/cipher.h \
     src/common.h \
     src/connection.h \
+    src/controller.h \
     src/encryptor.h \
-    src/localcontroller.h \
     src/profile.h \
-    src/udprelay.h \
-    $$PWD/servercontroller.h
+    src/udprelay.h
 
 unix: {
     target.path = /usr/lib
