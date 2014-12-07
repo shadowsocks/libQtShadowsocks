@@ -22,11 +22,15 @@
 
 #include <QDebug>
 #include <QHostInfo>
+
 #ifdef Q_OS_WIN32
-    #include <windows.h>
+#include <winsock2.h>
+#include <windows.h>
+#include <Ws2tcpip.h>
 #else
-    #include <arpa/inet.h>
+#include <arpa/inet.h>
 #endif
+
 #include "common.h"
 using namespace QSS;
 
@@ -86,7 +90,7 @@ void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &po
     else if (addrtype == ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
             QByteArray dest(INET_ADDRSTRLEN, '0');
-            inet_ntop(AF_INET, reinterpret_cast<const void *>(data.mid(1, 4).constData()), dest.data(), INET_ADDRSTRLEN);
+            inet_ntop(AF_INET, reinterpret_cast<void *>(data.mid(1, 4).data()), dest.data(), INET_ADDRSTRLEN);
             dest_addr = QHostAddress(QString(dest));
             dest_port = ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data()));
             header_length = 7;
@@ -98,7 +102,7 @@ void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &po
     else if (addrtype == ADDRTYPE_IPV6) {
         if (data.length() > 19) {
             QByteArray dest(INET6_ADDRSTRLEN, '0');
-            inet_ntop(AF_INET6, reinterpret_cast<const void *>(data.mid(1, 16).constData()), dest.data(), INET6_ADDRSTRLEN);
+            inet_ntop(AF_INET6, reinterpret_cast<void *>(data.mid(1, 16).data()), dest.data(), INET6_ADDRSTRLEN);
             dest_addr = QHostAddress(QString(dest));
             dest_port = ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data()));
             header_length = 19;
