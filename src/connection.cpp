@@ -163,14 +163,24 @@ void Connection::onLocalTcpSocketError()
         return;
     }
 
-    QString str = QString("local socket error: ") + socket->errorString();
-    emit error(str);
+    if (socket->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
+        QString str = QString("local socket error: ") + socket->errorString();
+        emit error(str);
+    }
 }
 
 void Connection::onRemoteTcpSocketError()
 {
-    QString str = QString("remote socket error: ") + remote->errorString();
-    emit error(str);
+    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    if (socket == NULL) {
+        emit error("Error. Invalid object called onRemoteTcpSocketError.");
+        return;
+    }
+
+    if (socket->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
+        QString str = QString("remote socket error: ") + socket->errorString();
+        emit error(str);
+    }
 }
 
 void Connection::onLocalTcpSocketReadyRead()
