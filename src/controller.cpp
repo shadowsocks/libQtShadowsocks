@@ -1,5 +1,5 @@
 /*
- * basecontroller.cpp - the source file of BaseController class
+ * controller.cpp - the source file of Controller class
  *
  * Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
  *
