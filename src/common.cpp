@@ -33,12 +33,18 @@ using namespace QSS;
 QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)//TODO FIX
 {
     QByteArray address_str = addr.toString().toLatin1();
-    QByteArray port_str = QString::number(port).toLatin1();
+    QByteArray address_bin;
+    quint16 port_net = htons(port);
+    QByteArray port_ns = QByteArray::fromRawData(reinterpret_cast<char *>(&port_net), 2);
     if (addr.protocol() == QAbstractSocket::IPv6Protocol || addr.protocol() == QAbstractSocket::AnyIPProtocol) {
-        return char(4) + address_str + port_str;
+        address_bin.resize(INET6_ADDRSTRLEN);
+        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(address_bin.data()));
+        return char(4) + address_bin + port_ns;
     }
     else {// if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
-        return char(1) + address_str + port_str;
+        address_bin.resize(INET_ADDRSTRLEN);
+        inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(address_bin.data()));
+        return char(1) + address_bin + port_ns;
     }
     /*if (address_str.length() > 255) {
         address_str = address_str.mid(0, 255);
