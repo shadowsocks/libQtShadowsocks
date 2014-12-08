@@ -25,50 +25,18 @@
 
 #include <QByteArray>
 #include <QHostAddress>
+#include "address.h"
 
 namespace QSS {
-
-class Common
-{
-public:
-    static QByteArray packAddress(const QHostAddress &addr, const quint16 &port);
-    static void parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &port, int &length);
-    static const int ADDRTYPE_IPV4 = 1;
-    static const int ADDRTYPE_IPV6 = 4;
-    static const int ADDRTYPE_HOST = 3;
-};
-
-class Address
-{
-public:
-    Address(const QHostAddress &a = QHostAddress(), const quint16 &p = 0) : addr(a), port(p) {}
-    QHostAddress addr;
-    quint16 port;
-
-    Address& operator=(const Address &o) {
-        this->addr = o.addr;
-        this->port = o.port;
-        return *this;
-    }
-
-    inline bool operator<(const Address &o) const {
-        if (this->addr.toIPv4Address() == o.addr.toIPv4Address()) {
-            return this->port < o.port;
-        }
-        else {
-            return this->addr.toIPv4Address() < o.addr.toIPv4Address();
-        }
-    }
-
-    inline bool operator==(const Address &o) const {
-        return (this->addr.toIPv4Address() == o.addr.toIPv4Address()) && (this->port == o.port);
-    }
-};
 
 class CacheKey
 {
 public:
-    CacheKey(const QHostAddress &ra = QHostAddress(), const quint16 &rp = 0, const QHostAddress &da = QHostAddress(), const quint16 &dp = 0) : r(ra, rp), d(da, dp) {}
+    CacheKey(const QString &ra = QString(), const quint16 &rp = 0, const QString &da = QString(), const quint16 &dp = 0) : r(ra, rp), d(da, dp) {}
+    CacheKey(const QHostAddress &rip, const quint16 &rp, const QHostAddress &dip, const quint16 &dp) : r(rip, rp), d(dip, dp) {}
+    CacheKey(const QHostAddress &rip, const quint16 &rp, const Address &dA) : r(rip, rp), d(dA) {}
+    CacheKey(const Address &rA, const Address &dA) : r(rA), d(dA) {}
+
     Address r;
     Address d;
 
@@ -80,6 +48,14 @@ public:
             return this->r < o.r;
         }
     }
+};
+
+class Common
+{
+public:
+    static QByteArray packAddress(const Address &addr);
+    static QByteArray packAddress(const QHostAddress &addr, const quint16 &port);//this will never use ADDRTYPE_HOST because addr is an IP address
+    static void parseHeader(const QByteArray &data, Address &addr, int &length);
 };
 
 }

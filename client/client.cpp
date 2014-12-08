@@ -32,11 +32,6 @@ Client::Client(QObject *parent) :
     lc = NULL;
 }
 
-void Client::setShareOverLAN(bool s)
-{
-    profile.shareOverLAN = s;
-}
-
 void Client::readConfig(const QString &file)
 {
     QFile c(file);
@@ -54,6 +49,7 @@ void Client::readConfig(const QString &file)
 
     QJsonDocument confJson = QJsonDocument::fromJson(confArray);
     QJsonObject confObj = confJson.object();
+    profile.local_address = confObj["local_address"].toString();
     profile.local_port = confObj["local_port"].toInt();
     profile.method = confObj["method"].toString();
     profile.password = confObj["password"].toString();

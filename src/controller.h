@@ -52,7 +52,6 @@ public:
 
     virtual quint16 getServerPort();
     virtual QHostAddress getServerAddr();
-    virtual Address getAServer();
 
     virtual quint16 getLocalPort();
     virtual QHostAddress getLocalAddr();

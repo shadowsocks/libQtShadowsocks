@@ -29,11 +29,11 @@ namespace QSS {
 
 struct Profile {
     QString server;
+    QString local_address;
     QString method;
+    QString password;
     quint16 server_port;
     quint16 local_port;
-    bool shareOverLAN;
-    QString password;
 };
 
 }

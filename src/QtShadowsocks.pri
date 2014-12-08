@@ -3,6 +3,7 @@
 # Licensed Under GPLv3
 
 SOURCES  += \
+    src/address.cpp \
     src/cipher.cpp \
     src/common.cpp \
     src/connection.cpp \
@@ -11,6 +12,7 @@ SOURCES  += \
     src/udprelay.cpp
 
 HEADERS  += \
+    src/address.h \
     src/cipher.h \
     src/common.h \
     src/connection.h \

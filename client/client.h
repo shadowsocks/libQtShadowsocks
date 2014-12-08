@@ -31,8 +31,6 @@ class Client : public QObject
     Q_OBJECT
 public:
     explicit Client(QObject *parent = 0);
-
-    void setShareOverLAN(bool);
     void readConfig(const QString &);
 
 public slots:
@@ -44,7 +42,6 @@ private:
 
 private slots:
     void logHandler(const QString &);
-
 };
 
 #endif // CLIENT_H

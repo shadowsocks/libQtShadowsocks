@@ -105,17 +105,14 @@ void Connection::handleStageHello(QByteArray &data)
             return;
         }
     }
-    QHostAddress remote_addr;
-    quint16 remote_port;
+
     int header_length = 0;
-    Common::parseHeader(data, remote_addr, remote_port, header_length);
+    Common::parseHeader(data, remoteAddress, header_length);
     if (header_length == 0) {
         emit error("Can't parse header");
         return;
     }
-    emit info("connecting " + remote_addr.toString().toLocal8Bit() + ":" + QString::number(remote_port).toLocal8Bit());
-    remoteAddress.addr = remote_addr;
-    remoteAddress.port = remote_port;
+    emit info("connecting " + remoteAddress.getAddress().toLocal8Bit() + ":" + QString::number(remoteAddress.getPort()).toLocal8Bit());
     stage = REPLY;//skip DNS, because remote_addr is already an IP address now.
 
     if (isLocal) {
@@ -149,7 +146,7 @@ bool Connection::writeToLocal(const QByteArray &data)
 bool Connection::writeToRemote(const QByteArray &data)
 {
     if (remote->state() != QAbstractSocket::ConnectedState) {
-        remote->connectToHost(remoteAddress.addr, remoteAddress.port);
+        remote->connectToHost(remoteAddress.getIPAddress(), remoteAddress.getPort());
     }
     qint64 s = remote->write(data);
     return s != -1;
@@ -171,14 +168,8 @@ void Connection::onLocalTcpSocketError()
 
 void Connection::onRemoteTcpSocketError()
 {
-    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
-    if (socket == NULL) {
-        emit error("Error. Invalid object called onRemoteTcpSocketError.");
-        return;
-    }
-
-    if (socket->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
-        QString str = QString("remote socket error: ") + socket->errorString();
+    if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
+        QString str = QString("remote socket error: ") + remote->errorString();
         emit error(str);
     }
 }
@@ -235,13 +226,7 @@ void Connection::onLocalTcpSocketReadyRead()
 
 void Connection::onRemoteTcpSocketReadyRead()
 {
-    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
-    if (socket == NULL) {
-        emit error("Error. Invalid object called onRemoteTcpSocketReadyRead.");
-        return;
-    }
-
-    QByteArray buf = socket->readAll();
+    QByteArray buf = remote->readAll();
     if (isLocal) {
         buf = encryptor->decrypt(buf);
     }

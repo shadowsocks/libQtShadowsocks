@@ -55,11 +55,11 @@ void Controller::start()
 
     QString sstr("tcp server listen at port ");
     if (isLocal) {
-        tcpServer->listen(profile.shareOverLAN ? QHostAddress::Any : QHostAddress::LocalHost, profile.local_port);
+        tcpServer->listen(getLocalAddr(), profile.local_port);
         sstr.append(QString::number(profile.local_port));
     }
     else {
-        tcpServer->listen(QHostAddress(profile.server), profile.server_port);
+        tcpServer->listen(getServerAddr(), profile.server_port);
         sstr.append(QString::number(profile.server_port));
     }
     emit info(sstr);
@@ -84,11 +84,6 @@ QHostAddress Controller::getServerAddr()
     return serverAddrList.first();//Todo: maybe randomly pick one?
 }
 
-Address Controller::getAServer()
-{
-    return Address(serverAddrList.first(), profile.server_port);//TODO
-}
-
 quint16 Controller::getLocalPort()
 {
     return profile.local_port;
@@ -96,7 +91,14 @@ quint16 Controller::getLocalPort()
 
 QHostAddress Controller::getLocalAddr()
 {
-    return profile.shareOverLAN ? QHostAddress::Any : QHostAddress::LocalHost;
+    QHostAddress addr(profile.local_address);
+    if (!addr.isNull()) {
+        return addr;
+    }
+    else {
+        emit error("Can't get address from " + profile.local_address.toLocal8Bit() + ". Using localhost instead.");
+        return QHostAddress::LocalHost;
+    }
 }
 
 Connection *Controller::socketDescriptorInList(qintptr tsd)

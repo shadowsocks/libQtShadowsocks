@@ -34,49 +34,73 @@
 #include "common.h"
 using namespace QSS;
 
-QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)//TODO FIX
+QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
 {
-    QByteArray address_str = addr.toString().toLatin1();
+    QByteArray ss_header;
+    QByteArray address_str = addr.getAddress().toLocal8Bit();
     QByteArray address_bin;
-    quint16 port_net = htons(port);
+    quint16 port_net = htons(addr.getPort());
     QByteArray port_ns = QByteArray::fromRawData(reinterpret_cast<char *>(&port_net), 2);
-    if (addr.protocol() == QAbstractSocket::IPv6Protocol || addr.protocol() == QAbstractSocket::AnyIPProtocol) {
-        address_bin.resize(INET6_ADDRSTRLEN);
-        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(address_bin.data()));
-        return char(4) + address_bin + port_ns;
-    }
-    else {// if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
+
+    int type = addr.addressType();
+    ss_header.append(static_cast<char>(type));
+    switch (type) {
+    case Address::ADDRTYPE_HOST://should we care if it exceeds 255?
+        ss_header.append(static_cast<char>(address_str.length()));
+        ss_header += address_str;
+        break;
+    case Address::ADDRTYPE_IPV4:
         address_bin.resize(INET_ADDRSTRLEN);
         inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(address_bin.data()));
-        return char(1) + address_bin + port_ns;
+        ss_header += address_bin;
+        break;
+    case Address::ADDRTYPE_IPV6:
+        address_bin.resize(INET6_ADDRSTRLEN);
+        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(address_bin.data()));
+        ss_header += address_bin;
+        break;
+    default:
+        qWarning() << "Unknown address type. Shouldn't get here.";
     }
-    /*if (address_str.length() > 255) {
-        address_str = address_str.mid(0, 255);
-    }*/
-    //return char(3) + static_cast<char>(address_str.length()) + address_str + port_str;
+    return ss_header + port_ns;
 }
 
-void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &port, int &length)
+QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
+{
+    QByteArray type;
+    quint16 port_net = htons(port);
+    QByteArray port_ns = QByteArray::fromRawData(reinterpret_cast<char *>(&port_net), 2);
+    if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
+        type.append(static_cast<char>(Address::ADDRTYPE_IPV4));
+    }
+    else {
+        type.append(static_cast<char>(Address::ADDRTYPE_IPV6));
+    }
+    return type + addr.toString().toLocal8Bit() + port_ns;
+}
+
+void Common::parseHeader(const QByteArray &data, Address &dest, int &header_length)
 {
     int addrtype = static_cast<int>(data[0]);
-    int header_length = 0;
-    QHostAddress dest_addr;
-    quint16 dest_port = 0;
+    header_length = 0;
 
-    if (addrtype == ADDRTYPE_HOST) {
-        //always lookup it
+    if (addrtype == Address::ADDRTYPE_HOST) {
         if (data.length() > 2) {
             int addrlen = static_cast<int>(data[1]);
             if (data.size() >= 2 + addrlen) {
                 QByteArray host = data.mid(2, addrlen);
-                QList<QHostAddress> addrList = QHostInfo::fromName(host).addresses();//TODO QHostInfo::fromName is a blocking operation. Therefore, we'd better put each Connection instance in a seperated thread to avoid blocking. Or we can use lookupHost function and implement DNS stage in Connection
+                //TODO QHostInfo::fromName is a blocking operation. Therefore, we'd better put each Connection instance in a seperated thread to avoid blocking. Or we can use lookupHost function and implement DNS stage in Connection
+                /*
+                QList<QHostAddress> addrList = QHostInfo::fromName(host).addresses();
                 if (addrList.isEmpty()) {
                     qWarning() << "Cannot look up the IP addresses of " << host;
                 }
                 else {
                     dest_addr = addrList.first();
                 }
-                dest_port = ntohs(*reinterpret_cast<quint16 *>(data.mid(2 + addrlen, 2).data()));
+                */
+                dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(2 + addrlen, 2).data())));
+                dest.setAddress(QString(host));
                 header_length = 4 + addrlen;
             }
             else {
@@ -87,24 +111,24 @@ void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &po
             qDebug() << "header is too short";
         }
     }
-    else if (addrtype == ADDRTYPE_IPV4) {
+    else if (addrtype == Address::ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
-            QByteArray dest(INET_ADDRSTRLEN, '0');
-            inet_ntop(AF_INET, reinterpret_cast<void *>(data.mid(1, 4).data()), dest.data(), INET_ADDRSTRLEN);
-            dest_addr = QHostAddress(QString(dest));
-            dest_port = ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data()));
+            QByteArray d_addr(INET_ADDRSTRLEN, '0');
+            inet_ntop(AF_INET, reinterpret_cast<void *>(data.mid(1, 4).data()), d_addr.data(), INET_ADDRSTRLEN);
+            dest.setAddress(QString(d_addr));
+            dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data())));
             header_length = 7;
         }
         else {
             qDebug() << "header is too short";
         }
     }
-    else if (addrtype == ADDRTYPE_IPV6) {
+    else if (addrtype == Address::ADDRTYPE_IPV6) {
         if (data.length() > 19) {
-            QByteArray dest(INET6_ADDRSTRLEN, '0');
-            inet_ntop(AF_INET6, reinterpret_cast<void *>(data.mid(1, 16).data()), dest.data(), INET6_ADDRSTRLEN);
-            dest_addr = QHostAddress(QString(dest));
-            dest_port = ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data()));
+            QByteArray d_addr(INET6_ADDRSTRLEN, '0');
+            inet_ntop(AF_INET6, reinterpret_cast<void *>(data.mid(1, 16).data()), d_addr.data(), INET6_ADDRSTRLEN);
+            dest.setAddress(QString(d_addr));
+            dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data())));
             header_length = 19;
         }
         else {
@@ -114,10 +138,4 @@ void Common::parseHeader(const QByteArray &data, QHostAddress &addr, quint16 &po
     else {
         qDebug() << "unsupported addrtype" << addrtype << "maybe wrong password";
     }
-    if (dest_addr.isNull()) {
-        qDebug() << "parsing header to get address failed";
-    }
-    addr = dest_addr;
-    port = dest_port;
-    length = header_length;
 }

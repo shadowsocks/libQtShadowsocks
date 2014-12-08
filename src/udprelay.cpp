@@ -106,15 +106,15 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data = encryptor->decryptAll(data);
     }
 
-    QHostAddress dest_addr;
-    quint16 dest_port;
+
+    Address destAddr;
     int header_length = 0;
-    Common::parseHeader(data, dest_addr, dest_port, header_length);
+    Common::parseHeader(data, destAddr, header_length);
     if (header_length == 0) {
         return;
     }
 
-    CacheKey key(r_addr, r_port, dest_addr, dest_port);
+    CacheKey key(r_addr, r_port, destAddr);
     QUdpSocket *client = cache.value(key, NULL);
     if (client == NULL) {
         client = new QUdpSocket(this);
@@ -128,14 +128,14 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     if (isLocal) {
         data = encryptor->encryptAll(data);
-        dest_addr = remote->peerAddress();
-        dest_port = remote->peerPort();
+        destAddr.setIPAddress(remote->peerAddress());
+        destAddr.setPort(remote->peerPort());
     }
     else {
         data = data.mid(header_length);
     }
 
-    client->writeDatagram(data, dest_addr, dest_port);
+    client->writeDatagram(data, destAddr.getIPAddress(), destAddr.getPort());
 }
 
 void UdpRelay::onClientUdpSocketReadyRead()
@@ -160,11 +160,10 @@ void UdpRelay::onClientUdpSocketReadyRead()
     QByteArray response;
     if (isLocal) {
         data = encryptor->decryptAll(data);
-        QHostAddress d_addr;
-        quint16 d_port;
+        Address destAddr;
         int header_length = 0;
 
-        Common::parseHeader(data, d_addr, d_port, header_length);
+        Common::parseHeader(data, destAddr, header_length);
         if (header_length == 0) {
             return;
         }
@@ -176,8 +175,8 @@ void UdpRelay::onClientUdpSocketReadyRead()
     }
 
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
-    if (clientAddress.port != 0) {
-        listen->writeDatagram(response, clientAddress.addr, clientAddress.port);
+    if (clientAddress.getPort() != 0) {
+        listen->writeDatagram(response, clientAddress.getIPAddress(), clientAddress.getPort());
     }
     //else this packet is from somewhere else we know
     //simply drop that packet
