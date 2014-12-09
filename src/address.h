@@ -39,6 +39,8 @@ public:
 
     QString getAddress() const;
     QHostAddress getIPAddress() const;
+    QHostAddress getRealIPAddress();//will try to lookup host if ipAddress is null. note it's a blocking operation
+    bool isIPValid() const;
     quint16 getPort() const;
 
     void setAddress(const QString &);

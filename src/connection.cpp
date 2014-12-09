@@ -146,7 +146,7 @@ bool Connection::writeToLocal(const QByteArray &data)
 bool Connection::writeToRemote(const QByteArray &data)
 {
     if (remote->state() != QAbstractSocket::ConnectedState) {
-        remote->connectToHost(remoteAddress.getIPAddress(), remoteAddress.getPort());
+        remote->connectToHost(remoteAddress.getRealIPAddress(), remoteAddress.getPort());
     }
     qint64 s = remote->write(data);
     return s != -1;

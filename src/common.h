@@ -50,9 +50,10 @@ public:
     }
 };
 
-class Common
+class Common//provide some common functions
 {
 public:
+    virtual ~Common() = 0;//You should never initialise Common class.
     static QByteArray packAddress(const Address &addr);
     static QByteArray packAddress(const QHostAddress &addr, const quint16 &port);//this will never use ADDRTYPE_HOST because addr is an IP address
     static void parseHeader(const QByteArray &data, Address &addr, int &length);

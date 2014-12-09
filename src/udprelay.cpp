@@ -135,7 +135,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data = data.mid(header_length);
     }
 
-    client->writeDatagram(data, destAddr.getIPAddress(), destAddr.getPort());
+    client->writeDatagram(data, destAddr.getRealIPAddress(), destAddr.getPort());
 }
 
 void UdpRelay::onClientUdpSocketReadyRead()
@@ -176,7 +176,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.getPort() != 0) {
-        listen->writeDatagram(response, clientAddress.getIPAddress(), clientAddress.getPort());
+        listen->writeDatagram(response, clientAddress.getRealIPAddress(), clientAddress.getPort());
     }
     //else this packet is from somewhere else we know
     //simply drop that packet

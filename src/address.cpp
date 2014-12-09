@@ -22,6 +22,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <QHostInfo>
 #include "address.h"
 
 using namespace QSS;
@@ -49,6 +50,26 @@ QString Address::getAddress() const
 QHostAddress Address::getIPAddress() const
 {
     return ipAddress;
+}
+
+QHostAddress Address::getRealIPAddress()
+{
+    if (ipAddress.isNull()) {
+        //lookup the host
+        QList<QHostAddress> ipList = QHostInfo::fromName(address).addresses();
+        if (ipList.isEmpty()) {
+            qWarning() << "Can't look up the IP addresses of " << address;
+        }
+        else {
+            ipAddress = ipList.first();
+        }
+    }
+    return ipAddress;
+}
+
+bool Address::isIPValid() const
+{
+    return !ipAddress.isNull();
 }
 
 quint16 Address::getPort() const
