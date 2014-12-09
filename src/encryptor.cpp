@@ -54,6 +54,7 @@ QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
     map.insert("RC2-CFB", {16, 8});
     map.insert("RC4", {16, 0});
     map.insert("RC4-MD5", {16, 16});
+    map.insert("Salsa20", {32, 8});
     map.insert("SEED-CFB", {16, 16});
     return map;
 }
@@ -98,10 +99,13 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
     else if (method.contains("CAST5")) {
         method = "CAST-128-CFB";
     }
+    else if (method.contains("SALSA20")) {
+        method = "Salsa20";
+    }
 
     QVector<int> cipher = cipherMap.value(method);
     if (cipher.size() < 2) {
-        qCritical() << "Abort. The method" << method << "is not supported.";
+        qCritical() << "Abort. The method" << m.toLocal8Bit() << "is not supported.";
         exit(223);
     }
     keyLen = cipher[0];
