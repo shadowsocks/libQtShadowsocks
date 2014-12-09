@@ -44,18 +44,18 @@ const QMap<QByteArray, QVector<int> > Encryptor::cipherMap = Encryptor::generate
 QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
 {
     QMap<QByteArray, QVector<int> >map;
-    map.insert("AES-128-CFB", {16, 16});
-    map.insert("AES-192-CFB", {24, 16});
-    map.insert("AES-256-CFB", {32, 16});
-    map.insert("Blowfish-CFB", {16, 8});
-    map.insert("CAST-128-CFB", {16, 8});
-    map.insert("DES-CFB", {8, 8});
-    map.insert("IDEA-CFB", {16, 8});
-    map.insert("RC2-CFB", {16, 8});
+    map.insert("AES-128/CFB", {16, 16});
+    map.insert("AES-192/CFB", {24, 16});
+    map.insert("AES-256/CFB", {32, 16});
+    map.insert("Blowfish/CFB", {16, 8});
+    map.insert("CAST-128/CFB", {16, 8});
+    map.insert("DES/CFB", {8, 8});
+    map.insert("IDEA/CFB", {16, 8});
+    map.insert("RC2/CFB", {16, 8});
     map.insert("RC4", {16, 0});
     map.insert("RC4-MD5", {16, 16});
-    map.insert("Salsa20", {32, 8});
-    map.insert("SEED-CFB", {16, 16});
+    map.insert("Salsa20/CTR", {32, 8});
+    map.insert("SEED/CFB", {16, 16});
     return map;
 }
 
@@ -94,13 +94,16 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
 
     type = BOTAN;
     if (method.contains("BF")) {
-        method = "Blowfish-CFB";
+        method = "Blowfish/CFB";
     }
     else if (method.contains("CAST5")) {
-        method = "CAST-128-CFB";
+        method = "CAST-128/CFB";
     }
-    else if (method.contains("SALSA20")) {
-        method = "Salsa20";
+    else if (method.contains("SALSA20-CTR")) {
+        method = "Salsa20/CTR";
+    }
+    else {
+        method.replace("-C", "/C");//i.e. -CFB to /CFB
     }
 
     QVector<int> cipher = cipherMap.value(method);

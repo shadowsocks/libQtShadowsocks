@@ -42,7 +42,6 @@ Cipher::Cipher(QByteArray method, const QByteArray &key, const QByteArray &iv, b
         filter = Botan::get_cipher("ARC4", _key, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);//botan-1.10
     }
     else {
-        method.replace("-CFB", "/CFB");
         std::string str(method.constData(), method.length());
         Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(key.constData()), key.size());
         Botan::InitializationVector _iv(reinterpret_cast<const Botan::byte *>(iv.constData()), iv.size());
