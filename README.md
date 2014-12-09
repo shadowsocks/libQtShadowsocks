@@ -48,10 +48,10 @@ Current Status
 - RC2-CFB
 - RC4
 - RC4-MD5
-- Salsa20-CTR (+)
+- Salsa20 (+)
 - SEED-CFB
 
-+: Salsa20-CTR is supported experimentally on Shadowsocks (Python version) as well.
++: Unfortunately, the `Salsa20` is not compatible with the implementation of `Salsa20-CTR` in shadowsocks-python.
 
 Warning
 -------
