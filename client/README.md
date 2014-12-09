@@ -5,6 +5,23 @@ Client
 
 You can build this Qt project and use it to test functionality of `libQtShadowsocks`, or simply use it as your local shadowsocks client.
 
+Usage
+-----
+
+```
+Usage: ./sslocal-libqss [options]
+
+Options:
+  -h, --help                       Displays this help.
+  -v, --version                    Displays version information.
+  -c, --config-file <config.json>  specify config.json file.
+  -s, --server-mode                run as shadowsocks server.
+```
+
+By default, it runs as local client. You have to pass `-s` if you want it run in server mode.
+
+There is a `config.json` example for reference.
+
 License
 -------
 

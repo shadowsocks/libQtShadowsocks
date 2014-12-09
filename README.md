@@ -8,12 +8,12 @@ Introduction
 
 It is written in C++ using Qt5 frameworks. Therefore, the major purpose of this project is to provide a developer-friendly shadowsocks library, mainly for Qt applications, i.e. [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
 
-The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` can also be used as a local Shadowsocks client.
+The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` can also be used as both Shadowsocks local client and Shadowsocks server.
 
 TODO
 ----
 
-- Support use as server (server-side shadowsocks) (v1.0)
+- ~~Support use as server (server-side shadowsocks) (v1.0)~~
 - Stabilise ABI and code structure (v1.0)
 - ~~Get rid of QCA. Use `Botan` directly (v1.0)~~
 - ~~Support RC4-MD5 method (v1.x)~~
@@ -30,7 +30,7 @@ Current Status
 
 ###Supported Platforms###
 
-- Windows
+- Microsoft Windows (Vista or higher)
 - Linux
 - xBSD (untested)
 - Mac OS X (untested)

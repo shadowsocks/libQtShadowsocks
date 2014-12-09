@@ -34,7 +34,7 @@ public:
     void readConfig(const QString &);
 
 public slots:
-    void start();
+    void start(bool _server = false);
 
 private:
     QSS::Controller *lc;

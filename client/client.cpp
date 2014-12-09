@@ -57,12 +57,12 @@ void Client::readConfig(const QString &file)
     profile.server_port = confObj["server_port"].toInt();
 }
 
-void Client::start()
+void Client::start(bool _server)
 {
     if (lc != NULL) {
         lc->deleteLater();
     }
-    lc = new QSS::Controller(profile, true, this);
+    lc = new QSS::Controller(profile, !_server, this);
     connect (lc, &QSS::Controller::info, this, &Client::logHandler);
     connect (lc, &QSS::Controller::error, this, &Client::logHandler);
     lc->start();

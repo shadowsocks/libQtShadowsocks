@@ -55,10 +55,12 @@ void Controller::start()
 
     QString sstr("tcp server listen at port ");
     if (isLocal) {
+        emit info("running in local mode.");
         tcpServer->listen(getLocalAddr(), profile.local_port);
         sstr.append(QString::number(profile.local_port));
     }
     else {
+        emit info("running in server mode.");
         tcpServer->listen(getServerAddr(), profile.server_port);
         sstr.append(QString::number(profile.server_port));
     }

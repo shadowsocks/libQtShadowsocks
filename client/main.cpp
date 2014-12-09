@@ -28,17 +28,19 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     a.setApplicationName("Shadowsocks-libQtShadowsocks");
-    a.setApplicationVersion("0.2");
+    a.setApplicationVersion("0.9");
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption configFile(QStringList() << "c" << "config-file", "specify config.json file", "config.json", "config.json");
+    QCommandLineOption configFile(QStringList() << "c" << "config-file", "specify config.json file.", "config.json", "config.json");
+    QCommandLineOption serverMode(QStringList() << "s" << "server-mode", "run as shadowsocks server.");
     parser.addOption(configFile);
+    parser.addOption(serverMode);
     parser.process(a);
 
     Client c;
     c.readConfig(parser.value(configFile));
-    c.start();
+    c.start(parser.isSet(serverMode));
 
     return a.exec();
 }
