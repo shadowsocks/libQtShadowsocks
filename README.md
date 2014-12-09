@@ -46,6 +46,7 @@ Current Status
 - DES-CFB
 - IDEA-CFB
 - RC2-CFB
+- RC4
 - RC4-MD5
 - SEED-CFB
 
