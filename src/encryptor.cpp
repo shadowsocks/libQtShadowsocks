@@ -52,14 +52,9 @@ QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
     map.insert("DES-CFB", {8, 8});
     map.insert("IDEA-CFB", {16, 8});
     map.insert("RC2-CFB", {16, 8});
+    map.insert("RC4", {16, 0});
     map.insert("RC4-MD5", {16, 16});
     map.insert("SEED-CFB", {16, 16});
-    /*
-     * below ciphers are currently unsupported.
-     */
-    /*
-    map.insert("RC4", {16, 0});
-    */
     return map;
 }
 

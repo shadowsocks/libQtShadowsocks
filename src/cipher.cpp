@@ -31,7 +31,13 @@ Cipher::Cipher(QByteArray method, const QByteArray &key, const QByteArray &iv, b
 {
     Botan::Keyed_Filter *filter;
     if (method.contains("RC4")) {
-        QByteArray rc4_key = QCryptographicHash::hash(key + iv, QCryptographicHash::Md5);//rc4-md5
+        QByteArray rc4_key;
+        if (iv.isEmpty()) {//old deprecated rc4's iv is empty
+            rc4_key = key;
+        }
+        else {//otherwise, it's rc4-md5
+            rc4_key = QCryptographicHash::hash(key + iv, QCryptographicHash::Md5);
+        }
         Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(rc4_key.constData()), key.size());
         filter = Botan::get_cipher("ARC4", _key, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);//botan-1.10
     }
@@ -61,6 +67,10 @@ QByteArray Cipher::update(const QByteArray &data)
 
 QByteArray Cipher::randomIv(int length)
 {
+    if (length == 0) {//directly return empty byte array if no need to genenrate iv
+        return QByteArray();
+    }
+
     Botan::AutoSeeded_RNG rng;
     QByteArray out;
     out.resize(length);
