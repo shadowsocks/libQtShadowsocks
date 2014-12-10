@@ -65,7 +65,7 @@ void UdpRelay::onSocketError()
 {
     QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
     if (sock == NULL) {
-        qCritical() << "Fatal. A false object calling onSocketError.";
+        emit error("Fatal. A false object calling onSocketError.");
         return;
     }
     if (sock == listen) {
@@ -85,7 +85,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
 {
     QUdpSocket *server = qobject_cast<QUdpSocket *>(sender());
     if (server->pendingDatagramSize() > RecvSize) {
-        qDebug() << "datagram is too large. discarded.";
+        emit error("datagram is too large. discarded.");
         return;
     }
 
@@ -97,7 +97,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     if (isLocal) {
         if (static_cast<int> (data[2]) != 0) {
-            qDebug() << "drop a message since frag is not 0";
+            emit error("drop a message since frag is not 0");
             return;
         }
         data.remove(0, 2);
@@ -142,12 +142,12 @@ void UdpRelay::onClientUdpSocketReadyRead()
 {
     QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
     if (sock == NULL) {
-        qCritical() << "Fatal. A false object calling onClientUdpSocketReadyRead.";
+        emit error("Fatal. A false object calling onClientUdpSocketReadyRead.");
         return;
     }
 
     if (sock->pendingDatagramSize() > RecvSize) {
-        qDebug() << "datagram is too large. discarded.";
+        emit error("datagram is too large. discarded.");
         return;
     }
 
@@ -186,7 +186,7 @@ void UdpRelay::onClientDisconnected()
 {
     QUdpSocket *client = qobject_cast<QUdpSocket *>(sender());
     if (client == NULL) {
-        qCritical() << "Fatal. A false object calling onClientDisconnected.";
+        emit error("Fatal. A false object calling onClientDisconnected.");
         return;
     }
     cache.remove(cache.key(client));
