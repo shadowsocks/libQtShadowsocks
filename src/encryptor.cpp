@@ -54,7 +54,7 @@ QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
     map.insert("RC2/CFB", {16, 8});
     map.insert("RC4", {16, 0});
     map.insert("RC4-MD5", {16, 16});
-    map.insert("Salsa20/CTR", {32, 8});
+    map.insert("Salsa20", {32, 8});
     map.insert("SEED/CFB", {16, 16});
     return map;
 }
@@ -99,8 +99,8 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
     else if (method.contains("CAST5")) {
         method = "CAST-128/CFB";
     }
-    else if (method.contains("SALSA20-CTR")) {
-        method = "Salsa20/CTR";
+    else if (method.contains("SALSA20")) {
+        method = "Salsa20";
     }
     else {
         method.replace("-C", "/C");//i.e. -CFB to /CFB
