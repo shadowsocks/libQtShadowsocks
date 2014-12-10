@@ -20,15 +20,25 @@
 
 #include <QCoreApplication>
 #include <QCommandLineParser>
+#include <signal.h>
 #include "client.h"
 
 using namespace QSS;
+
+static void onSIGINT_TERM(int sig)
+{
+    if (sig == SIGINT || sig == SIGTERM) qApp->quit();
+}
 
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     a.setApplicationName("Shadowsocks-libQtShadowsocks");
     a.setApplicationVersion("0.9");
+
+    signal(SIGINT, onSIGINT_TERM);
+    signal(SIGTERM, onSIGINT_TERM);
+
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
