@@ -24,9 +24,9 @@
 #include "controller.h"
 
 UdpRelay::UdpRelay(bool is_local, QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    isLocal(is_local)
 {
-    isLocal = is_local;
     Controller *c = qobject_cast<Controller *>(parent);
 
     if(c == NULL) {

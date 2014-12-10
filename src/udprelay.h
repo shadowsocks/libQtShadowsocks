@@ -45,7 +45,7 @@ signals:
     void error(const QString &);
 
 private:
-    bool isLocal;
+    const bool isLocal;
     QUdpSocket *listen;
     QUdpSocket *remote;
     Encryptor *encryptor;

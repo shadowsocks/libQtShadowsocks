@@ -50,7 +50,7 @@ signals:
     void error(const QString &);
 
 private:
-    bool isLocal;
+    const bool isLocal;
     QTcpSocket *local;
     QTcpSocket *remote;
     Encryptor *encryptor;

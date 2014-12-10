@@ -24,7 +24,8 @@
 #include "controller.h"
 
 Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    isLocal(is_local)
 {
     Controller *c = qobject_cast<Controller *>(parent);
 
@@ -33,7 +34,6 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
         return;
     }
 
-    isLocal = is_local;
     stage = INIT;
     encryptor = new Encryptor(this);
 
