@@ -72,6 +72,11 @@ void Controller::start()
 void Controller::stop()
 {
     tcpServer->close();
+    while (!conList.isEmpty()) {
+        Connection *con = conList.takeLast();
+        con->deleteLater();
+    }
+    emit connectionCountChanged(conList.size());
     running = false;
 }
 
