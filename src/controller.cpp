@@ -44,6 +44,7 @@ Controller::~Controller()
     if (running) {
         stop();
     }
+    qDebug() << "Exited gracefully.";
 }
 
 bool Controller::start()
