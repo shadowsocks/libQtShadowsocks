@@ -18,6 +18,7 @@ HEADERS  += \
     src/connection.h \
     src/controller.h \
     src/encryptor.h \
+    src/export.h \
     src/profile.h \
     src/QtShadowsocks \
     src/udprelay.h

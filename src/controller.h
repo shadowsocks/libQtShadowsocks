@@ -31,6 +31,7 @@
 #include <QObject>
 #include <QTcpServer>
 #include <botan/init.h>
+#include "export.h"
 #include "profile.h"
 #include "udprelay.h"
 
@@ -38,7 +39,7 @@ using namespace QSS;
 
 namespace QSS {
 
-class Controller : public QObject
+class QSS_EXPORT Controller : public QObject
 {
     Q_OBJECT
 public:

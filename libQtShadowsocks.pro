@@ -6,11 +6,17 @@ QT       += core network concurrent
 
 QT       -= gui
 
-CONFIG   += staticlib c++11
+CONFIG   += c++11
 
 TARGET    = QtShadowsocks
 
 TEMPLATE  = lib
 
+contains(DEFINES, QSS_STATIC) {
+    CONFIG  += staticlib
+}
+else {
+    DEFINES += QSS_LIBRARY
+}
 
 include(src/QtShadowsocks.pri)
