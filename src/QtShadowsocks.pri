@@ -28,7 +28,7 @@ unix: {
     CONFIG     += link_pkgconfig
     PKGCONFIG  += botan-1.10
 
-    VERSION     = 0.9
+    VERSION     = 1.0
 }
 
 win32: {

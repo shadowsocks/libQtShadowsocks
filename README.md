@@ -10,15 +10,6 @@ It is written in C++ using Qt5 frameworks. Therefore, the major purpose of this 
 
 The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` can also be used as both Shadowsocks local client and Shadowsocks server.
 
-TODO
-----
-
-- ~~Support use as server (server-side shadowsocks) (v1.0)~~
-- Stabilise ABI and code structure (v1.0)
-- ~~Get rid of QCA. Use `Botan` directly (v1.0)~~
-- ~~Support RC4-MD5 method (v1.x)~~
-- ~~Statically linked Windows build (v1.x)~~
-
 Dependency
 ----------
 
@@ -51,10 +42,18 @@ Current Status
 - Salsa20
 - SEED-CFB
 
-Warning
+RoadMap
 -------
 
-This project is under heavy development. Please wait for a `v1.0` release before use it in production environment.
+Below features will possibly be implemented in future versions. While even version number indicates a stable version. Odd number means development version correspondingly.
+
+- Traffic statistics (v1.2)
+- Server ping (v1.2)
+- Multiple server IP address random choose (v1.4)
+- ChaCha cipher (v1.4, also need to wait for `Botan-1.12` release)
+- Multiple profile balance (v1.6)
+
+Please open an [issue](/issues) to apply for a new feature.
 
 License
 -------
