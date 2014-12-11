@@ -61,7 +61,6 @@ private:
     void handleDnsResolved(const QHostAddress &);
     void handleStageHello(QByteArray &);
     void handleStageReply(QByteArray &);
-    bool writeToLocal(const QByteArray &);
     bool writeToRemote(const QByteArray &);
 
     static const qint64 RecvSize = 32736;//32KB, same as shadowsocks-python
