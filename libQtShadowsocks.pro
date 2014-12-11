@@ -12,4 +12,5 @@ TARGET    = QtShadowsocks
 
 TEMPLATE  = lib
 
+
 include(src/QtShadowsocks.pri)

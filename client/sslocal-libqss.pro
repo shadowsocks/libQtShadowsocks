@@ -7,28 +7,26 @@ QT       += core network concurrent
 QT       -= gui
 
 TARGET    = sslocal-libqss
+
 CONFIG   += console
 
 TEMPLATE  = app
 
-INCLUDEPATH += $$top_srcdir/../src
+HEADERS  += client.h
 
-HEADERS     += client.h
-
-SOURCES     += client.cpp \
-               main.cpp
-
+SOURCES  += client.cpp \
+            main.cpp
 
 unix: {
     CONFIG    += link_pkgconfig
-    PKGCONFIG += botan-1.10
-    LIBS      += -L/home/symeon/Projects/build/libqtshadowsocks-Desktop-Debug
+    PKGCONFIG += QtShadowsocks botan-1.10
 }
 
 win32: {
-    #DEFINES += QCA_STATIC
-    DEFINES   += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
-    LIBS      += -L./
+    DEFINES     += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
+    INCLUDEPATH += $$top_srcdir/../include
+    LIBS        += -L$$top_srcdir/../lib \
+                   -lQtShadowsocks \
+                   -lbotan-1.10
 }
 
-LIBS += -lQtShadowsocks -lbotan-1.10
