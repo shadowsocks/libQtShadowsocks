@@ -6,7 +6,7 @@ QT       += core network concurrent
 
 QT       -= gui
 
-TARGET    = sslocal-libqss
+TARGET    = shadowsocks-libqss
 
 CONFIG   += console
 
@@ -17,9 +17,17 @@ HEADERS  += client.h
 SOURCES  += client.cpp \
             main.cpp
 
+isEmpty(INSTALL_PREFIX) {
+    unix: INSTALL_PREFIX = /usr
+    else: INSTALL_PREFIX = $$top_srcdir
+}
+
 unix: {
     CONFIG    += link_pkgconfig
     PKGCONFIG += QtShadowsocks botan-1.10
+
+    target.path = $$INSTALL_PREFIX/bin
+    INSTALLS   += target
 }
 
 win32: {
