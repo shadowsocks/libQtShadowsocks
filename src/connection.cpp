@@ -74,15 +74,9 @@ void Connection::handleStageHello(QByteArray &data)
             header.append(char(5));
             header.append(char(0));
             header.append(char(0));
-            if (local->peerAddress().protocol() == QAbstractSocket::IPv6Protocol) {
-                header.append(char(4));
-            }
-            else {
-                header.append(char(1));
-            }
             QHostAddress addr = local->peerAddress();
             quint16 port = local->peerPort();
-            local->write(header + addr.toString().toLatin1() + QString::number(port).toLatin1());
+            local->write(header + Common::packAddress(addr, port));
             stage = UDP_ASSOC;
             return;
         }
@@ -90,7 +84,8 @@ void Connection::handleStageHello(QByteArray &data)
             data = data.mid(3);
         }
         else {
-            emit error("Unknown command " + QString::number(cmd).toLocal8Bit());
+            emit error("Unknown command " + QString::number(cmd));
+            this->deleteLater();
             return;
         }
     }
@@ -105,7 +100,7 @@ void Connection::handleStageHello(QByteArray &data)
     stage = REPLY;//skip DNS, because we use getRealIPAddress function of Address class, which will always return IP address.
 
     if (isLocal) {
-        static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 1, 1 };
+        static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
         QByteArray response(res, 10);
         local->write(response);
         data = encryptor->encrypt(data);

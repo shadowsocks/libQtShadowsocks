@@ -70,11 +70,11 @@ QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
     QByteArray type;
     quint16 port_net = htons(port);
     QByteArray port_ns = QByteArray::fromRawData(reinterpret_cast<char *>(&port_net), 2);
-    if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
-        type.append(static_cast<char>(Address::ADDRTYPE_IPV4));
+    if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
+        type.append(static_cast<char>(Address::ADDRTYPE_IPV6));
     }
     else {
-        type.append(static_cast<char>(Address::ADDRTYPE_IPV6));
+        type.append(static_cast<char>(Address::ADDRTYPE_IPV4));
     }
     return type + addr.toString().toLocal8Bit() + port_ns;
 }
