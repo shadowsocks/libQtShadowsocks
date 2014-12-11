@@ -1,6 +1,8 @@
 /*
  * connection.h - the header file of Connection class
  *
+ * This class represents TCP connection only.
+ *
  * Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
@@ -39,10 +41,7 @@ public:
     explicit Connection(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
 
     qintptr socketDescriptor;
-    enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, REPLY, STREAM, DESTROYED};//we skip DNS stage because we always resolve hostname
-
-public slots:
-    void appendTcpSocket(QTcpSocket *);
+    enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, REPLY, STREAM, DESTROYED};
 
 signals:
     void disconnected();

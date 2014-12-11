@@ -58,21 +58,8 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
     connect(remote, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
     connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead, Qt::DirectConnection);
-}
 
-void Connection::appendTcpSocket(QTcpSocket *t)
-{
-    disconnect(local, &QTcpSocket::disconnected, this, &Connection::disconnected);
-    connect(local, &QTcpSocket::disconnected, local, &QTcpSocket::deleteLater);
-
-    local = t;
-    local->setParent(this);
-    local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    local->setReadBufferSize(RecvSize);
-
-    connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onLocalTcpSocketError);
-    connect(local, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
-    connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead, Qt::DirectConnection);
+    connect(this, &Connection::disconnected, this, &Connection::deleteLater);
 }
 
 void Connection::handleStageHello(QByteArray &data)
@@ -113,7 +100,7 @@ void Connection::handleStageHello(QByteArray &data)
         return;
     }
     emit info("Connecting " + remoteAddress.getAddress().toLocal8Bit() + ":" + QString::number(remoteAddress.getPort()).toLocal8Bit());
-    stage = REPLY;//skip DNS, because remote_addr is already an IP address now.
+    stage = REPLY;//skip DNS, because we use getRealIPAddress function of Address class, which will always return IP address.
 
     if (isLocal) {
         static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 1, 1 };
@@ -154,14 +141,8 @@ bool Connection::writeToRemote(const QByteArray &data)
 
 void Connection::onLocalTcpSocketError()
 {
-    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
-    if (socket == NULL) {
-        emit error("Error. Invalid object called onLocalTcpSocketError.");
-        return;
-    }
-
-    if (socket->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
-        QString str = QString("Local socket error: ") + socket->errorString();
+    if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
+        QString str = QString("Local socket error: ") + local->errorString();
         emit error(str);
     }
 }
@@ -176,14 +157,8 @@ void Connection::onRemoteTcpSocketError()
 
 void Connection::onLocalTcpSocketReadyRead()
 {
-    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
-    if (socket == NULL) {
-        emit error("Error. Invalid object called onLocalTcpSocketReadyRead.");
-        return;
-    }
-
     if (isLocal && stage == INIT) {
-        QByteArray buf = socket->read(256);
+        QByteArray buf = local->read(256);
         QByteArray response;
         if (buf[0] != char(5)) {
             response.append(char(0));
@@ -198,7 +173,7 @@ void Connection::onLocalTcpSocketReadyRead()
         return;
     }
 
-    QByteArray buf = socket->readAll();
+    QByteArray buf = local->readAll();
     if (!isLocal) {
         buf = encryptor->decrypt(buf);
     }

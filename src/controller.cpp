@@ -21,7 +21,10 @@
  */
 
 #include <QHostInfo>
+#include <QTcpSocket>
 #include "controller.h"
+#include "connection.h"
+#include "encryptor.h"
 
 Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
     QObject(parent),
@@ -49,14 +52,11 @@ Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
     udpRelay = new UdpRelay(isLocal, this);
 
     connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
-    connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewConnection);
+    connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection);
 }
 
 Controller::~Controller()
 {
-    if (running) {
-        stop();
-    }
     qDebug() << "Exited gracefully.";
 }
 
@@ -93,11 +93,6 @@ bool Controller::start()
 void Controller::stop()
 {
     tcpServer->close();
-    while (!conList.isEmpty()) {
-        Connection *con = conList.takeLast();
-        con->deleteLater();
-    }
-    emit connectionCountChanged(conList.size());
     running = false;
 }
 
@@ -139,50 +134,16 @@ bool Controller::isRunning() const
     return running;
 }
 
-Connection *Controller::socketDescriptorInList(qintptr tsd)
-{
-    Connection *found = NULL;
-    QtConcurrent::blockingMap(conList, [&](Connection *c) {//would this be faster than the old foreach loop?
-        if (tsd == c->socketDescriptor) {
-            found = c;
-        }
-    });
-    return found;
-}
-
 void Controller::onTcpServerError()
 {
     QString str = QString("TCP server error: ") + tcpServer->errorString();
     emit error(str);
 }
 
-void Controller::onNewConnection()
+void Controller::onNewTCPConnection()
 {
     QTcpSocket *ts = tcpServer->nextPendingConnection();
-    Connection *con = socketDescriptorInList(ts->socketDescriptor());
-
-    if (con == NULL) {
-        con = new Connection(ts, isLocal, this);
-        conList.append(con);
-        connect (con, &Connection::disconnected, this, &Controller::onConnectionDisconnected);
-        connect (con, &Connection::info, this, &Controller::info);
-        connect (con, &Connection::error, this, &Controller::error);
-        emit connectionCountChanged(conList.size());
-    }
-    else {
-        con->appendTcpSocket(ts);
-    }
-}
-
-void Controller::onConnectionDisconnected()
-{
-    Connection *con = qobject_cast<Connection *>(sender());
-    if (con) {
-        conList.removeOne(con);
-        con->deleteLater();
-        emit connectionCountChanged(conList.size());
-    }
-    else {
-        emit error("A false sender called onConnectionDisconnected slot");
-    }
+    Connection *con = new Connection(ts, isLocal, this);
+    connect (con, &Connection::info, this, &Controller::info);
+    connect (con, &Connection::error, this, &Controller::error);
 }

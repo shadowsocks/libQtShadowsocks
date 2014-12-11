@@ -25,19 +25,14 @@
 #ifndef BASECONTROLLER_H
 #define BASECONTROLLER_H
 
-#include <QtConcurrent>
 #include <QByteArray>
 #include <QHostAddress>
 #include <QList>
 #include <QObject>
 #include <QTcpServer>
-#include <QTcpSocket>
 #include <botan/init.h>
-#include "common.h"
 #include "profile.h"
-#include "connection.h"
 #include "udprelay.h"
-#include "encryptor.h"
 
 using namespace QSS;
 
@@ -72,16 +67,12 @@ protected://children can access protected members
     QTcpServer *tcpServer;
     UdpRelay *udpRelay;
     Profile profile;
-    QList<Connection *> conList;
     QList<QHostAddress> serverAddrList;
     Botan::LibraryInitializer init;
 
-    virtual Connection *socketDescriptorInList(qintptr);
-
 protected slots:
     virtual void onTcpServerError();
-    virtual void onNewConnection();
-    virtual void onConnectionDisconnected();
+    virtual void onNewTCPConnection();
 };
 
 }
