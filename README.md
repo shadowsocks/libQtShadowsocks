@@ -55,6 +55,21 @@ Below features will possibly be implemented in future versions. While even versi
 
 Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to apply for a new feature.
 
+Build & Install
+---------------
+
+Use `qmake-qt5` instead of `qmake` if your distribution uses `qmake` from Qt4.
+
+```
+qmake INSTALL_PREFIX=/usr
+make
+make install
+```
+
+By default, it'll use `/usr` as path prefix on unix platforms, while the prefix is this source code directory (current working directory) on Windows platform.
+
+After installation of `libQtShadowsocks`, you can `cd` into `client` and do the same procedure to install `shadowsocks-libqss`.
+
 License
 -------
 

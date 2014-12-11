@@ -1,15 +1,17 @@
 Client
 ------
 
-`sslocal-libqss` is the test client for `libQtShadowsocks`. This subproject is also a part of project `libQtShadowsocks`.
+`shadowsocks-libqss` is a CLI client utilising `libQtShadowsocks`.
 
-You can build this Qt project and use it to test functionality of `libQtShadowsocks`, or simply use it as your local shadowsocks client.
+Note: This subproject is also a part of project `libQtShadowsocks`.
+
+You can build this Qt project and use it to test functionality of `libQtShadowsocks`, or simply use it as your shadowsocks client on either (or both) local-side and server-side.
 
 Usage
 -----
 
 ```
-Usage: ./sslocal-libqss [options]
+Usage: ./shadowsocks-libqss [options]
 
 Options:
   -h, --help                       Displays this help.
