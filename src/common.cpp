@@ -114,7 +114,7 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
         }
     }
     else if (addrtype == Address::ADDRTYPE_IPV6) {
-        if (data.length() > 19) {
+        if (data.length() >= 19) {
             QByteArray d_addr(INET6_ADDRSTRLEN, '0');
             inet_ntop(AF_INET6, reinterpret_cast<void *>(data.mid(1, 16).data()), d_addr.data(), INET6_ADDRSTRLEN);
             dest.setAddress(QString(d_addr));
