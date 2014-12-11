@@ -28,8 +28,21 @@ Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
     isLocal(is_local)
 {
     profile = p;
-    serverAddrList = QHostInfo::fromName(profile.server).addresses();
-    Q_ASSERT(!serverAddrList.isEmpty());
+    hasError = false;
+    running = false;
+
+    //try to use address directly at first (IP address)
+    QHostAddress s_addr(profile.server);
+    if (s_addr.isNull()) {
+        serverAddrList = QHostInfo::fromName(profile.server).addresses();
+        if(serverAddrList.isEmpty()) {//well, we can't get server ip address.
+            qCritical() << "Abort. Can't look up IP address of server " << profile.server;
+            hasError = true;
+        }
+    }
+    else {
+        serverAddrList.append(s_addr);
+    }
 
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
@@ -49,6 +62,10 @@ Controller::~Controller()
 
 bool Controller::start()
 {
+    if (hasError) {
+        return false;
+    }
+
     emit info("Initialising ciphers...");
     if (!Encryptor::initialise(profile.method, profile.password)) {
         emit error("Initialisation failed.");
@@ -92,7 +109,12 @@ quint16 Controller::getServerPort()
 
 QHostAddress Controller::getServerAddr()
 {
-    return serverAddrList.first();//Todo: maybe randomly pick one?
+    if (serverAddrList.isEmpty()) {
+        return QHostAddress();
+    }
+    else {
+        return serverAddrList.first();//Todo: maybe randomly pick one?
+    }
 }
 
 quint16 Controller::getLocalPort()

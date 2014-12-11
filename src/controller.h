@@ -66,6 +66,7 @@ public slots:
     virtual void stop();
 
 protected://children can access protected members
+    bool hasError;
     bool running;
     const bool isLocal;//run on local-side (client) or server-side (server)
     QTcpServer *tcpServer;
