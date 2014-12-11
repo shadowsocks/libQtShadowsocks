@@ -1,8 +1,12 @@
 /*
  * encryptor.h - the header file of Encryptor class
  *
- * high-level API to encrypt/decrypt data that send to or receive from
+ * High-level API to encrypt/decrypt data that send to or receive from
  * another shadowsocks side.
+ *
+ * This class shouldn't contain too many detailed (de)encrypt functions.
+ * Instead, it should use Cipher class as much as possible.
+ * The only exception for this rule is the deprecated TABLE method.
  *
  * Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
  *
@@ -27,9 +31,6 @@
 #define ENCRYPTOR_H
 
 #include <QObject>
-#include <QVector>
-#include <QMap>
-#include <QCryptographicHash>
 #include "cipher.h"
 
 namespace QSS {
@@ -41,7 +42,7 @@ public:
     explicit Encryptor(QObject *parent = 0);
     ~Encryptor();
 
-    enum TYPE {TABLE, BOTAN};
+    enum TYPE {TABLE, CIPHER};//CIPHER means we need to use Cipher class to do encryption/decryption
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
     QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
@@ -49,8 +50,6 @@ public:
     void reset();
 
     static const QVector<quint8> octVec;
-    static const QMap<QByteArray, QVector<int> > cipherMap;
-    static QMap<QByteArray, QVector<int> > generateCihperMap();
     static int randomCompare(const quint8 &, const quint8 &, const quint32 &, const quint64 &);
 
     /*

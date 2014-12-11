@@ -22,6 +22,8 @@
 
 #include <QCryptographicHash>
 #include <botan/auto_rng.h>
+#include <botan/key_filt.h>
+#include <botan/lookup.h>
 #include "cipher.h"
 
 using namespace QSS;
@@ -36,7 +38,7 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
             rc4_key = key;
         }
         else {//otherwise, it's rc4-md5
-            rc4_key = QCryptographicHash::hash(key + iv, QCryptographicHash::Md5);
+            rc4_key = md5Hash(key + iv);
         }
         Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(rc4_key.constData()), key.size());
         filter = Botan::get_cipher("ARC4", _key, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);//botan-1.10
@@ -47,12 +49,33 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
         Botan::InitializationVector _iv(reinterpret_cast<const Botan::byte *>(iv.constData()), iv.size());
         filter = Botan::get_cipher(str, _key, _iv, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
     }
+    //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
     pipe = new Botan::Pipe(filter);
 }
 
 Cipher::~Cipher()
 {
     if(pipe != NULL)    delete pipe;
+}
+
+const QMap<QByteArray, QVector<int> > Cipher::keyIvMap = Cipher::generateKeyIvMap();
+
+QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
+{
+    QMap<QByteArray, QVector<int> >map;
+    map.insert("AES-128/CFB", {16, 16});
+    map.insert("AES-192/CFB", {24, 16});
+    map.insert("AES-256/CFB", {32, 16});
+    map.insert("Blowfish/CFB", {16, 8});
+    map.insert("CAST-128/CFB", {16, 8});
+    map.insert("DES/CFB", {8, 8});
+    map.insert("IDEA/CFB", {16, 8});
+    map.insert("RC2/CFB", {16, 8});
+    map.insert("RC4", {16, 0});
+    map.insert("RC4-MD5", {16, 16});
+    map.insert("Salsa20", {32, 8});
+    map.insert("SEED/CFB", {16, 16});
+    return map;
 }
 
 QByteArray Cipher::update(const QByteArray &data)
@@ -77,6 +100,11 @@ QByteArray Cipher::randomIv(int length)
     return out;
 }
 
+QByteArray Cipher::md5Hash(const QByteArray &in)
+{
+    return QCryptographicHash::hash(in, QCryptographicHash::Md5);
+}
+
 bool Cipher::isSupported(const QByteArray &method)
 {
     if (method.contains("RC4")) {
@@ -84,6 +112,7 @@ bool Cipher::isSupported(const QByteArray &method)
     }
     else {
         //have_algorithm function take only the **algorithm** (so we need to omit the mode)
-        return Botan::have_algorithm(method.mid(0, method.lastIndexOf('/')).toStdString());
+        std::string algorithm(method.constData(), method.lastIndexOf('/'));
+        return Botan::have_algorithm(algorithm);
     }
 }

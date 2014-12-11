@@ -39,26 +39,6 @@ Encryptor::~Encryptor()
 
 const QVector<quint8> Encryptor::octVec = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255};
 
-const QMap<QByteArray, QVector<int> > Encryptor::cipherMap = Encryptor::generateCihperMap();
-
-QMap<QByteArray, QVector<int> > Encryptor::generateCihperMap()
-{
-    QMap<QByteArray, QVector<int> >map;
-    map.insert("AES-128/CFB", {16, 16});
-    map.insert("AES-192/CFB", {24, 16});
-    map.insert("AES-256/CFB", {32, 16});
-    map.insert("Blowfish/CFB", {16, 8});
-    map.insert("CAST-128/CFB", {16, 8});
-    map.insert("DES/CFB", {8, 8});
-    map.insert("IDEA/CFB", {16, 8});
-    map.insert("RC2/CFB", {16, 8});
-    map.insert("RC4", {16, 0});
-    map.insert("RC4-MD5", {16, 16});
-    map.insert("Salsa20", {32, 8});
-    map.insert("SEED/CFB", {16, 16});
-    return map;
-}
-
 //define static member variables
 Encryptor::TYPE Encryptor::type;
 QByteArray Encryptor::method;
@@ -92,7 +72,7 @@ bool Encryptor::initialise(const QString &m, const QString &pwd)
         return true;
     }
 
-    type = BOTAN;
+    type = CIPHER;
     if (method.contains("BF")) {
         method = "Blowfish/CFB";
     }
@@ -106,13 +86,13 @@ bool Encryptor::initialise(const QString &m, const QString &pwd)
         method.replace("-C", "/C");//i.e. -CFB to /CFB
     }
 
-    QVector<int> cipher = cipherMap.value(method);
-    if (cipher.size() < 2 || !Cipher::isSupported(method)) {
+    QVector<int> ki = Cipher::keyIvMap.value(method);
+    if (ki.isEmpty() || !Cipher::isSupported(method)) {
         qCritical() << "Abort. The method" << m.toLocal8Bit() << "is not supported.";
         return false;
     }
-    keyLen = cipher[0];
-    ivLen = cipher[1];
+    keyLen = ki[0];
+    ivLen = ki[1];
     evpBytesToKey();
     return true;
 }
@@ -129,7 +109,7 @@ void Encryptor::tableInit()
 
     encTable.fill(0, 256);
     decTable.fill(0, 256);
-    QByteArray digest = QCryptographicHash::hash(password, QCryptographicHash::Md5);
+    QByteArray digest = Cipher::md5Hash(password);
 
     for (i = 0; i < 8; ++i)
     {
@@ -199,7 +179,7 @@ void Encryptor::evpBytesToKey()
         else {
             data = m[i - 1] + password;
         }
-        m.append(QCryptographicHash::hash(data, QCryptographicHash::Md5));
+        m.append(Cipher::md5Hash(data));
         i++;
     }
     QByteArray ms;
@@ -222,7 +202,7 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
             out[i] = encTable.at(in[i]);
         }
         break;
-    case BOTAN:
+    case CIPHER:
         if (enCipher == NULL) {
             enCipher = new Cipher(method, key, iv, true, this);
             out = iv + enCipher->update(in);
@@ -249,7 +229,7 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
             out[i] = decTable.at(in[i]);
         }
         break;
-    case BOTAN:
+    case CIPHER:
         if (deCipher == NULL) {
             deCipher = new Cipher(method, key, in.mid(0, ivLen), false, this);
             out = deCipher->update(in.mid(ivLen));
@@ -277,7 +257,7 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
             out[i] = encTable.at(in[i]);
         }
         break;
-    case BOTAN:
+    case CIPHER:
         if (enCipher != NULL) {
             delete enCipher;
         }
@@ -302,7 +282,7 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
             out[i] = decTable.at(in[i]);
         }
         break;
-    case BOTAN:
+    case CIPHER:
         if (deCipher != NULL) {
             delete deCipher;
         }

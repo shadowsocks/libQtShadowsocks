@@ -1,7 +1,11 @@
 /*
  * cipher.h - the header file of Cipher class
  *
- * communicate with lower-level encrytion library
+ * Communicate with lower-level encrytion library
+ *
+ * Seperated from Encryptor enables us to change low-level library easier.
+ * If there is a modification associated with encryption/decryption, it's
+ * this class that needs changes instead of messing up lots of classes.
  *
  * Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
  *
@@ -26,8 +30,9 @@
 #define CIPHER_H
 
 #include <QObject>
-#include <botan/key_filt.h>
-#include <botan/lookup.h>
+#include <QMap>
+#include <QVector>
+#include <botan/pipe.h>
 
 namespace QSS {
 
@@ -37,12 +42,25 @@ class Cipher : public QObject
 public:
     explicit Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
     ~Cipher();
+
     QByteArray update(const QByteArray &data);
+
+    /*
+     * keyIvMap contains required key length and IV length
+     * The QVector contains two integers, the first one is key length,
+     * while the second one is IV length.
+     * If there is no such cipher, then the QVector is empty.
+     */
+    static const QMap<QByteArray, QVector<int> > keyIvMap;
+
     static QByteArray randomIv(int length);
+    static QByteArray md5Hash(const QByteArray &);
     static bool isSupported(const QByteArray &method);
 
 private:
     Botan::Pipe *pipe;
+
+    static QMap<QByteArray, QVector<int> > generateKeyIvMap();
 };
 
 }
