@@ -44,7 +44,6 @@ public:
     enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, REPLY, STREAM, DESTROYED};
 
 signals:
-    void disconnected();
     void info(const QString &);
     void error(const QString &);
 

@@ -40,7 +40,6 @@ class Encryptor : public QObject
     Q_OBJECT
 public:
     explicit Encryptor(QObject *parent = 0);
-    ~Encryptor();
 
     enum TYPE {TABLE, CIPHER};//CIPHER means we need to use Cipher class to do encryption/decryption
     QByteArray decrypt(const QByteArray &);

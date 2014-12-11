@@ -55,7 +55,7 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
 
 Cipher::~Cipher()
 {
-    if(pipe != NULL)    delete pipe;
+    delete pipe;
 }
 
 const QMap<QByteArray, QVector<int> > Cipher::keyIvMap = Cipher::generateKeyIvMap();
@@ -112,7 +112,8 @@ bool Cipher::isSupported(const QByteArray &method)
     }
     else {
         //have_algorithm function take only the **algorithm** (so we need to omit the mode)
-        std::string algorithm(method.constData(), method.lastIndexOf('/'));
+        int length = method.lastIndexOf('/');//note Salsa20 don't have '/'
+        std::string algorithm(method.constData(), length != -1 ? length : method.length());
         return Botan::have_algorithm(algorithm);
     }
 }

@@ -54,16 +54,14 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     connect(timer, &QTimer::timeout, this, &Connection::deleteLater);
 
     connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onLocalTcpSocketError);
-    connect(local, &QTcpSocket::disconnected, this, &Connection::disconnected);
+    connect(local, &QTcpSocket::disconnected, this, &Connection::deleteLater);
     connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead);
     connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
     connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
-    connect(remote, &QTcpSocket::disconnected, this, &Connection::disconnected);
+    connect(remote, &QTcpSocket::disconnected, this, &Connection::deleteLater);
     connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead);
     connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
-
-    connect(this, &Connection::disconnected, this, &Connection::deleteLater);
 }
 
 void Connection::handleStageHello(QByteArray &data)
