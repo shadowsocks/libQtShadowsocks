@@ -34,6 +34,9 @@ struct Profile {
     QString password;
     quint16 server_port;
     quint16 local_port;
+    int timeout;
+
+    Profile() : server_port(8388), local_port(1080), timeout(600) {}
 };
 
 }

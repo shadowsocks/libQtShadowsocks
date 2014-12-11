@@ -36,6 +36,8 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
 
     stage = INIT;
     encryptor = new Encryptor(this);
+    timer = new QTimer(this);
+    timer->setInterval(c->getTimeout());
 
     local = localTcpSocket;
     local->setParent(this);
@@ -49,15 +51,17 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
         remote->connectToHost(c->getServerAddr(), c->getServerPort());
     }
 
-    socketDescriptor = local->socketDescriptor();
+    connect(timer, &QTimer::timeout, this, &Connection::deleteLater);
 
     connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onLocalTcpSocketError);
-    connect(local, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
-    connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead, Qt::DirectConnection);
+    connect(local, &QTcpSocket::disconnected, this, &Connection::disconnected);
+    connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead);
+    connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
     connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
-    connect(remote, &QTcpSocket::disconnected, this, &Connection::disconnected, Qt::DirectConnection);
-    connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead, Qt::DirectConnection);
+    connect(remote, &QTcpSocket::disconnected, this, &Connection::disconnected);
+    connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead);
+    connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
     connect(this, &Connection::disconnected, this, &Connection::deleteLater);
 }

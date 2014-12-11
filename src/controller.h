@@ -49,12 +49,12 @@ public:
     virtual QHostAddress getServerAddr();
     virtual quint16 getLocalPort();
     virtual QHostAddress getLocalAddr();
+    virtual int getTimeout();//return timeout interval (millisecond)
     virtual bool isRunning() const;
 
 signals:
     void error(const QString &);
     void info(const QString &);
-    void connectionCountChanged(int);
 
 public slots:
     virtual bool start();//return true if start successfully, otherwise return false

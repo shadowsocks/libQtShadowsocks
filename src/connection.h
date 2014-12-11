@@ -27,6 +27,7 @@
 
 #include <QObject>
 #include <QTcpSocket>
+#include <QTimer>
 #include "common.h"
 #include "encryptor.h"
 
@@ -40,7 +41,6 @@ class Connection : public QObject
 public:
     explicit Connection(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
 
-    qintptr socketDescriptor;
     enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, REPLY, STREAM, DESTROYED};
 
 signals:
@@ -50,11 +50,15 @@ signals:
 
 private:
     const bool isLocal;
+
     QTcpSocket *local;
     QTcpSocket *remote;
+    QTimer *timer;
     Encryptor *encryptor;
+
     STAGE stage;
     Address remoteAddress;
+
     void handleDnsResolved(const QHostAddress &);
     void handleStageHello(QByteArray &);
     void handleStageReply(QByteArray &);

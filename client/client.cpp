@@ -55,6 +55,7 @@ bool Client::readConfig(const QString &file)
     profile.password = confObj["password"].toString();
     profile.server = confObj["server"].toString();
     profile.server_port = confObj["server_port"].toInt();
+    profile.timeout = confObj["timeout"].toInt();
 
     return true;
 }

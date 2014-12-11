@@ -129,6 +129,11 @@ QHostAddress Controller::getLocalAddr()
     }
 }
 
+int Controller::getTimeout()
+{
+    return profile.timeout * 1000;
+}
+
 bool Controller::isRunning() const
 {
     return running;
