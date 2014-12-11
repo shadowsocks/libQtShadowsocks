@@ -53,7 +53,7 @@ Below features will possibly be implemented in future versions. While even versi
 - ChaCha cipher (v1.4, also need to wait for `Botan-1.12` release)
 - Multiple profile balance (v1.6)
 
-Please open an [issue](/issues) to apply for a new feature.
+Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to apply for a new feature.
 
 License
 -------
