@@ -24,7 +24,7 @@
 #define CLIENT_H
 
 #include <QObject>
-#include <controller.h>
+#include <QtShadowsocks>
 
 class Client : public QObject
 {

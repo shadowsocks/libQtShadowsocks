@@ -21,6 +21,10 @@ HEADERS  += \
     src/profile.h \
     src/udprelay.h
 
+OTHER_FILES += \
+    src/QtShadowsocks \
+    README.md
+
 unix: {
     target.path = /usr/lib
     INSTALLS   += target
