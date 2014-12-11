@@ -36,7 +36,7 @@ Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
     if (s_addr.isNull()) {
         serverAddrList = QHostInfo::fromName(profile.server).addresses();
         if(serverAddrList.isEmpty()) {//well, we can't get server ip address.
-            qCritical() << "Abort. Can't look up IP address of server " << profile.server;
+            qCritical() << "Error. Can't look up IP address of server " << profile.server;
             hasError = true;
         }
     }
