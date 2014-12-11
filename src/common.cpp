@@ -94,11 +94,11 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
                 header_length = 4 + addrlen;
             }
             else {
-                qDebug() << "host header is too short";
+                qDebug() << "Host header is too short";
             }
         }
         else {
-            qDebug() << "host header is too short to contain a port";
+            qDebug() << "Host header is too short to contain a port";
         }
     }
     else if (addrtype == Address::ADDRTYPE_IPV4) {
@@ -110,7 +110,7 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             header_length = 7;
         }
         else {
-            qDebug() << "ipv4 header is too short";
+            qDebug() << "IPv4 header is too short";
         }
     }
     else if (addrtype == Address::ADDRTYPE_IPV6) {
@@ -122,10 +122,10 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             header_length = 19;
         }
         else {
-            qDebug() << "ipv6 header is too short";
+            qDebug() << "IPv6 header is too short";
         }
     }
     else {
-        qDebug() << "unsupported addrtype" << addrtype << "maybe wrong password";
+        qDebug() << "Unsupported addrtype" << addrtype << "maybe wrong password";
     }
 }

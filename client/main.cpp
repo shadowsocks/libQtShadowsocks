@@ -49,8 +49,15 @@ int main(int argc, char *argv[])
     parser.process(a);
 
     Client c;
-    c.readConfig(parser.value(configFile));
-    c.start(parser.isSet(serverMode));
-
-    return a.exec();
+    if (c.readConfig(parser.value(configFile))) {
+        if (c.start(parser.isSet(serverMode))) {
+            return a.exec();
+        }
+        else {
+            return 2;
+        }
+    }
+    else {
+        return 1;
+    }
 }

@@ -35,10 +35,11 @@ class Cipher : public QObject
 {
     Q_OBJECT
 public:
-    explicit Cipher(QByteArray method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
+    explicit Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
     ~Cipher();
     QByteArray update(const QByteArray &data);
     static QByteArray randomIv(int length);
+    static bool isSupported(const QByteArray &method);
 
 private:
     Botan::Pipe *pipe;

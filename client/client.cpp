@@ -32,17 +32,17 @@ Client::Client(QObject *parent) :
     lc = NULL;
 }
 
-void Client::readConfig(const QString &file)
+bool Client::readConfig(const QString &file)
 {
     QFile c(file);
     c.open(QIODevice::ReadOnly | QIODevice::Text);
     if (!c.isOpen()) {
         qDebug() << "config file" << file << "is not open!";
-        exit(1);
+        return false;
     }
     if (!c.isReadable()) {
         qDebug() << "config file" << file << "is not readable!";
-        exit(1);
+        return false;
     }
     QByteArray confArray = c.readAll();
     c.close();
@@ -55,9 +55,11 @@ void Client::readConfig(const QString &file)
     profile.password = confObj["password"].toString();
     profile.server = confObj["server"].toString();
     profile.server_port = confObj["server_port"].toInt();
+
+    return true;
 }
 
-void Client::start(bool _server)
+bool Client::start(bool _server)
 {
     if (lc != NULL) {
         lc->deleteLater();
@@ -65,7 +67,7 @@ void Client::start(bool _server)
     lc = new QSS::Controller(profile, !_server, this);
     connect (lc, &QSS::Controller::info, this, &Client::logHandler);
     connect (lc, &QSS::Controller::error, this, &Client::logHandler);
-    lc->start();
+    return lc->start();
 }
 
 void Client::logHandler(const QString &log)

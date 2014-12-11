@@ -31,10 +31,10 @@ class Client : public QObject
     Q_OBJECT
 public:
     explicit Client(QObject *parent = 0);
-    void readConfig(const QString &);
+    bool readConfig(const QString &);
 
 public slots:
-    void start(bool _server = false);
+    bool start(bool _server = false);
 
 private:
     QSS::Controller *lc;

@@ -26,7 +26,7 @@
 
 using namespace QSS;
 
-Cipher::Cipher(QByteArray method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent) :
+Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent) :
     QObject(parent)
 {
     Botan::Keyed_Filter *filter;
@@ -75,4 +75,15 @@ QByteArray Cipher::randomIv(int length)
     out.resize(length);
     rng.randomize(reinterpret_cast<Botan::byte *>(out.data()), length);
     return out;
+}
+
+bool Cipher::isSupported(const QByteArray &method)
+{
+    if (method.contains("RC4")) {
+        return Botan::have_algorithm("ARC4");
+    }
+    else {
+        //have_algorithm function take only the **algorithm** (so we need to omit the mode)
+        return Botan::have_algorithm(method.mid(0, method.lastIndexOf('/')).toStdString());
+    }
 }

@@ -81,7 +81,7 @@ void Encryptor::reset()
     }
 }
 
-void Encryptor::initialise(const QString &m, const QString &pwd)
+bool Encryptor::initialise(const QString &m, const QString &pwd)
 {
     method = m.toUpper().toLocal8Bit();//local8bit or utf-8?
     password = pwd.toLocal8Bit();
@@ -89,7 +89,7 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
     if (m.compare("TABLE") == 0) {
         type = TABLE;
         tableInit();
-        return;
+        return true;
     }
 
     type = BOTAN;
@@ -107,13 +107,19 @@ void Encryptor::initialise(const QString &m, const QString &pwd)
     }
 
     QVector<int> cipher = cipherMap.value(method);
-    if (cipher.size() < 2) {
+    if (cipher.size() < 2 || !Cipher::isSupported(method)) {
         qCritical() << "Abort. The method" << m.toLocal8Bit() << "is not supported.";
-        exit(223);
+        return false;
     }
     keyLen = cipher[0];
     ivLen = cipher[1];
     evpBytesToKey();
+    return true;
+}
+
+QString Encryptor::getInternalMethodName()
+{
+    return QString(method);
 }
 
 void Encryptor::tableInit()

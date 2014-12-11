@@ -78,14 +78,14 @@ void UdpRelay::onSocketError()
 
 void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 {
-    qDebug() << "listen udp socket state changed to" << s;
+    qDebug() << "Listen UDP socket state changed to" << s;
 }
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
     QUdpSocket *server = qobject_cast<QUdpSocket *>(sender());
     if (server->pendingDatagramSize() > RecvSize) {
-        emit error("datagram is too large. discarded.");
+        emit error("Datagram is too large. discarded.");
         return;
     }
 
@@ -97,7 +97,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     if (isLocal) {
         if (static_cast<int> (data[2]) != 0) {
-            emit error("drop a message since frag is not 0");
+            emit error("Drop a message since frag is not 0");
             return;
         }
         data.remove(0, 2);
@@ -147,7 +147,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
     }
 
     if (sock->pendingDatagramSize() > RecvSize) {
-        emit error("datagram is too large. discarded.");
+        emit error("Datagram is too large. Discarded.");
         return;
     }
 

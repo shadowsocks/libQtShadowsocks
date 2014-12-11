@@ -112,7 +112,7 @@ void Connection::handleStageHello(QByteArray &data)
         emit error("Can't parse header");
         return;
     }
-    emit info("connecting " + remoteAddress.getAddress().toLocal8Bit() + ":" + QString::number(remoteAddress.getPort()).toLocal8Bit());
+    emit info("Connecting " + remoteAddress.getAddress().toLocal8Bit() + ":" + QString::number(remoteAddress.getPort()).toLocal8Bit());
     stage = REPLY;//skip DNS, because remote_addr is already an IP address now.
 
     if (isLocal) {
@@ -161,7 +161,7 @@ void Connection::onLocalTcpSocketError()
     }
 
     if (socket->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
-        QString str = QString("local socket error: ") + socket->errorString();
+        QString str = QString("Local socket error: ") + socket->errorString();
         emit error(str);
     }
 }
@@ -169,7 +169,7 @@ void Connection::onLocalTcpSocketError()
 void Connection::onRemoteTcpSocketError()
 {
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
-        QString str = QString("remote socket error: ") + remote->errorString();
+        QString str = QString("Remote socket error: ") + remote->errorString();
         emit error(str);
     }
 }

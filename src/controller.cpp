@@ -46,27 +46,30 @@ Controller::~Controller()
     }
 }
 
-void Controller::start()
+bool Controller::start()
 {
-    emit info("initialising ciphers...");
-    Encryptor::initialise(profile.method, profile.password);
-    QString istr = profile.method + QString(" initialised.");
-    emit info(istr);
+    emit info("Initialising ciphers...");
+    if (!Encryptor::initialise(profile.method, profile.password)) {
+        emit error("Initialisation failed.");
+        return false;
+    }
 
-    QString sstr("tcp server listen at port ");
+    emit info(Encryptor::getInternalMethodName() + " (" + profile.method + ") initialised.");
+    QString sstr("TCP server listen at port ");
     if (isLocal) {
-        emit info("running in local mode.");
+        emit info("Running in local mode.");
         tcpServer->listen(getLocalAddr(), profile.local_port);
         sstr.append(QString::number(profile.local_port));
     }
     else {
-        emit info("running in server mode.");
+        emit info("Running in server mode.");
         tcpServer->listen(getServerAddr(), profile.server_port);
         sstr.append(QString::number(profile.server_port));
     }
     emit info(sstr);
 
     running = true;
+    return true;
 }
 
 void Controller::stop()
@@ -108,6 +111,11 @@ QHostAddress Controller::getLocalAddr()
     }
 }
 
+bool Controller::isRunning() const
+{
+    return running;
+}
+
 Connection *Controller::socketDescriptorInList(qintptr tsd)
 {
     Connection *found = NULL;
@@ -121,7 +129,7 @@ Connection *Controller::socketDescriptorInList(qintptr tsd)
 
 void Controller::onTcpServerError()
 {
-    QString str = QString("tcp server error: ") + tcpServer->errorString();
+    QString str = QString("TCP server error: ") + tcpServer->errorString();
     emit error(str);
 }
 
@@ -152,6 +160,6 @@ void Controller::onConnectionDisconnected()
         emit connectionCountChanged(conList.size());
     }
     else {
-        emit error("a false sender called onConnectionDisconnected slot");
+        emit error("A false sender called onConnectionDisconnected slot");
     }
 }

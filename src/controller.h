@@ -52,9 +52,9 @@ public:
 
     virtual quint16 getServerPort();
     virtual QHostAddress getServerAddr();
-
     virtual quint16 getLocalPort();
     virtual QHostAddress getLocalAddr();
+    virtual bool isRunning() const;
 
 signals:
     void error(const QString &);
@@ -62,7 +62,7 @@ signals:
     void connectionCountChanged(int);
 
 public slots:
-    virtual void start();
+    virtual bool start();//return true if start successfully, otherwise return false
     virtual void stop();
 
 protected://children can access protected members

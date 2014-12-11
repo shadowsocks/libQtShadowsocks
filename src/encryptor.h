@@ -54,13 +54,20 @@ public:
     static int randomCompare(const quint8 &, const quint8 &, const quint32 &, const quint64 &);
 
     /*
+     * Return true if initialised succesfully, otherwise return false.
      * Only need to call this function once if the encrpytion method and password don't change.
      * If you want to change the method and password, remember to call reset() function to remove
      * the old enCipher and(or) deCipher.
      * It's not recommended to change method and/or password on-process. The clean way to do that
      * is to delete and release the old library classes, then construct them with new values.
      */
-    static void initialise(const QString &m, const QString &pwd);
+    static bool initialise(const QString &m, const QString &pwd);
+
+    /*
+     * Because we use a different name internally, i.e. aes-128-cfb becomes AES-128/CFB. This function
+     * may be helpful for developers to diagnose the problem (if there is a problem).
+     */
+    static QString getInternalMethodName();
 
 private:
     static TYPE type;
