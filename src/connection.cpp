@@ -153,45 +153,44 @@ void Connection::onRemoteTcpSocketError()
 
 void Connection::onLocalTcpSocketReadyRead()
 {
-    if (isLocal && stage == INIT) {
-        QByteArray buf = local->read(256);
-        QByteArray response;
-        if (buf[0] != char(5)) {
-            response.append(char(0));
-            response.append(char(91));
+    QByteArray data = local->readAll();
+
+    if (data.isEmpty()) {
+        this->deleteLater();
+        return;
+    }
+    if (!isLocal) {
+        data = encryptor->decrypt(data);
+        if (data.isEmpty()) {
+            return;
+        }
+    }
+    if (stage == STREAM) {
+        if (isLocal) {
+            data = encryptor->encrypt(data);
+        }
+        writeToRemote(data);
+        return;
+    }
+    else if (isLocal && stage == INIT) {
+        QByteArray auth;
+        if (data[0] != char(5)) {
+            auth.append(char(0));
+            auth.append(char(91));
         }
         else {
-            response.append(char(5));
-            response.append(char(0));
+            auth.append(char(5));
+            auth.append(char(0));
         }
-        local->write(response);
+        local->write(auth);
         stage = HELLO;
         return;
     }
-
-    QByteArray buf = local->readAll();
-    if (!isLocal) {
-        buf = encryptor->decrypt(buf);
+    else if (stage == REPLY) {
+        handleStageReply(data);
     }
-
-    switch (stage) {
-    case STREAM:
-        if (isLocal) {
-            buf = encryptor->encrypt(buf);
-        }
-        writeToRemote(buf);
-        break;
-    case HELLO:
-        if (isLocal)    handleStageHello(buf);
-        break;
-    case INIT:
-        if (!isLocal)   handleStageHello(buf);
-        break;
-    case REPLY:
-        handleStageReply(buf);
-        break;
-    default:
-        emit error("Unknown stage");
+    else if ((isLocal && stage == HELLO) || (!isLocal && stage == INIT)) {
+        handleStageHello(data);
     }
 }
 
