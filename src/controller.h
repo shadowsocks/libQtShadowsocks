@@ -29,6 +29,7 @@
 #include <QHostAddress>
 #include <QList>
 #include <QObject>
+#include <QObjectCleanupHandler>
 #include <QTcpServer>
 #include <botan/init.h>
 #include "export.h"
@@ -67,6 +68,7 @@ protected://children can access protected members
     const bool isLocal;//run on local-side (client) or server-side (server)
     QTcpServer *tcpServer;
     UdpRelay *udpRelay;
+    QObjectCleanupHandler *connectionCollector;
     Profile profile;
     QList<QHostAddress> serverAddrList;
     Botan::LibraryInitializer init;

@@ -62,18 +62,6 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     connect(remote, &QTcpSocket::disconnected, this, &Connection::deleteLater, Qt::DirectConnection);
     connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead, Qt::DirectConnection);
     connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start), Qt::DirectConnection);
-
-    connect(this, &Connection::destroyMe, this, &Connection::deleteLater, Qt::DirectConnection);
-}
-
-Connection::~Connection()
-{
-    if (remote->isOpen()) {
-        remote->close();
-    }
-    if (local->isOpen()) {
-        local->close();
-    }
 }
 
 void Connection::handleStageHello(QByteArray &data)
@@ -97,7 +85,7 @@ void Connection::handleStageHello(QByteArray &data)
         }
         else {
             emit error("Unknown command " + QString::number(cmd));
-            emit destroyMe();
+            deleteLater();
             return;
         }
     }
@@ -147,7 +135,7 @@ void Connection::onLocalTcpSocketError()
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         QString str = QString("Local socket error: ") + local->errorString();
         emit error(str);
-        emit destroyMe();
+        deleteLater();
     }
 }
 
@@ -156,7 +144,7 @@ void Connection::onRemoteTcpSocketError()
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         QString str = QString("Remote socket error: ") + remote->errorString();
         emit error(str);
-        emit destroyMe();
+        deleteLater();
     }
 }
 
@@ -165,7 +153,7 @@ void Connection::onLocalTcpSocketReadyRead()
     QByteArray data = local->readAll();
 
     if (data.isEmpty()) {
-        emit destroyMe();
+        deleteLater();
         return;
     }
     if (!isLocal) {
