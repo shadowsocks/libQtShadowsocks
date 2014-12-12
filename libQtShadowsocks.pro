@@ -17,6 +17,21 @@ isEmpty(INSTALL_PREFIX) {
     else: INSTALL_PREFIX = $$top_srcdir
 }
 
+win32: {
+    DEFINES    += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
+    DEFINES    += "_WIN32_WINNT=0x0600"#drop support for Windows XP
+    DEFINES    += QSS_STATIC
+}
+
+contains(DEFINES, QSS_STATIC) {
+    CONFIG  += staticlib
+}
+else {
+    DEFINES += QSS_LIBRARY
+}
+
+include(src/QtShadowsocks.pri)
+
 unix: {
     VERSION     = 1.0
 
@@ -37,18 +52,3 @@ unix: {
 
     PKGCONFIG  += botan-1.10
 }
-
-win32: {
-    DEFINES    += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
-    DEFINES    += "_WIN32_WINNT=0x0600"#drop support for Windows XP
-    DEFINES    += QSS_STATIC
-}
-
-contains(DEFINES, QSS_STATIC) {
-    CONFIG  += staticlib
-}
-else {
-    DEFINES += QSS_LIBRARY
-}
-
-include(src/QtShadowsocks.pri)
