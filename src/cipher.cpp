@@ -83,7 +83,7 @@ QByteArray Cipher::update(const QByteArray &data)
     pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
     size_t id = pipe->message_count() - 1;
     Botan::SecureVector<Botan::byte> c = pipe->read_all(id);
-    QByteArray out(reinterpret_cast<char *>(c.begin()), c.size());
+    QByteArray out(reinterpret_cast<const char *>(c.begin()), c.size());
     return out;
 }
 
