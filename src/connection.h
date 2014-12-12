@@ -40,12 +40,14 @@ class Connection : public QObject
     Q_OBJECT
 public:
     explicit Connection(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
+    ~Connection();
 
     enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, REPLY, STREAM, DESTROYED};
 
 signals:
     void info(const QString &);
     void error(const QString &);
+    void destroyMe();
 
 private:
     const bool isLocal;
