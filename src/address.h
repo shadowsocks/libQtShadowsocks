@@ -27,15 +27,17 @@
 
 #include <QString>
 #include <QHostAddress>
+#include <QObject>
 
 namespace QSS {
 
-class Address
+class Address : public QObject
 {
+    Q_OBJECT
 public:
-    Address(const QString &a = QString(), const quint16 &p = 0);
-    Address(const QHostAddress &ip, const quint16 &p);
-    Address(const Address &o);
+    Address(const QString &a = QString(), const quint16 &p = 0, QObject *parent = 0);
+    Address(const QHostAddress &ip, const quint16 &p, QObject *parent = 0);
+    Address(const Address &o, QObject *parent = 0);
 
     QString getAddress() const;
     QHostAddress getIPAddress() const;
