@@ -50,7 +50,12 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
         filter = Botan::get_cipher(str, _key, _iv, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
     }
     //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
-    pipe.append(filter);
+    pipe = new Botan::Pipe(filter);
+}
+
+Cipher::~Cipher()
+{
+    delete pipe;
 }
 
 const QMap<QByteArray, QVector<int> > Cipher::keyIvMap = Cipher::generateKeyIvMap();
@@ -75,9 +80,9 @@ QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
 
 QByteArray Cipher::update(const QByteArray &data)
 {
-    pipe.process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
-    size_t id = pipe.message_count() - 1;
-    Botan::SecureVector<Botan::byte> c = pipe.read_all(id);
+    pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
+    size_t id = pipe->message_count() - 1;
+    Botan::SecureVector<Botan::byte> c = pipe->read_all(id);
     QByteArray out(reinterpret_cast<char *>(c.begin()), c.size());
     return out;
 }
