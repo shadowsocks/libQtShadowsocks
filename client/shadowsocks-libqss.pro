@@ -33,8 +33,8 @@ unix: {
 win32: {
     DEFINES     += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
     DEFINES     += QSS_STATIC
-    INCLUDEPATH += $$top_srcdir/../include
-    LIBS        += -L$$top_srcdir/../lib \
+    INCLUDEPATH += $$top_srcdir/../src
+    LIBS        += -L./ \
                    -lQtShadowsocks \
                    -lbotan-1.10
 }
