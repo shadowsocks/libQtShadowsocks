@@ -51,6 +51,7 @@ UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     }
     else {
         listen->bind(c->getServerAddr(), c->getServerPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
+        remote = NULL;
     }
 
     listen->setReadBufferSize(RecvSize);
