@@ -66,6 +66,8 @@ make
 make install
 ```
 
+If your distribution (i.e. Fedora) requires library installed into `/usr/lib64` on 64-bit system instead of `/usr/lib`, you have to add an extra argument `DEFINES+="LIB64"` to `qmake` command.
+
 By default, it'll use `/usr` as path prefix on unix platforms, while the prefix is this source code directory (current working directory) on Windows platform.
 
 After installation of `libQtShadowsocks`, you can `cd` into `client` and do the same procedure to install `shadowsocks-libqss`.
