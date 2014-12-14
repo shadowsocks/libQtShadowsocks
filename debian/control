@@ -1,0 +1,19 @@
+Source: libqtshadowsocks
+Section: devel
+Priority: extra
+Maintainer: Symeon Huang <hzwhuang@gmail.org>
+Build-Depends: debhelper (>= 9),
+               pkg-config,
+               qt5-qmake,
+               qtbase5-dev,
+               qtbase5-private-dev,
+               libbotan1.10-dev
+Standards-Version: 3.9.4
+Homepage: https://github.com/librehat/libQtShadowsocks
+Vcs-Git: https://github.com/librehat/libQtShadowsocks
+Vcs-Browser: https://github.com/librehat/libQtShadowsocks
+
+Package: libqtshadowsocks
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: A Shadowsocks library written in C++/Qt5
