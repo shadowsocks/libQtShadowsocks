@@ -37,7 +37,7 @@ unix: {
 
     CONFIG     += create_pc create_prl no_install_prl link_pkgconfig
 
-    contains(QMAKE_HOST.arch, x86_64): target.path = $$INSTALL_PREFIX/lib64
+    contains(DEFINES, LIB64): target.path = $$INSTALL_PREFIX/lib64
     else: target.path = $$INSTALL_PREFIX/lib
     header_files.files = $$HEADERS
     header_files.path  = $$INSTALL_PREFIX/include/qtshadowsocks
