@@ -44,6 +44,7 @@ public:
     enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, REPLY, STREAM, DESTROYED};
 
 signals:
+    void debug(const QString &);
     void info(const QString &);
     void error(const QString &);
 
@@ -70,6 +71,7 @@ private slots:
     void onRemoteTcpSocketReadyRead();
     void onLocalTcpSocketError();
     void onLocalTcpSocketReadyRead();
+    void onTimeout();
 };
 
 }

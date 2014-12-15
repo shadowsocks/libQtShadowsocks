@@ -72,6 +72,7 @@ Controller::~Controller()
 bool Controller::start()
 {
     if (hasError) {
+        emit error("Can't start due to an error during construction.");
         return false;
     }
 
@@ -150,14 +151,14 @@ bool Controller::isRunning() const
 
 void Controller::onTcpServerError()
 {
-    QString str = QString("TCP server error: ") + tcpServer->errorString();
-    emit error(str);
+    emit error("TCP server error: " + tcpServer->errorString());
 }
 
 void Controller::onNewTCPConnection()
 {
     QTcpSocket *ts = tcpServer->nextPendingConnection();
     Connection *con = new Connection(ts, isLocal, this);
+    connect (con, &Connection::debug, this, &Controller::debug);
     connect (con, &Connection::info, this, &Controller::info);
     connect (con, &Connection::error, this, &Controller::error);
     connectionCollector->add(con);

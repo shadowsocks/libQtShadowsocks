@@ -51,7 +51,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
         remote->connectToHost(c->getServerAddr(), c->getServerPort());
     }
 
-    connect(timer, &QTimer::timeout, this, &Connection::deleteLater, Qt::DirectConnection);
+    connect(timer, &QTimer::timeout, this, &Connection::onTimeout, Qt::DirectConnection);
 
     connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onLocalTcpSocketError, Qt::DirectConnection);
     connect(local, &QTcpSocket::disconnected, this, &Connection::deleteLater, Qt::DirectConnection);
@@ -110,6 +110,9 @@ void Connection::handleStageHello(QByteArray &data)
         if (data.length() > header_length) {
             writeToRemote(data.mid(header_length));
         }
+        else {
+            emit error("Data length is shorter than header.");
+        }
     }
 }
 
@@ -133,8 +136,7 @@ bool Connection::writeToRemote(const QByteArray &data)
 void Connection::onLocalTcpSocketError()
 {
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
-        QString str = QString("Local socket error: ") + local->errorString();
-        emit error(str);
+        emit error("Local socket error: " + local->errorString());
         deleteLater();
     }
 }
@@ -142,8 +144,7 @@ void Connection::onLocalTcpSocketError()
 void Connection::onRemoteTcpSocketError()
 {
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
-        QString str = QString("Remote socket error: ") + remote->errorString();
-        emit error(str);
+        emit error("Remote socket error: " + remote->errorString());
         deleteLater();
     }
 }
@@ -153,12 +154,14 @@ void Connection::onLocalTcpSocketReadyRead()
     QByteArray data = local->readAll();
 
     if (data.isEmpty()) {
+        emit error("Received empty data.");
         deleteLater();
         return;
     }
     if (!isLocal) {
         data = encryptor->decrypt(data);
         if (data.isEmpty()) {
+            emit debug("Data is empty after decryption.");
             return;
         }
     }
@@ -174,10 +177,12 @@ void Connection::onLocalTcpSocketReadyRead()
         if (data[0] != char(5)) {
             auth.append(char(0));
             auth.append(char(91));
+            emit error("A socket v4 connection was rejected.");
         }
         else {
             auth.append(char(5));
             auth.append(char(0));
+            emit debug("Accept a local socket connection.");
         }
         local->write(auth);
         stage = HELLO;
@@ -201,4 +206,10 @@ void Connection::onRemoteTcpSocketReadyRead()
         buf = encryptor->encrypt(buf);
     }
     local->write(buf);
+}
+
+void Connection::onTimeout()
+{
+    emit info("Connection timeout.");
+    deleteLater();
 }
