@@ -10,11 +10,11 @@ It is written in C++ using Qt5 frameworks. Therefore, the major purpose of this 
 
 The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` can also be used as both Shadowsocks local client and Shadowsocks server.
 
-Dependency
+Build Dependencies
 ----------
 
 - Qt5 >= 5.2 (`qtbase5-dev`)
-- Botan = 1.10.x (`libbotan-1.10-dev`)
+- Botan = 1.10.x (`libbotan1.10-dev`)
 
 Current Status
 --------------
