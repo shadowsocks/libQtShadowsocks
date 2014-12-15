@@ -55,8 +55,13 @@ public:
     virtual bool isRunning() const;
 
 signals:
+    /*
+     * Log level.
+     * i.e. info signal will be emitted if there is an "error", but info won't transfer "debug" output.
+     */
     void error(const QString &);
     void info(const QString &);
+    void debug(const QString &);
 
 public slots:
     virtual bool start();//return true if start successfully, otherwise return false

@@ -54,6 +54,9 @@ Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
 
     connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
     connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection);
+
+    connect(this, &Controller::error, this, &Controller::info);
+    connect(this, &Controller::info, this, &Controller::debug);
 }
 
 Controller::~Controller()
