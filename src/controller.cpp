@@ -55,7 +55,7 @@ Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
     connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
     connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection);
 
-    connect(this, &Controller::error, this, &Controller::info);
+    connect(this, &Controller::error, this, &Controller::info);//you shouldn't bind any other classes' error with info (and info with debug). we only need to do that once here.
     connect(this, &Controller::info, this, &Controller::debug);
 }
 
