@@ -49,6 +49,8 @@ Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
 
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
+    qDebug() << "Maximum pending connections is set to " << FD_SETSIZE;
+
     udpRelay = new UdpRelay(isLocal, this);
     connectionCollector = new QObjectCleanupHandler;
 
@@ -66,7 +68,7 @@ Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
 Controller::~Controller()
 {
     delete connectionCollector;//we have to delete all connections at first. otherwise, the application will crash.
-    qDebug() << "Exited gracefully.";
+    emit info("Controller exited gracefully.");
 }
 
 bool Controller::start()
@@ -115,6 +117,7 @@ quint16 Controller::getServerPort()
 QHostAddress Controller::getServerAddr()
 {
     if (serverAddrList.isEmpty()) {
+        emit error("Server IP address list is empty.");
         return QHostAddress();
     }
     else {
@@ -162,4 +165,5 @@ void Controller::onNewTCPConnection()
     connect (con, &Connection::info, this, &Controller::info);
     connect (con, &Connection::error, this, &Controller::error);
     connectionCollector->add(con);
+    emit debug("A new TCP connection.");
 }
