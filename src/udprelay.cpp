@@ -98,6 +98,10 @@ void UdpRelay::onServerUdpSocketReadyRead()
     quint16 r_port;
     server->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
 
+    QString dbg("Received UDP packet from ");
+    QDebug(&dbg) << r_addr << r_port;
+    emit debug(dbg);
+
     if (isLocal) {
         if (static_cast<int> (data[2]) != 0) {
             emit error("Drop a message since frag is not 0");
@@ -113,6 +117,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
     int header_length = 0;
     Common::parseHeader(data, destAddr, header_length);
     if (header_length == 0) {
+        emit error("Can't parse UDP packet header.");
         return;
     }
 
@@ -126,6 +131,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
         clientDescriptorToServerAddr.insert(client->socketDescriptor(), key.r);
         connect(client, &QUdpSocket::readyRead, this, &UdpRelay::onClientUdpSocketReadyRead);
         connect(client, &QUdpSocket::disconnected, this, &UdpRelay::onClientDisconnected);
+        emit debug("A new UDP client is connected.");
     }
 
     if (isLocal) {
@@ -180,8 +186,9 @@ void UdpRelay::onClientUdpSocketReadyRead()
     if (clientAddress.getPort() != 0) {
         listen->writeDatagram(response, clientAddress.getRealIPAddress(), clientAddress.getPort());
     }
-    //else this packet is from somewhere else we know
-    //simply drop that packet
+    else {
+        emit debug("Drop a UDP packet from somewhere else we know.");
+    }
 }
 
 void UdpRelay::onClientDisconnected()
@@ -194,4 +201,5 @@ void UdpRelay::onClientDisconnected()
     cache.remove(cache.key(client));
     clientDescriptorToServerAddr.remove(client->socketDescriptor());
     client->deleteLater();
+    emit debug("A UDP client connection is disconnected and destroyed.");
 }

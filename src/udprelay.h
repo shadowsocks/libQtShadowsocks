@@ -41,6 +41,7 @@ public:
     explicit UdpRelay(bool is_local = true, QObject *parent = 0);
 
 signals:
+    void debug(const QString &);
     void info(const QString &);
     void error(const QString &);
 
