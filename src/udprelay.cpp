@@ -79,7 +79,9 @@ void UdpRelay::onSocketError()
 
 void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 {
-    qDebug() << "Listen UDP socket state changed to" << s;
+    QString stateChanged("Listen UDP socket state changed to ");
+    QDebug(&stateChanged) << s;
+    emit info(stateChanged);
 }
 
 void UdpRelay::onServerUdpSocketReadyRead()
@@ -106,7 +108,6 @@ void UdpRelay::onServerUdpSocketReadyRead()
     else {
         data = encryptor->decryptAll(data);
     }
-
 
     Address destAddr;
     int header_length = 0;
