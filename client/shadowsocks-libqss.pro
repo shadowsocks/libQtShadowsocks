@@ -8,7 +8,7 @@ QT       -= gui
 
 TARGET    = shadowsocks-libqss
 
-CONFIG   += console
+CONFIG   += console c++11
 
 TEMPLATE  = app
 
