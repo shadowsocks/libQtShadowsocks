@@ -24,6 +24,7 @@
 #include <botan/auto_rng.h>
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
+#include <botan/version.h>
 #include "cipher.h"
 
 using namespace QSS;
@@ -41,7 +42,8 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
             rc4_key = md5Hash(key + iv);
         }
         Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(rc4_key.constData()), key.size());
-        filter = Botan::get_cipher("ARC4", _key, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);//botan-1.10
+        filter = Botan::get_cipher(Botan::version_minor() < 11 ? "ARC4" : "RC4",
+                                   _key, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
     }
     else {
         std::string str(method.constData(), method.length());
@@ -68,6 +70,9 @@ QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
     map.insert("AES-256/CFB", {32, 16});
     map.insert("Blowfish/CFB", {16, 8});
     map.insert("CAST-128/CFB", {16, 8});
+    if (Botan::version_minor() >= 11) {
+        map.insert("ChaCha", {32, 8});
+    }
     map.insert("DES/CFB", {8, 8});
     map.insert("IDEA/CFB", {16, 8});
     map.insert("RC2/CFB", {16, 8});
@@ -108,7 +113,7 @@ QByteArray Cipher::md5Hash(const QByteArray &in)
 bool Cipher::isSupported(const QByteArray &method)
 {
     if (method.contains("RC4")) {
-        return Botan::have_algorithm("ARC4");
+        return Botan::have_algorithm(Botan::version_minor() < 11 ? "ARC4" : "RC4");
     }
     else {
         //have_algorithm function take only the **algorithm** (so we need to omit the mode)

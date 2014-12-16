@@ -77,6 +77,9 @@ bool Encryptor::initialise(const QString &m, const QString &pwd)
     else if (method.contains("SALSA20")) {
         method = "Salsa20";
     }
+    else if (method.contains("CHACHA20")) {
+        method = "ChaCha";
+    }
     else {
         method.replace("-C", "/C");//i.e. -CFB to /CFB
     }
