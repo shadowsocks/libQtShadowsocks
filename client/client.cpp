@@ -66,8 +66,7 @@ bool Client::start(bool _server)
         lc->deleteLater();
     }
     lc = new QSS::Controller(profile, !_server, this);
-    connect (lc, &QSS::Controller::info, this, &Client::logHandler);
-    connect (lc, &QSS::Controller::error, this, &Client::logHandler);
+    connect (lc, &QSS::Controller::debug, this, &Client::logHandler);
     return lc->start();
 }
 
