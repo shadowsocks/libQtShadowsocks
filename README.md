@@ -14,7 +14,7 @@ Build Dependencies
 ----------
 
 - Qt5 >= 5.2 (`qtbase5-dev`)
-- Botan = 1.10.x (`libbotan1.10-dev`)
+- Botan = 1.8.x or 1.10.x (`libbotan1.8-dev` or `libbotan1.10-dev`)
 
 Current Status
 --------------
@@ -67,6 +67,8 @@ make install
 ```
 
 If your distribution (i.e. Fedora) requires library installed into `/usr/lib64` on 64-bit system instead of `/usr/lib`, you have to add an extra argument `DEFINES+="LIB64"` to `qmake` command.
+
+If you want to build `libQtShadowsocks` against other botan versions than 1.10, such as `botan-1.8`, then you have to add `BOTAN_VER="1.8"` to `qmake` command.
 
 By default, it'll use `/usr` as path prefix on unix platforms, while the prefix is this source code directory (current working directory) on Windows platform.
 
