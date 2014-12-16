@@ -24,7 +24,6 @@
 #include <botan/auto_rng.h>
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
-#include <botan/version.h>
 #include "cipher.h"
 
 using namespace QSS;
@@ -87,8 +86,8 @@ QByteArray Cipher::update(const QByteArray &data)
 {
     pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
     size_t id = pipe->message_count() - 1;
-    Botan::SecureVector<Botan::byte> c = pipe->read_all(id);
-    QByteArray out(reinterpret_cast<const char *>(c.begin()), c.size());
+    SecureByteArray c = pipe->read_all(id);
+    QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)), c.size());
     return out;
 }
 
