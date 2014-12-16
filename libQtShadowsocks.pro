@@ -17,6 +17,10 @@ isEmpty(INSTALL_PREFIX) {
     else: INSTALL_PREFIX = $$top_srcdir
 }
 
+isEmpty(BOTAN_VER) {
+    BOTAN_VER = 1.10
+}
+
 win32: {
     DEFINES    += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
     DEFINES    += "_WIN32_WINNT=0x0600"#drop support for Windows XP
@@ -51,5 +55,5 @@ unix: {
     QMAKE_PKGCONFIG_VERSION = $$VERSION
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 
-    PKGCONFIG  += botan-1.10
+    PKGCONFIG  += botan-$$BOTAN_VER
 }

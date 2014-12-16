@@ -22,9 +22,13 @@ isEmpty(INSTALL_PREFIX) {
     else: INSTALL_PREFIX = $$top_srcdir
 }
 
+isEmpty(BOTAN_VER) {
+    BOTAN_VER = 1.10
+}
+
 unix: {
     CONFIG    += link_pkgconfig
-    PKGCONFIG += QtShadowsocks botan-1.10
+    PKGCONFIG += QtShadowsocks botan-$$BOTAN_VER
 
     target.path = $$INSTALL_PREFIX/bin
     INSTALLS   += target
@@ -36,6 +40,6 @@ win32: {
     INCLUDEPATH += $$top_srcdir/../include
     LIBS        += -L$$top_srcdir/../lib \
                    -lQtShadowsocks \
-                   -lbotan-1.10
+                   -lbotan-$$BOTAN_VER
 }
 
