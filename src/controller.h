@@ -54,6 +54,12 @@ public:
     virtual int getTimeout();//return timeout interval (millisecond)
     virtual bool isRunning() const;
 
+    /*
+     * Get the "ping" time of given server
+     * Bind signal pingTime to get the result
+     */
+    virtual void ping(const QHostAddress &ip, quint32 port);
+
 signals:
     /*
      * Log level.
@@ -65,6 +71,9 @@ signals:
 
     void bytesReceivedChanged(const qint64 &);
     void bytesSentChanged(const qint64 &);
+
+    //used to pass the "ping" time (milliseconds). -1 if the sever cannot get connected in 3 seconds
+    void pingTime(int);
 
 public slots:
     virtual bool start();//return true if start successfully, otherwise return false

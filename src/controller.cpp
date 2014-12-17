@@ -152,6 +152,16 @@ bool Controller::isRunning() const
     return running;
 }
 
+void Controller::ping(const QHostAddress &ip, quint32 port)
+{
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, [&] { emit pingTime(-1); });
+    QTcpSocket socket;
+    connect(&socket, &QTcpSocket::connected, [&] { timer.stop(); emit pingTime(3000 - timer.remainingTime()); });
+    socket.connectToHost(ip, port);
+    timer.start(3000);
+}
+
 void Controller::onTcpServerError()
 {
     emit error("TCP server error: " + tcpServer->errorString());

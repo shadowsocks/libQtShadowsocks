@@ -48,7 +48,7 @@ RoadMap
 Below features will possibly be implemented in future versions. While even version number indicates a stable version. Odd number means development version correspondingly.
 
 - ~~Traffic statistics (v1.2)~~
-- Server ping (v1.2)
+- ~~Server ping (v1.2)~~
 - Multiple server IP address random choose (v1.4)
 - ChaCha cipher (v1.4, also need to wait for `Botan-1.12` release)
 - Multiple profile balance (v1.6)
