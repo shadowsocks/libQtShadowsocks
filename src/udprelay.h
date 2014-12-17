@@ -45,6 +45,12 @@ signals:
     void info(const QString &);
     void error(const QString &);
 
+    /*
+     * the same situation here. we only count "listen" socket's read and written bytes
+     */
+    void bytesRead(const qint64 &);
+    void bytesSend(const qint64 &);
+
 private:
     const bool isLocal;
     QUdpSocket *listen;

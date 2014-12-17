@@ -63,6 +63,9 @@ signals:
     void info(const QString &);
     void debug(const QString &);
 
+    void bytesReceivedChanged(const qint64 &);
+    void bytesSentChanged(const qint64 &);
+
 public slots:
     virtual bool start();//return true if start successfully, otherwise return false
     virtual void stop();
@@ -78,9 +81,15 @@ protected://children can access protected members
     QList<QHostAddress> serverAddrList;
     Botan::LibraryInitializer init;
 
+    //the total bytes recevied or sent by/from all TCP and UDP connections.
+    qint64 bytesReceived;
+    qint64 bytesSent;
+
 protected slots:
     virtual void onTcpServerError();
     virtual void onNewTCPConnection();
+    virtual void onBytesRead(const qint64 &);
+    virtual void onBytesSend(const qint64 &);
 };
 
 }

@@ -130,6 +130,7 @@ bool Connection::writeToRemote(const QByteArray &data)
         remote->connectToHost(remoteAddress.getRealIPAddress(), remoteAddress.getPort());
     }
     qint64 s = remote->write(data);
+    emit bytesSend(s);
     return s != -1;
 }
 
@@ -158,6 +159,7 @@ void Connection::onLocalTcpSocketReadyRead()
         deleteLater();
         return;
     }
+
     if (!isLocal) {
         data = encryptor->decrypt(data);
         if (data.isEmpty()) {
@@ -198,7 +200,11 @@ void Connection::onLocalTcpSocketReadyRead()
 
 void Connection::onRemoteTcpSocketReadyRead()
 {
-    QByteArray buf = remote->readAll();
+    QByteArray buf;
+    buf.resize(RecvSize);
+    qint64 r = remote->read(buf.data(), RecvSize);
+    emit bytesRead(r);
+
     if (isLocal) {
         buf = encryptor->decrypt(buf);
     }

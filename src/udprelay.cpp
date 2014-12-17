@@ -96,7 +96,8 @@ void UdpRelay::onServerUdpSocketReadyRead()
     data.resize(server->pendingDatagramSize());
     QHostAddress r_addr;
     quint16 r_port;
-    server->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
+    qint64 readSize = server->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
+    emit bytesRead(readSize);
 
     QString dbg("Received UDP packet from ");
     QDebug(&dbg) << r_addr << r_port;
@@ -184,7 +185,8 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.getPort() != 0) {
-        listen->writeDatagram(response, clientAddress.getRealIPAddress(), clientAddress.getPort());
+        qint64 writtenBytes = listen->writeDatagram(response, clientAddress.getRealIPAddress(), clientAddress.getPort());
+        emit bytesSend(writtenBytes);
     }
     else {
         emit debug("Drop a UDP packet from somewhere else we know.");

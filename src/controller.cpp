@@ -164,6 +164,24 @@ void Controller::onNewTCPConnection()
     connect (con, &Connection::debug, this, &Controller::debug);
     connect (con, &Connection::info, this, &Controller::info);
     connect (con, &Connection::error, this, &Controller::error);
+    connect (con, &Connection::bytesRead, this, &Controller::onBytesRead);
+    connect (con, &Connection::bytesSend, this, &Controller::onBytesSend);
     connectionCollector->add(con);
     emit debug("A new TCP connection.");
+}
+
+void Controller::onBytesRead(const qint64 &r)
+{
+    if (r != -1) {//-1 means read failed. don't count
+        bytesReceived += r;
+        emit bytesReceivedChanged(bytesReceived);
+    }
+}
+
+void Controller::onBytesSend(const qint64 &s)
+{
+    if (s != -1) {//-1 means write failed. don't count
+        bytesSent += s;
+        emit bytesSentChanged(bytesSent);
+    }
 }

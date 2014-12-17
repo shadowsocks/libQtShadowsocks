@@ -48,6 +48,14 @@ signals:
     void info(const QString &);
     void error(const QString &);
 
+    /*
+     * Count only remote socket's traffic
+     * Either in local or server mode, the remote socket is used to communicate
+     * with other-side shadowsocks instance (a local or a server)
+     */
+    void bytesRead(const qint64 &);
+    void bytesSend(const qint64 &);
+
 private:
     const bool isLocal;
 
