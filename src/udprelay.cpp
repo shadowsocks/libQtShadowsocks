@@ -86,17 +86,16 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
-    QUdpSocket *server = qobject_cast<QUdpSocket *>(sender());
-    if (server->pendingDatagramSize() > RecvSize) {
+    if (listen->pendingDatagramSize() > RecvSize) {
         emit error("Datagram is too large. discarded.");
         return;
     }
 
     QByteArray data;
-    data.resize(server->pendingDatagramSize());
+    data.resize(listen->pendingDatagramSize());
     QHostAddress r_addr;
     quint16 r_port;
-    qint64 readSize = server->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
+    qint64 readSize = listen->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
     emit bytesRead(readSize);
 
     QString dbg("Received UDP packet from ");
