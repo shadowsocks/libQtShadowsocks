@@ -25,9 +25,21 @@
 
 using namespace QSS;
 
-#define LE(p) ((static_cast<quint32>((p)[0])) | (static_cast<quint32>((p)[1]) << 8) | (static_cast<quint32>((p)[2]) << 16) | (static_cast<quint32>((p)[3]) << 24))
-#define FROMLE(b, i) (b)[0] = i & 0xFF; (b)[1] = (i >> 8) & 0xFF; (b)[2] = (i >> 16) & 0xFF; (b)[3] = (i >> 24) & 0xFF;
-#define ROTL32(v, n) ((v) << (n)) | ((v) >> (32 - (n)))
+#define LE(p) \
+   ((static_cast<quint32>((p)[0]))       | \
+    (static_cast<quint32>((p)[1]) << 8)  | \
+    (static_cast<quint32>((p)[2]) << 16) | \
+    (static_cast<quint32>((p)[3]) << 24))
+
+#define FROMLE(p, v) \
+    (p)[0] = static_cast<quint8>(v) & 0xFF##U; \
+    (p)[1] = static_cast<quint8>(v) & 0xFF##U >> 8; \
+    (p)[2] = static_cast<quint8>(v) & 0xFF##U >> 16; \
+    (p)[3] = static_cast<quint8>(v) & 0xFF##U >> 24;
+
+#define ROTL32(v, n) \
+    ((static_cast<quint32>(v) & 0xFFFFFFFF##U) << (n)) | ((v) >> (32 - (n)))
+
 #define QUARTERROUND(x, a, b, c, d) \
     x[a] += x[b]; x[d] = ROTL32(x[d] ^ x[a], 16); \
     x[c] += x[d]; x[b] = ROTL32(x[b] ^ x[c], 12); \
