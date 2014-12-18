@@ -22,6 +22,7 @@
 
 #include "connection.h"
 #include "controller.h"
+#include <QDebug>
 
 Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *parent) :
     QObject(parent),
@@ -96,6 +97,7 @@ void Connection::handleStageHello(QByteArray &data)
         emit error("Can't parse header");
         return;
     }
+
     emit info("Connecting " + remoteAddress.getAddress().toLocal8Bit() + ":" + QString::number(remoteAddress.getPort()).toLocal8Bit());
     stage = REPLY;//skip DNS, because we use getRealIPAddress function of Address class, which will always return IP address.
 
@@ -116,14 +118,6 @@ void Connection::handleStageHello(QByteArray &data)
             emit error(err);
         }
     }
-}
-
-void Connection::handleStageReply(QByteArray &data)
-{
-    if (isLocal) {
-        data = encryptor->encrypt(data);
-    }
-    writeToRemote(data);
 }
 
 bool Connection::writeToRemote(const QByteArray &data)
@@ -169,7 +163,7 @@ void Connection::onLocalTcpSocketReadyRead()
             return;
         }
     }
-    if (stage == STREAM) {
+    if (stage == STREAM || stage == REPLY) {
         if (isLocal) {
             data = encryptor->encrypt(data);
         }
@@ -191,9 +185,6 @@ void Connection::onLocalTcpSocketReadyRead()
         local->write(auth);
         stage = HELLO;
         return;
-    }
-    else if (stage == REPLY) {
-        handleStageReply(data);
     }
     else if ((isLocal && stage == HELLO) || (!isLocal && stage == INIT)) {
         handleStageHello(data);
