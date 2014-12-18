@@ -32,10 +32,11 @@
 
 #include <QObject>
 #include "cipher.h"
+#include "export.h"
 
 namespace QSS {
 
-class Encryptor : public QObject
+class QSS_EXPORT Encryptor : public QObject
 {
     Q_OBJECT
 public:
@@ -67,6 +68,8 @@ public:
      */
     static QString getInternalMethodName();
 
+    bool selfTest();
+
 private:
     static TYPE type;
     static QByteArray method;
@@ -79,7 +82,6 @@ private:
     static void tableInit();
     static QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
     static void evpBytesToKey();
-    bool selfTest();
 
 protected:
     Cipher *enCipher;

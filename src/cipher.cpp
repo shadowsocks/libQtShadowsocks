@@ -45,6 +45,12 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
                                    _key, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
     }
     else {
+        if (method.contains("ChaCha")) {
+            chacha = new ChaCha(key, iv, this);
+            pipe = NULL;
+            return;
+        }
+
         std::string str(method.constData(), method.length());
         Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(key.constData()), key.size());
         Botan::InitializationVector _iv(reinterpret_cast<const Botan::byte *>(iv.constData()), iv.size());
@@ -56,7 +62,7 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
 
 Cipher::~Cipher()
 {
-    delete pipe;
+    if (pipe != NULL)   delete pipe;
 }
 
 const QMap<QByteArray, QVector<int> > Cipher::keyIvMap = Cipher::generateKeyIvMap();
@@ -69,9 +75,9 @@ QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
     map.insert("AES-256/CFB", {32, 16});
     map.insert("Blowfish/CFB", {16, 8});
     map.insert("CAST-128/CFB", {16, 8});
-    if (Botan::version_minor() >= 11) {
+    //if (Botan::version_minor() >= 11) {
         map.insert("ChaCha", {32, 8});
-    }
+    //}
     map.insert("DES/CFB", {8, 8});
     map.insert("IDEA/CFB", {16, 8});
     map.insert("RC2/CFB", {16, 8});
@@ -84,11 +90,16 @@ QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
 
 QByteArray Cipher::update(const QByteArray &data)
 {
+    if (pipe == NULL) {
+        return chacha->update(data);
+    }
+    else {
     pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
     size_t id = pipe->message_count() - 1;
     SecureByteArray c = pipe->read_all(id);
     QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)), c.size());
     return out;
+    }
 }
 
 QByteArray Cipher::randomIv(int length)
@@ -111,6 +122,7 @@ QByteArray Cipher::md5Hash(const QByteArray &in)
 
 bool Cipher::isSupported(const QByteArray &method)
 {
+    if (method.contains("ChaCha"))  return true;
     if (method.contains("RC4")) {
         return Botan::have_algorithm(Botan::version_minor() < 11 ? "ARC4" : "RC4");
     }

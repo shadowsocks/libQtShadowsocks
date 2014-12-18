@@ -9,7 +9,8 @@ SOURCES  += \
     src/connection.cpp \
     src/controller.cpp \
     src/encryptor.cpp \
-    src/udprelay.cpp
+    src/udprelay.cpp \
+    $$PWD/chacha.cpp
 
 HEADERS  += \
     src/address.h \
@@ -21,7 +22,8 @@ HEADERS  += \
     src/export.h \
     src/profile.h \
     src/QtShadowsocks \
-    src/udprelay.h
+    src/udprelay.h \
+    $$PWD/chacha.h
 
 OTHER_FILES += \
     README.md
