@@ -108,15 +108,8 @@ void Connection::handleStageHello(QByteArray &data)
         data = encryptor->encrypt(data);
         writeToRemote(data);
     }
-    else {
-        if (data.length() > header_length) {
-            writeToRemote(data.mid(header_length));
-        }
-        else {
-            QString err;
-            QDebug(&err) << "Data length" << data.length() << "is shorter than header length" << header_length;
-            emit error(err);
-        }
+    else if (data.length() > header_length) {
+        writeToRemote(data.mid(header_length));
     }
 }
 
