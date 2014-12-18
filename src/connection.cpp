@@ -99,7 +99,7 @@ void Connection::handleStageHello(QByteArray &data)
     }
 
     emit info("Connecting " + remoteAddress.getAddress().toLocal8Bit() + ":" + QString::number(remoteAddress.getPort()).toLocal8Bit());
-    stage = REPLY;//skip DNS, because we use getRealIPAddress function of Address class, which will always return IP address.
+    stage = STREAM;//skip DNS, because we use getRealIPAddress function of Address class, which will always return IP address.
 
     if (isLocal) {
         static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
@@ -163,7 +163,7 @@ void Connection::onLocalTcpSocketReadyRead()
             return;
         }
     }
-    if (stage == STREAM || stage == REPLY) {
+    if (stage == STREAM) {
         if (isLocal) {
             data = encryptor->encrypt(data);
         }

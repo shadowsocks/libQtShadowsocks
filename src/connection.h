@@ -41,7 +41,7 @@ class Connection : public QObject
 public:
     explicit Connection(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
 
-    enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, REPLY, STREAM, DESTROYED};
+    enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, STREAM};//we don't have REPLY, DESTROYED stages. the DNS is not implemented neither.
 
 signals:
     void debug(const QString &);
