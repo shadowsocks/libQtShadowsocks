@@ -67,7 +67,19 @@ bool Client::start(bool _server)
     }
     lc = new QSS::Controller(profile, !_server, this);
     connect (lc, &QSS::Controller::debug, this, &Client::logHandler);
-    return lc->start();
+    return lc->start() && cipherTest();
+}
+
+bool Client::cipherTest()
+{
+    QSS::Encryptor e;
+    if(e.selfTest()) {
+        return true;
+    }
+    else {
+        qCritical() << "Cipher test failed.";
+        return false;
+    }
 }
 
 void Client::logHandler(const QString &log)

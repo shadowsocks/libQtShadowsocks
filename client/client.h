@@ -40,6 +40,8 @@ private:
     QSS::Controller *lc;
     QSS::Profile profile;
 
+    bool cipherTest();
+
 private slots:
     void logHandler(const QString &);
 };
