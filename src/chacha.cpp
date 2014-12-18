@@ -65,7 +65,12 @@ QByteArray ChaCha::update(const QByteArray &in)
             quint32 result = keystream[i] + schedule[i];
             FROMLE(keystream.data() + i, result);
         }
-        if (!++nonce[0] && !++nonce[1] && !++nonce[2])  ++nonce[3];
+        if (!nonce[0] && !nonce[1] && !nonce[2]) {
+            ++nonce[0];
+            ++nonce[1];
+            ++nonce[2];
+            ++nonce[3];
+        }
 
         chacha_xor(reinterpret_cast<quint8 *>(keystream.data()), reinterpret_cast<const quint8*>(in.data()), reinterpret_cast<quint8*>(out.data()), amount);
         length -= amount;
