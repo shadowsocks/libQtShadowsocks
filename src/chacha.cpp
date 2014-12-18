@@ -90,7 +90,7 @@ void ChaCha::chacha()
     }
     for (int i = 0; i < 16; ++i) {
         quint32 result = keystream[i] + schedule[i];
-        FROMLE(keystream.data() + i, result);
+        FROMLE(reinterpret_cast<quint8 *>(keystream.data() + i), result);
     }
     ++schedule[12];
     schedule[13] += (schedule[12] == 0);
