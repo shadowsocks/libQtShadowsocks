@@ -34,7 +34,10 @@
 #include <QVector>
 #include <botan/pipe.h>
 #include <botan/version.h>
+
+#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
 #include "chacha.h"
+#endif
 
 namespace QSS {
 
@@ -71,7 +74,10 @@ public:
 
 private:
     Botan::Pipe *pipe;
+
+#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
     ChaCha *chacha;
+#endif
 
     static QMap<QByteArray, QVector<int> > generateKeyIvMap();
 };
