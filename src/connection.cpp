@@ -111,7 +111,9 @@ void Connection::handleStageHello(QByteArray &data)
             writeToRemote(data.mid(header_length));
         }
         else {
-            emit error("Data length is shorter than header.");
+            QString err;
+            QDebug(&err) << "Data length" << data.length() << "is shorter than header length" << header_length;
+            emit error(err);
         }
     }
 }
