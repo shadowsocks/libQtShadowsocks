@@ -45,6 +45,12 @@ public:
     bool isIPValid() const;
     quint16 getPort() const;
 
+    /*
+     * Get the "ping" time of this Address
+     * bind pingTime signal to retreive the time (milliseconds)
+     */
+    void ping();
+
     void setAddress(const QString &);
     void setIPAddress(const QHostAddress &);
     void setPort(const quint16 &);
@@ -69,6 +75,9 @@ public:
     inline bool operator==(const Address &o) const {
         return (this->address == o.address) && (this->port == o.port);
     }
+
+signals:
+    void pingTime(int);
 
 private:
     QString address;

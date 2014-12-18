@@ -23,6 +23,8 @@
  */
 
 #include <QHostInfo>
+#include <QTimer>
+#include <QTcpSocket>
 #include "address.h"
 
 using namespace QSS;
@@ -80,6 +82,16 @@ bool Address::isIPValid() const
 quint16 Address::getPort() const
 {
     return port;
+}
+
+void Address::ping()
+{
+    QTimer timer;
+    connect(&timer, &QTimer::timeout, [&] { emit pingTime(-1); });
+    QTcpSocket socket;
+    connect(&socket, &QTcpSocket::connected, [&] { timer.stop(); emit pingTime(3000 - timer.remainingTime()); });
+    socket.connectToHost(this->getRealIPAddress(), port);
+    timer.start(3000);
 }
 
 void Address::setAddress(const QString &a)
