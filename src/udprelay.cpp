@@ -97,6 +97,9 @@ void UdpRelay::onServerUdpSocketReadyRead()
     quint16 r_port;
     qint64 readSize = listen->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
     emit bytesRead(readSize);
+    if (readSize > 0) {
+        data.resize(readSize);
+    }
 
     QString dbg("Received UDP packet from ");
     QDebug(&dbg) << r_addr << r_port;

@@ -202,10 +202,8 @@ void Connection::onLocalTcpSocketReadyRead()
 
 void Connection::onRemoteTcpSocketReadyRead()
 {
-    QByteArray buf;
-    buf.resize(RecvSize);
-    qint64 r = remote->read(buf.data(), RecvSize);
-    emit bytesRead(r);
+    QByteArray buf = remote->readAll();
+    emit bytesRead(buf.size());
 
     if (isLocal) {
         buf = encryptor->decrypt(buf);
