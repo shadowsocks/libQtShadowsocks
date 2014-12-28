@@ -26,26 +26,12 @@
 #include "connection.h"
 #include "encryptor.h"
 
-Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
+Controller::Controller(bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)
 {
-    profile = p;
-    hasError = false;
+    valid = false;
     running = false;
-
-    //try to use address directly at first (IP address)
-    QHostAddress s_addr(profile.server);
-    if (s_addr.isNull()) {
-        serverAddrList = QHostInfo::fromName(profile.server).addresses();
-        if(serverAddrList.isEmpty()) {//well, we can't get server ip address.
-            qCritical() << "Error. Can't look up IP address of server " << profile.server;
-            hasError = true;
-        }
-    }
-    else {
-        serverAddrList.append(s_addr);
-    }
 
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
@@ -70,23 +56,46 @@ Controller::Controller(const Profile &p, bool is_local, QObject *parent) :
 Controller::~Controller()
 {
     delete connectionCollector;//we have to delete all connections at first. otherwise, the application will crash.
-    emit info("Controller exited gracefully.");
+    qDebug() << "Controller exited gracefully.";
 }
 
-bool Controller::start()
+bool Controller::setup(const Profile &p)
 {
-    if (hasError) {
-        emit error("Can't start due to an error during construction.");
-        return false;
+    profile = p;
+    serverAddrList.clear();
+    valid = true;
+    //try to use address directly at first (IP address)
+    QHostAddress s_addr(profile.server);
+    if (s_addr.isNull()) {
+        serverAddrList = QHostInfo::fromName(profile.server).addresses();
+        if(serverAddrList.isEmpty()) {//well, we can't get server ip address.
+            emit error("Error. Can't look up IP address of server " + profile.server);
+            valid = false;
+        }
+    }
+    else {
+        serverAddrList.append(s_addr);
     }
 
     emit info("Initialising ciphers...");
     if (!Encryptor::initialise(profile.method, profile.password)) {
         emit error("Initialisation failed.");
+        valid = false;
+    }
+    else {
+        emit info(Encryptor::getInternalMethodName() + " (" + profile.method + ") initialised.");
+    }
+
+    return valid;
+}
+
+bool Controller::start()
+{
+    if (!valid) {
+        emit error("Controller is not valid. Maybe improper setup?");
         return false;
     }
 
-    emit info(Encryptor::getInternalMethodName() + " (" + profile.method + ") initialised.");
     QString sstr("TCP server listen at port ");
     if (isLocal) {
         emit info("Running in local mode.");
@@ -107,9 +116,10 @@ bool Controller::start()
 void Controller::stop()
 {
     tcpServer->close();
+    connectionCollector->clear();
     running = false;
+    emit debug("Stopped.");
 }
-
 
 quint16 Controller::getServerPort()
 {

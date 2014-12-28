@@ -44,8 +44,14 @@ class QSS_EXPORT Controller : public QObject
 {
     Q_OBJECT
 public:
-    explicit Controller(const Profile &p, bool is_local = true, QObject *parent = 0);
+    Controller(bool is_local = true, QObject *parent = 0);
     virtual ~Controller();
+
+    /*
+     * You have to call setup before calling start()
+     * You can also change the Profile by call setup again with new Profile
+     */
+    virtual bool setup(const Profile &);
 
     virtual quint16 getServerPort();
     virtual QHostAddress getServerAddr();
@@ -71,7 +77,7 @@ public slots:
     virtual void stop();
 
 protected://children can access protected members
-    bool hasError;
+    bool valid;
     bool running;
     const bool isLocal;//run on local-side (client) or server-side (server)
     QTcpServer *tcpServer;
