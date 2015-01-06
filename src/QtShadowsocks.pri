@@ -1,6 +1,6 @@
 # This file is part of project libQtShadowsocks
-# Copyright (C) 2014, Symeon Huang <hzwhuang@gmail.com>
-# Licensed Under GPLv3
+# Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+# Licensed Under LGPLv3
 
 SOURCES  += \
     src/address.cpp \
