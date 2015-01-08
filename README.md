@@ -13,7 +13,7 @@ The `client` utilises this library. You can check the code to see how to use `li
 Build Dependencies
 ----------
 
-- Qt5 >= 5.2 (`qtbase5-dev`)
+- Qt5 >= 5.0 (`qtbase5-dev`)
 - Botan >= 1.8.x (suggest `libbotan1.10-dev`)
 
 Current Status
