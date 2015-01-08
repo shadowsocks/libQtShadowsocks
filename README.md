@@ -14,7 +14,7 @@ Build Dependencies
 ----------
 
 - Qt5 >= 5.2 (`qtbase5-dev`)
-- Botan = 1.8.x or 1.10.x (`libbotan1.8-dev` or `libbotan1.10-dev`)
+- Botan >= 1.8.x (suggest `libbotan1.10-dev`)
 
 Current Status
 --------------
@@ -34,6 +34,7 @@ Current Status
 - AES-256-CFB
 - BF-CFB
 - CAST5-CFB
+- ChaCha20
 - DES-CFB
 - IDEA-CFB
 - RC2-CFB
@@ -49,8 +50,8 @@ Below features will possibly be implemented in future versions. While even versi
 
 - ~~Traffic statistics (v1.2)~~
 - ~~Server ping (v1.2)~~
+- ~~ChaCha cipher (use bundled ChaCha for botan < 1.11)~~
 - Multiple server IP address random choose (v1.4)
-- ChaCha cipher (v1.4, also need to wait for `Botan-1.12` release)
 - Multiple profile balance (v1.6)
 
 Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to apply for a new feature.
@@ -68,7 +69,7 @@ make install
 
 If your distribution (i.e. Fedora) requires library installed into `/usr/lib64` on 64-bit system instead of `/usr/lib`, you have to add an extra argument `DEFINES+="LIB64"` to `qmake` command.
 
-If you want to build `libQtShadowsocks` against other botan versions than 1.10, such as `botan-1.8`, then you have to add `BOTAN_VER="1.8"` to `qmake` command.
+If you want to build `libQtShadowsocks` against other botan versions than 1.10, such as `botan-1.8` or `botan-1.11`, then you have to add `BOTAN_VER="1.8"` to `qmake` command.
 
 By default, it'll use `/usr` as path prefix on unix platforms, while the prefix is this source code directory (current working directory) on Windows platform.
 

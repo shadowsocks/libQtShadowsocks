@@ -1,3 +1,11 @@
+libqtshadowsocks (1.2-1) stable; urgency=medium
+
+  * Note: This release caused an ABI break.
+  * Add ChaCha20 support (using bundled copy if botan < 1.11).
+  * Support different botan version.
+
+ -- Symeon Huang <symeon@odroid-u3>  Thu, 8 Jan 2015 12:06:15 +0000
+
 libqtshadowsocks (1.0-1) stable; urgency=medium
 
   * first release.
