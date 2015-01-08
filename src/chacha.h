@@ -1,7 +1,7 @@
 /*
  * chacha.h - the header file of ChaCha class
  *
- * This class is partly ported from chacha20_simple and Botan::ChaCha
+ * This class is partly ported from Botan::ChaCha
  *
  * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
  *
@@ -42,18 +42,18 @@ public:
 
 public slots:
     //encrypt (or decrypt, same process for ChaCha algorithm) a byte array.
-    QByteArray update(const QByteArray &in);
+    QByteArray update(const QByteArray &input);
 
 private:
-    QVector<quint32> schedule;//16
-    QVector<quint32> keystream;//16
-    quint32 position;
+    QVector<quint32> m_state;
+    QVector<unsigned char> m_buffer;
+    size_t m_position;
 
     void chacha();
 
-    inline void chacha_xor(quint8 *ks, const quint8 *in, quint8 *out, quint32 length)
+    inline void chacha_xor(unsigned char *ks, const unsigned char *in, unsigned char *out, size_t length)
     {
-        quint8 *end_ks = ks + length;
+        unsigned char *end_ks = ks + length;
         do {
             *out = *in ^ *ks;
             ++out; ++in; ++ks;

@@ -21,99 +21,112 @@
  */
 
 #include "chacha.h"
-#include <QDebug>
+#include <botan/loadstor.h>
+#include <botan/rotate.h>
 
 using namespace QSS;
+using namespace Botan;
 
-#define LE(p) \
-   ((static_cast<quint32>((p)[0]))       | \
-    (static_cast<quint32>((p)[1]) << 8)  | \
-    (static_cast<quint32>((p)[2]) << 16) | \
-    (static_cast<quint32>((p)[3]) << 24))
-
-#define FROMLE(p, v) \
-    (p)[0] = static_cast<quint8>(v) & 0xFF##U; \
-    (p)[1] = static_cast<quint8>(v) & 0xFF##U >> 8; \
-    (p)[2] = static_cast<quint8>(v) & 0xFF##U >> 16; \
-    (p)[3] = static_cast<quint8>(v) & 0xFF##U >> 24;
-
-#define ROTL32(v, n) \
-    ((static_cast<quint32>(v) & 0xFFFFFFFF##U) << (n)) | ((v) >> (32 - (n)))
-
-#define QUARTERROUND(x, a, b, c, d) \
-    x[a] += x[b]; x[d] = ROTL32(x[d] ^ x[a], 16); \
-    x[c] += x[d]; x[b] = ROTL32(x[b] ^ x[c], 12); \
-    x[a] += x[b]; x[d] = ROTL32(x[d] ^ x[a], 8); \
-    x[c] += x[d]; x[b] = ROTL32(x[b] ^ x[c], 7);
+#define CHACHA_QUARTER_ROUND(a, b, c, d)        \
+    do {                                        \
+        a += b; d ^= a; d = rotate_left(d, 16); \
+        c += d; b ^= c; b = rotate_left(b, 12); \
+        a += b; d ^= a; d = rotate_left(d, 8);  \
+        c += d; b ^= c; b = rotate_left(b, 7);  \
+    } while(0)
 
 ChaCha::ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
     QObject (parent)
 {
-    const quint8 *key = reinterpret_cast<const quint8*>(_key.constData());
-    const quint8 *iv = reinterpret_cast<const quint8*>(_iv.constData());
+    const byte *key = reinterpret_cast<const byte*>(_key.constData());
+    const byte *iv = reinterpret_cast<const byte*>(_iv.constData());
 
-    schedule.resize(16);
-    keystream.resize(16);
+    m_state.resize(16);
+    m_buffer.resize(64);
 
-    schedule[0] = 0x61707865;
-    schedule[1] = 0x3320646e;
-    schedule[2] = 0x79622d32;
-    schedule[3] = 0x6b206574;
-    schedule[4] = LE(key + 0);
-    schedule[5] = LE(key + 4);
-    schedule[6] = LE(key + 8);
-    schedule[7] = LE(key + 12);
-    schedule[8] = LE(key + 16);
-    schedule[9] = LE(key + 20);
-    schedule[10] = LE(key + 24);
-    schedule[11] = LE(key + 28);
-    schedule[12] = 0;
-    schedule[13] = 0;
-    schedule[14] = LE(iv + 0);
-    schedule[15] = LE(iv + 4);
+    m_state[0] = 0x61707865;
+    m_state[1] = 0x3320646e;
+    m_state[2] = 0x79622d32;
+    m_state[3] = 0x6b206574;
+
+    m_state[4] = load_le<quint32>(key, 0);
+    m_state[5] = load_le<quint32>(key, 1);
+    m_state[6] = load_le<quint32>(key, 2);
+    m_state[7] = load_le<quint32>(key, 3);
+
+    key += 16;
+
+    m_state[8] = load_le<quint32>(key, 0);
+    m_state[9] = load_le<quint32>(key, 1);
+    m_state[10] = load_le<quint32>(key, 2);
+    m_state[11] = load_le<quint32>(key, 3);
+    m_state[12] = 0;
+    m_state[13] = 0;
+    m_state[14] = load_le<quint32>(iv, 0);
+    m_state[15] = load_le<quint32>(iv, 1);
+
     chacha();
-    position = 0;
 }
 
 void ChaCha::chacha()
 {
-    keystream = schedule;
-    for (int i = 0; i < 10; ++i) {
-        QUARTERROUND(keystream.data(), 0, 4, 8, 12)
-        QUARTERROUND(keystream.data(), 1, 5, 9, 13)
-        QUARTERROUND(keystream.data(), 2, 6, 10, 14)
-        QUARTERROUND(keystream.data(), 3, 7, 11, 15)
-        QUARTERROUND(keystream.data(), 0, 5, 10, 15)
-        QUARTERROUND(keystream.data(), 1, 6, 11, 12)
-        QUARTERROUND(keystream.data(), 2, 7, 8, 13)
-        QUARTERROUND(keystream.data(), 3, 4, 9, 14)
+    byte *output = m_buffer.data();
+    const quint32 *input = m_state.constData();
+    quint32 x00 = input[ 0], x01 = input[ 1], x02 = input[ 2], x03 = input[ 3],
+            x04 = input[ 4], x05 = input[ 5], x06 = input[ 6], x07 = input[ 7],
+            x08 = input[ 8], x09 = input[ 9], x10 = input[10], x11 = input[11],
+            x12 = input[12], x13 = input[13], x14 = input[14], x15 = input[15];
+    for (size_t i = 0; i != 10; ++i) {
+        CHACHA_QUARTER_ROUND(x00, x04, x08, x12);
+        CHACHA_QUARTER_ROUND(x01, x05, x09, x13);
+        CHACHA_QUARTER_ROUND(x02, x06, x10, x14);
+        CHACHA_QUARTER_ROUND(x03, x07, x11, x15);
+
+        CHACHA_QUARTER_ROUND(x00, x05, x10, x15);
+        CHACHA_QUARTER_ROUND(x01, x06, x11, x12);
+        CHACHA_QUARTER_ROUND(x02, x07, x08, x13);
+        CHACHA_QUARTER_ROUND(x03, x04, x09, x14);
     }
-    for (int i = 0; i < 16; ++i) {
-        quint32 result = keystream[i] + schedule[i];
-        FROMLE(reinterpret_cast<quint8 *>(keystream.data() + i), result);
-    }
-    ++schedule[12];
-    schedule[13] += (schedule[12] == 0);
+
+     store_le(x00 + input[ 0], output + 4 *  0);
+     store_le(x01 + input[ 1], output + 4 *  1);
+     store_le(x02 + input[ 2], output + 4 *  2);
+     store_le(x03 + input[ 3], output + 4 *  3);
+     store_le(x04 + input[ 4], output + 4 *  4);
+     store_le(x05 + input[ 5], output + 4 *  5);
+     store_le(x06 + input[ 6], output + 4 *  6);
+     store_le(x07 + input[ 7], output + 4 *  7);
+     store_le(x08 + input[ 8], output + 4 *  8);
+     store_le(x09 + input[ 9], output + 4 *  9);
+     store_le(x10 + input[10], output + 4 * 10);
+     store_le(x11 + input[11], output + 4 * 11);
+     store_le(x12 + input[12], output + 4 * 12);
+     store_le(x13 + input[13], output + 4 * 13);
+     store_le(x14 + input[14], output + 4 * 14);
+     store_le(x15 + input[15], output + 4 * 15);
+
+     ++m_state[12];
+     m_state[13] += (m_state[12] == 0);
+     m_position = 0;
 }
 
-QByteArray ChaCha::update(const QByteArray &in)
+QByteArray ChaCha::update(const QByteArray &input)
 {
-    quint32 length = in.length();
-    QByteArray out;
-    out.resize(length);
-    const quint8 *inpointer = reinterpret_cast<const quint8*>(in.data());
-    quint8 *outpointer = reinterpret_cast<quint8*>(out.data());
+    size_t length = input.length();
+    QByteArray output;
+    output.resize(length);
+    const byte *in = reinterpret_cast<const byte*>(input.constData());
+    byte *out = reinterpret_cast<byte*>(output.data());
 
-    for (quint32 delta = 64 - position; length >= delta; delta = 64 - position) {//keystream.size() * 4 = 64
-        chacha_xor(reinterpret_cast<quint8 *>(keystream.data()) + position, inpointer, outpointer, delta);
+    for (size_t delta = m_buffer.size() - m_position; length >= delta; delta = m_buffer.size() - m_position) {
+        chacha_xor(m_buffer.data() + m_position, in, out, delta);
         length -= delta;
-        inpointer += delta;
-        outpointer += delta;
+        in += delta;
+        out += delta;
         chacha();
-        position = 0;
     }
 
-    chacha_xor(reinterpret_cast<quint8 *>(keystream.data()) + position, inpointer, outpointer, length);
-    position += length;
-    return out;
+    chacha_xor(m_buffer.data() + m_position, in, out, length);
+    m_position += length;
+    return output;
 }
