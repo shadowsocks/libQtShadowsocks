@@ -36,8 +36,6 @@
 #include "profile.h"
 #include "udprelay.h"
 
-using namespace QSS;
-
 namespace QSS {
 
 class QSS_EXPORT Controller : public QObject

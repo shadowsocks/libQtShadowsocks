@@ -31,8 +31,6 @@
 #include "common.h"
 #include "encryptor.h"
 
-using namespace QSS;
-
 namespace QSS {
 
 class Connection : public QObject

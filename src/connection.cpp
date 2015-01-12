@@ -24,6 +24,8 @@
 #include "controller.h"
 #include <QDebug>
 
+using namespace QSS;
+
 Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)

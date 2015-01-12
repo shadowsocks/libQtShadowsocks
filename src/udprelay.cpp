@@ -23,6 +23,8 @@
 #include "udprelay.h"
 #include "controller.h"
 
+using namespace QSS;
+
 UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)

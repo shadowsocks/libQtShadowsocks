@@ -30,8 +30,6 @@
 #include "encryptor.h"
 #include "common.h"
 
-using namespace QSS;
-
 namespace QSS {
 
 class UdpRelay : public QObject

@@ -26,6 +26,8 @@
 #include "connection.h"
 #include "encryptor.h"
 
+using namespace QSS;
+
 Controller::Controller(bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)
