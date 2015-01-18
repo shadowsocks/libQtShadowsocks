@@ -34,7 +34,7 @@ else {
     DEFINES += QSS_LIBRARY
 }
 
-include(src/QtShadowsocks.pri)
+include(lib/QtShadowsocks.pri)
 
 unix: {
     VERSION     = 1.2
