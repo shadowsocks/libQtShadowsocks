@@ -75,7 +75,13 @@ By default, it'll use `/usr` as path prefix on unix platforms, while the prefix 
 
 After installation of `libQtShadowsocks`, you can `cd` into `client` and do the same procedure to install `shadowsocks-libqss`.
 
-###Debian/Ubuntu/Linux Mint/Deepin/etc###
+###Fedora/Red Hat Enterprise Linux/CentOS###
+
+Requirement: Fedora >= 20 or Red Hat Enterprise Linux >= 7
+
+For instructions, please refer to [librehat/shadowsocks project in Copr](http://copr.fedoraproject.org/coprs/librehat/shadowsocks/).
+
+###Debian/Ubuntu/Linux Mint/Deepin###
 
 Requirement: Debian >= 7 or Ubuntu >= 14.04
 
