@@ -46,13 +46,13 @@ Current Status
 RoadMap
 -------
 
-Below features will possibly be implemented in future versions. While even version number indicates a stable version. Odd number means development version correspondingly.
+Below features will possibly be implemented in future versions.
 
 - ~~Traffic statistics (v1.2)~~
 - ~~Server ping (v1.2)~~
 - ~~ChaCha cipher (use bundled ChaCha for botan < 1.11)~~
-- Multiple server IP address random choose (v1.4)
-- Multiple profile balance (v1.6)
+- Multiple servers balance (v1.4)
+- Multiple profiles balance (v1.6)
 
 Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to apply for a new feature.
 
@@ -74,6 +74,19 @@ If you want to build `libQtShadowsocks` against other botan versions than 1.10, 
 By default, it'll use `/usr` as path prefix on unix platforms, while the prefix is this source code directory (current working directory) on Windows platform.
 
 After installation of `libQtShadowsocks`, you can `cd` into `client` and do the same procedure to install `shadowsocks-libqss`.
+
+###Debian/Ubuntu/Linux Mint/Deepin/etc###
+
+Requirement: Debian >= 7 or Ubuntu >= 14.04
+
+For Ubuntu users, please use [PPA](https://code.launchpad.net/~hzwhuang/+archive/ubuntu/ss-qt5).
+
+```bash
+sudo apt-get install qt5-qmake qtbase5-dev qtbase5-private-dev libbotan1.10-dev #skip this part if you installed these packages
+dpkg-buildpackage -uc -us -b
+```
+
+Then DEBs will be generated.
 
 License
 -------
