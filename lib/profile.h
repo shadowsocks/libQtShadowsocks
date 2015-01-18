@@ -1,5 +1,5 @@
 /*
- * client.h - header file of Client class
+ * profile.h - defines Profile struct
  *
  * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
  *
@@ -20,30 +20,24 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CLIENT_H
-#define CLIENT_H
+#ifndef PROFILE_H
+#define PROFILE_H
 
-#include <QObject>
-#include <QtShadowsocks>
+#include <QString>
 
-class Client : public QObject
-{
-    Q_OBJECT
-public:
-    explicit Client(QObject *parent = 0);
-    bool readConfig(const QString &);
+namespace QSS {
 
-public slots:
-    bool start(bool _server = false);
+struct Profile {
+    QString server;
+    QString local_address;
+    QString method;
+    QString password;
+    quint16 server_port;
+    quint16 local_port;
+    int timeout;
 
-private:
-    QSS::Controller *lc;
-    QSS::Profile profile;
-
-    bool cipherTest();
-
-private slots:
-    void logHandler(const QString &);
+    Profile() : server_port(8388), local_port(1080), timeout(600) {}
 };
 
-#endif // CLIENT_H
+}
+#endif // PROFILE_H
