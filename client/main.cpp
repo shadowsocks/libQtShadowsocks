@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
     a.setApplicationName("Shadowsocks-libQtShadowsocks");
-    a.setApplicationVersion("1.2");
+    a.setApplicationVersion("1.3");
 
     signal(SIGINT, onSIGINT_TERM);
     signal(SIGTERM, onSIGINT_TERM);

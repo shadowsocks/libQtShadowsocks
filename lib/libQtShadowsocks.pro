@@ -37,7 +37,7 @@ else {
 include(QtShadowsocks.pri)
 
 unix: {
-    VERSION     = 1.2
+    VERSION     = 1.3
 
     CONFIG     += create_pc create_prl no_install_prl link_pkgconfig
 
