@@ -31,7 +31,9 @@
 #include <arpa/inet.h>
 #endif
 
+#include <botan/auto_rng.h>
 #include "common.h"
+
 using namespace QSS;
 
 QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
@@ -128,4 +130,20 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
     else {
         qDebug() << "Unsupported addrtype" << addrtype << "maybe wrong password";
     }
+}
+
+int Common::randomNumber(int max, int min)
+{
+    Botan::AutoSeeded_RNG rng;
+    QByteArray randomArray;
+    int range = max - min;
+    randomArray.resize(range / 255 + 1);//treat each unsigned char as an unsigned 8-bit integer (0~255)
+    rng.randomize(reinterpret_cast<unsigned char*>(randomArray.data()), randomArray.length());
+
+    int r = 0;
+    //sum them
+    for (QByteArray::ConstIterator it = randomArray.constBegin(); it != randomArray.constEnd(); ++it) {
+        r += static_cast<quint8>(*it);
+    }
+    return r % range + min;
 }

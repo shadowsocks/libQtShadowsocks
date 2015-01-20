@@ -22,6 +22,7 @@
 
 #include <QHostInfo>
 #include <QTcpSocket>
+
 #include "controller.h"
 #include "connection.h"
 #include "encryptor.h"
@@ -133,7 +134,7 @@ QHostAddress Controller::getServerAddr()
         return QHostAddress();
     }
     else {
-        return serverAddrList.first();//Todo: maybe randomly pick one?
+        return serverAddrList.at(Common::randomNumber(serverAddrList.size()));
     }
 }
 

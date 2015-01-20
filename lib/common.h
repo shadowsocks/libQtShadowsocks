@@ -57,16 +57,17 @@ public:
     static QByteArray packAddress(const Address &addr);
     static QByteArray packAddress(const QHostAddress &addr, const quint16 &port);//this will never use ADDRTYPE_HOST because addr is an IP address
     static void parseHeader(const QByteArray &data, Address &addr, int &length);
-};
+    static int randomNumber(int max, int min = 0);//generate a random number which is in the range [min, max)
 
-inline void exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length)
-{
-    unsigned char *end_ks = ks + length;
-    do {
-        *out = *in ^ *ks;
-        ++out; ++in; ++ks;
-    } while (ks < end_ks);
-}
+    inline static void exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length)
+    {
+        unsigned char *end_ks = ks + length;
+        do {
+            *out = *in ^ *ks;
+            ++out; ++in; ++ks;
+        } while (ks < end_ks);
+    }
+};
 
 }
 
