@@ -37,7 +37,6 @@ Controller::Controller(bool is_local, QObject *parent) :
 
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
-    qDebug() << "Maximum pending connections is set to" << FD_SETSIZE;
 
     udpRelay = new UdpRelay(isLocal, this);
     connectionCollector = new QObjectCleanupHandler;
@@ -58,7 +57,6 @@ Controller::Controller(bool is_local, QObject *parent) :
 Controller::~Controller()
 {
     delete connectionCollector;//we have to delete all connections at first. otherwise, the application will crash.
-    qDebug() << "Controller exited gracefully.";
 }
 
 bool Controller::setup(const Profile &p)
