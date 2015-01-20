@@ -1,3 +1,9 @@
+libqtshadowsocks (1.4-1) unstable; urgency=medium
+
+  * use bundled RC4 cipher to avoid crashes.
+
+ -- Symeon Huang <symeon@odroid-u3>  Sun, 20 Tue 2015 14:26:30 +0000
+
 libqtshadowsocks (1.3-1) stable; urgency=medium
 
   * split into several binary packages.
