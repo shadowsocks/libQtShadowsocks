@@ -51,10 +51,11 @@ Below features will possibly be implemented in future versions.
 - ~~Traffic statistics (v1.2)~~
 - ~~Server ping (v1.2)~~
 - ~~ChaCha cipher (use bundled ChaCha for botan < 1.11)~~
-- Multiple servers balance (v1.4)
+- ~~Multiple servers balance (v1.4)~~
 - Multiple profiles balance (v1.6)
+- TCP fast open on Linux platform (v1.8)
 
-Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to apply for a new feature.
+Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to request a new feature.
 
 Build & Install
 ---------------
