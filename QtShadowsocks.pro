@@ -8,3 +8,5 @@ CONFIG  += ordered
 
 SUBDIRS  = lib/libQtShadowsocks.pro \
            client/shadowsocks-libqss.pro
+
+OTHER_FILES += README.md

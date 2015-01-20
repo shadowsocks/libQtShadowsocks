@@ -10,7 +10,8 @@ SOURCES  += \
             controller.cpp \
             encryptor.cpp \
             udprelay.cpp \
-            chacha.cpp
+            chacha.cpp \
+            rc4.cpp
 
 HEADERS  += \
             address.h \
@@ -23,7 +24,5 @@ HEADERS  += \
             profile.h \
             QtShadowsocks \
             udprelay.h \
-            chacha.h
-
-OTHER_FILES += \
-    README.md
+            chacha.h \
+            rc4.h

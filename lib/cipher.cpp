@@ -33,21 +33,15 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
 {
     Botan::Keyed_Filter *filter;
     if (method.contains("RC4")) {
-        QByteArray rc4_key;
-        if (iv.isEmpty()) {//old deprecated rc4's iv is empty
-            rc4_key = key;
-        }
-        else {//otherwise, it's rc4-md5
-            rc4_key = md5Hash(key + iv);
-        }
-        Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(rc4_key.constData()), key.size());
-        filter = Botan::get_cipher(Botan::version_minor() < 11 ? "ARC4" : "RC4",
-                                   _key, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
+        flag = 2;
+        rc4 = new RC4(key, iv, this);
+        pipe = NULL;
+        return;
     }
     else {
-
 #if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
         if (method.contains("ChaCha")) {
+            flag = 1;
             chacha = new ChaCha(key, iv, this);
             pipe = NULL;
             return;
@@ -61,6 +55,7 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
     }
     //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
     pipe = new Botan::Pipe(filter);
+    flag = 0;
 }
 
 Cipher::~Cipher()
@@ -91,17 +86,19 @@ QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
 
 QByteArray Cipher::update(const QByteArray &data)
 {
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
-    if (pipe == NULL) {
+    if (flag == 1) {
         return chacha->update(data);
     }
-#endif
-
-    pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
-    size_t id = pipe->message_count() - 1;
-    SecureByteArray c = pipe->read_all(id);
-    QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)), c.size());
-    return out;
+    else if (flag == 2) {
+        return rc4->update(data);
+    }
+    else {
+        pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
+        size_t id = pipe->message_count() - 1;
+        SecureByteArray c = pipe->read_all(id);
+        QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)), c.size());
+        return out;
+    }
 }
 
 QByteArray Cipher::randomIv(int length)
@@ -129,7 +126,7 @@ bool Cipher::isSupported(const QByteArray &method)
 #endif
 
     if (method.contains("RC4")) {
-        return Botan::have_algorithm(Botan::version_minor() < 11 ? "ARC4" : "RC4");
+        return true;
     }
     else {
         //have_algorithm function take only the **algorithm** (so we need to omit the mode)

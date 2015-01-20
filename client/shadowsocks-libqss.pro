@@ -59,4 +59,5 @@ win32: {
 }
 INCLUDEPATH     += $$top_srcdir/../lib
 LIBS            += -L$$top_srcdir/../lib \
+                   -L../lib \
                    -lQtShadowsocks
