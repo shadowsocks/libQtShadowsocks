@@ -44,14 +44,6 @@ public slots:
 
 private:
     void generate();
-    inline void rc4_xor(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length)
-    {
-        unsigned char *end_ks = ks + length;
-        do {
-            *out = *in ^ *ks;
-            ++out; ++in; ++ks;
-        } while (ks < end_ks);
-    }
 
     unsigned char x, y;
     QVector<unsigned char> state;

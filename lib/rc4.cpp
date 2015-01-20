@@ -22,7 +22,7 @@
 
 #include "rc4.h"
 #include "cipher.h"
-#include <botan/parsing.h>
+#include "common.h"
 
 using namespace QSS;
 
@@ -63,13 +63,13 @@ QByteArray RC4::update(const QByteArray &input)
     unsigned char *out = reinterpret_cast<unsigned char*>(output.data());
 
     for (quint32 delta = buffer.size() - position; length >= delta; delta = buffer.size() - position) {
-        rc4_xor(buffer.data() + position, in, out, delta);
+        exclusive_or(buffer.data() + position, in, out, delta);
         length -= delta;
         in += delta;
         out += delta;
         generate();
     }
-    rc4_xor(buffer.data() + position, in, out, length);
+    exclusive_or(buffer.data() + position, in, out, length);
     position += length;
     return output;
 }

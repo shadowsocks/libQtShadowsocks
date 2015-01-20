@@ -21,6 +21,7 @@
  */
 
 #include "chacha.h"
+#include "common.h"
 #include <botan/loadstor.h>
 #include <botan/rotate.h>
 
@@ -38,8 +39,8 @@ using namespace Botan;
 ChaCha::ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
     QObject (parent)
 {
-    const byte *key = reinterpret_cast<const byte*>(_key.constData());
-    const byte *iv = reinterpret_cast<const byte*>(_iv.constData());
+    const unsigned char *key = reinterpret_cast<const unsigned char*>(_key.constData());
+    const unsigned char *iv = reinterpret_cast<const unsigned char*>(_iv.constData());
 
     m_state.resize(16);
     m_buffer.resize(64);
@@ -70,13 +71,13 @@ ChaCha::ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
 
 void ChaCha::chacha()
 {
-    byte *output = m_buffer.data();
+    unsigned char *output = m_buffer.data();
     const quint32 *input = m_state.constData();
     quint32 x00 = input[ 0], x01 = input[ 1], x02 = input[ 2], x03 = input[ 3],
             x04 = input[ 4], x05 = input[ 5], x06 = input[ 6], x07 = input[ 7],
             x08 = input[ 8], x09 = input[ 9], x10 = input[10], x11 = input[11],
             x12 = input[12], x13 = input[13], x14 = input[14], x15 = input[15];
-    for (size_t i = 0; i != 10; ++i) {
+    for (quint32 i = 0; i != 10; ++i) {
         CHACHA_QUARTER_ROUND(x00, x04, x08, x12);
         CHACHA_QUARTER_ROUND(x01, x05, x09, x13);
         CHACHA_QUARTER_ROUND(x02, x06, x10, x14);
@@ -112,21 +113,21 @@ void ChaCha::chacha()
 
 QByteArray ChaCha::update(const QByteArray &input)
 {
-    size_t length = input.length();
+    quint32 length = input.length();
     QByteArray output;
     output.resize(length);
-    const byte *in = reinterpret_cast<const byte*>(input.constData());
-    byte *out = reinterpret_cast<byte*>(output.data());
+    const unsigned char *in = reinterpret_cast<const unsigned char*>(input.constData());
+    unsigned char *out = reinterpret_cast<unsigned char*>(output.data());
 
-    for (size_t delta = m_buffer.size() - m_position; length >= delta; delta = m_buffer.size() - m_position) {
-        chacha_xor(m_buffer.data() + m_position, in, out, delta);
+    for (quint32 delta = m_buffer.size() - m_position; length >= delta; delta = m_buffer.size() - m_position) {
+        exclusive_or(m_buffer.data() + m_position, in, out, delta);
         length -= delta;
         in += delta;
         out += delta;
         chacha();
     }
 
-    chacha_xor(m_buffer.data() + m_position, in, out, length);
+    exclusive_or(m_buffer.data() + m_position, in, out, length);
     m_position += length;
     return output;
 }

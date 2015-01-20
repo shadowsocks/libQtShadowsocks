@@ -47,18 +47,9 @@ public slots:
 private:
     QVector<quint32> m_state;
     QVector<unsigned char> m_buffer;
-    size_t m_position;
+    quint32 m_position;
 
     void chacha();
-
-    inline void chacha_xor(unsigned char *ks, const unsigned char *in, unsigned char *out, size_t length)
-    {
-        unsigned char *end_ks = ks + length;
-        do {
-            *out = *in ^ *ks;
-            ++out; ++in; ++ks;
-        } while (ks < end_ks);
-    }
 };
 
 }
