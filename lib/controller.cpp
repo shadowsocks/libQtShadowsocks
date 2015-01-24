@@ -55,6 +55,12 @@ Controller::Controller(bool is_local, QObject *parent) :
     connect(this, &Controller::info, this, &Controller::debug);
 }
 
+Controller::Controller(const Profile &_profile, bool is_local, QObject *parent) :
+    Controller(is_local, parent)
+{
+    setup(_profile);
+}
+
 Controller::~Controller()
 {
     delete connectionCollector;//we have to delete all connections at first. otherwise, the application will crash.
