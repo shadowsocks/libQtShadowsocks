@@ -66,8 +66,8 @@ bool Client::start(bool _server)
         lc->deleteLater();
     }
     lc = new QSS::Controller(!_server, this);
-    lc->setup(profile);
     connect (lc, &QSS::Controller::debug, this, &Client::logHandler);
+    lc->setup(profile);
     return lc->start() && cipherTest();
 }
 
