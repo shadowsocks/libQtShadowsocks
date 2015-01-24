@@ -41,7 +41,9 @@ Address::Address(const QHostAddress &ip, const quint16 &p, QObject *parent) :
     QObject(parent),
     ipAddress(ip),
     port(p)
-{}
+{
+    address = ip.toString();
+}
 
 Address::Address(const Address &o, QObject *parent) :
     QObject(parent)

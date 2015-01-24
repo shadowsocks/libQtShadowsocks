@@ -83,7 +83,7 @@ bool Client::cipherTest()
     }
 }
 
-void Client::logHandler(const QString &log)
+inline void Client::logHandler(const QString &log)
 {
     qDebug() << log;
 }

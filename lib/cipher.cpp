@@ -20,7 +20,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <QCryptographicHash>
 #include <botan/auto_rng.h>
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
@@ -112,11 +111,6 @@ QByteArray Cipher::randomIv(int length)
     out.resize(length);
     rng.randomize(reinterpret_cast<Botan::byte *>(out.data()), length);
     return out;
-}
-
-QByteArray Cipher::md5Hash(const QByteArray &in)
-{
-    return QCryptographicHash::hash(in, QCryptographicHash::Md5);
 }
 
 bool Cipher::isSupported(const QByteArray &method)
