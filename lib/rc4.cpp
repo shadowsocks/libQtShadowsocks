@@ -62,7 +62,7 @@ QByteArray RC4::update(const QByteArray &input)
     const unsigned char *in = reinterpret_cast<const unsigned char*>(input.constData());
     unsigned char *out = reinterpret_cast<unsigned char*>(output.data());
 
-    for (quint32 delta = buffer.size() - position; length >= delta; delta = buffer.size() - position) {
+    for (quint32 delta = 4096 - position; length >= delta; delta = 4096 - position) {//4096 == buffer.size()
         Common::exclusive_or(buffer.data() + position, in, out, delta);
         length -= delta;
         in += delta;

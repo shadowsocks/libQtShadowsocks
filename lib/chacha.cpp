@@ -119,7 +119,7 @@ QByteArray ChaCha::update(const QByteArray &input)
     const unsigned char *in = reinterpret_cast<const unsigned char*>(input.constData());
     unsigned char *out = reinterpret_cast<unsigned char*>(output.data());
 
-    for (quint32 delta = m_buffer.size() - m_position; length >= delta; delta = m_buffer.size() - m_position) {
+    for (quint32 delta = 64 - m_position; length >= delta; delta = 64 - m_position) {//64 == m_buffer.size()
         Common::exclusive_or(m_buffer.data() + m_position, in, out, delta);
         length -= delta;
         in += delta;
