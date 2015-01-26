@@ -44,12 +44,14 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
 
     local = localTcpSocket;
     local->setParent(this);
-    local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     local->setReadBufferSize(RecvSize);
+    local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    local->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
     remote = new QTcpSocket(this);
     remote->setReadBufferSize(RecvSize);
     remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
     if (isLocal) {
         remote->connectToHost(c->getServerAddr(), c->getServerPort());
     }
