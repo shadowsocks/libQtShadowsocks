@@ -12,10 +12,12 @@ CONFIG   += console c++11
 
 TEMPLATE  = app
 
-HEADERS  += client.h
+HEADERS  += client.h \
+            utils.h
 
 SOURCES  += client.cpp \
-            main.cpp
+            main.cpp \
+            utils.cpp
 
 isEmpty(INSTALL_PREFIX) {
     unix: INSTALL_PREFIX = /usr

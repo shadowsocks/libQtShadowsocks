@@ -32,6 +32,7 @@ class Client : public QObject
 public:
     explicit Client(QObject *parent = 0);
     bool readConfig(const QString &);
+    QString getMethod() const;
 
 public slots:
     bool start(bool _server = false);

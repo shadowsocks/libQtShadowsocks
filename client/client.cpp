@@ -87,3 +87,8 @@ inline void Client::logHandler(const QString &log)
 {
     qDebug() << log;
 }
+
+QString Client::getMethod() const
+{
+    return profile.method;
+}

@@ -20,8 +20,10 @@
 
 #include <QCoreApplication>
 #include <QCommandLineParser>
+#include <QDebug>
 #include <signal.h>
 #include "client.h"
+#include "utils.h"
 
 using namespace QSS;
 
@@ -44,13 +46,21 @@ int main(int argc, char *argv[])
     parser.addVersionOption();
     QCommandLineOption configFile(QStringList() << "c" << "config-file", "specify config.json file.", "config.json", "config.json");
     QCommandLineOption serverMode(QStringList() << "s" << "server-mode", "run as shadowsocks server.");
+    QCommandLineOption testSpeed("t", "test encrypt/decrypt speed.");
     parser.addOption(configFile);
     parser.addOption(serverMode);
+    parser.addOption(testSpeed);
     parser.process(a);
 
     Client c;
     if (c.readConfig(parser.value(configFile))) {
-        if (c.start(parser.isSet(serverMode))) {
+        if (parser.isSet(testSpeed)) {
+            qDebug() << "Encrypt Method      :" << c.getMethod();
+            qDebug() << "Datagram size       : 100 MB";
+            qDebug() << "Time used to encrypt:" << Utils::testSpeed(c.getMethod(), 100) << "ms";
+            return 0;
+        }
+        else if (c.start(parser.isSet(serverMode))) {
             return a.exec();
         }
         else {
