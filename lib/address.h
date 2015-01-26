@@ -47,9 +47,10 @@ public:
 
     /*
      * Get the "ping" time of this Address
-     * bind pingTime signal to retreive the time (milliseconds)
+     * return -1 if the target can't be connected before timed out (3000 ms by default)
+     * otherwise, the time used to connect will be returned
      */
-    void ping();
+    int ping(int timeout = 3000);
 
     void setAddress(const QString &);
     void setIPAddress(const QHostAddress &);
@@ -75,9 +76,6 @@ public:
     inline bool operator==(const Address &o) const {
         return (this->address == o.address) && (this->port == o.port);
     }
-
-signals:
-    void pingTime(int);
 
 private:
     QString address;

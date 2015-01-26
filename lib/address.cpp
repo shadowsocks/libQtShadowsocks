@@ -23,7 +23,7 @@
  */
 
 #include <QHostInfo>
-#include <QTimer>
+#include <QTime>
 #include <QTcpSocket>
 #include "address.h"
 
@@ -86,14 +86,17 @@ quint16 Address::getPort() const
     return port;
 }
 
-void Address::ping()
+int Address::ping(int timeout)
 {
-    QTimer timer;
-    connect(&timer, &QTimer::timeout, [&] { emit pingTime(-1); });
     QTcpSocket socket;
-    connect(&socket, &QTcpSocket::connected, [&] { timer.stop(); emit pingTime(3000 - timer.remainingTime()); });
+    QTime startTime = QTime::currentTime();
     socket.connectToHost(this->getRealIPAddress(), port);
-    timer.start(3000);
+    if (socket.waitForConnected(timeout)) {
+        return startTime.msecsTo(QTime::currentTime());
+    }
+    else {
+        return -1;
+    }
 }
 
 void Address::setAddress(const QString &a)
