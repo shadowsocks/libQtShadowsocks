@@ -58,8 +58,11 @@ unix: {
 win32: {
     DEFINES     += "FD_SETSIZE=1024"
     DEFINES     += QSS_STATIC
+    CONFIG(release, release|debug): LIBS += -L../lib/release
+    else:            LIBS += -L../lib/debug
 }
 INCLUDEPATH     += $$top_srcdir/../lib
 LIBS            += -L$$top_srcdir/../lib \
                    -L../lib \
-                   -lQtShadowsocks
+                   -lQtShadowsocks \
+                   -lbotan-$$BOTAN_VER
