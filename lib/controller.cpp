@@ -34,7 +34,6 @@ Controller::Controller(bool is_local, QObject *parent) :
     isLocal(is_local)
 {
     valid = false;
-    running = false;
 
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
@@ -116,7 +115,7 @@ bool Controller::start()
     }
     emit info(sstr);
 
-    running = true;
+    emit runningStateChanged(true);
     return true;
 }
 
@@ -124,7 +123,7 @@ void Controller::stop()
 {
     tcpServer->close();
     connectionCollector->clear();
-    running = false;
+    emit runningStateChanged(false);
     emit debug("Stopped.");
 }
 
@@ -166,14 +165,14 @@ int Controller::getTimeout()
     return profile.timeout * 1000;
 }
 
-bool Controller::isRunning() const
-{
-    return running;
-}
-
-void Controller::onTcpServerError()
+void Controller::onTcpServerError(QAbstractSocket::SocketError err)
 {
     emit error("TCP server error: " + tcpServer->errorString());
+
+    //can't continue if address is already in use
+    if (err == QAbstractSocket::AddressInUseError) {
+        stop();
+    }
 }
 
 void Controller::onNewTCPConnection()

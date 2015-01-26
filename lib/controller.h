@@ -57,7 +57,6 @@ public:
     virtual quint16 getLocalPort();
     virtual QHostAddress getLocalAddr();
     virtual int getTimeout();//return timeout interval (millisecond)
-    virtual bool isRunning() const;
 
 signals:
     /*
@@ -68,6 +67,9 @@ signals:
     void info(const QString &);
     void debug(const QString &);
 
+    //connect this signal to get notified when running state is changed
+    void runningStateChanged(bool);
+
     void bytesReceivedChanged(const qint64 &);
     void bytesSentChanged(const qint64 &);
 
@@ -77,7 +79,6 @@ public slots:
 
 protected://children can access protected members
     bool valid;
-    bool running;
     const bool isLocal;//run on local-side (client) or server-side (server)
     QTcpServer *tcpServer;
     UdpRelay *udpRelay;
@@ -91,7 +92,7 @@ protected://children can access protected members
     qint64 bytesSent;
 
 protected slots:
-    virtual void onTcpServerError();
+    virtual void onTcpServerError(QAbstractSocket::SocketError err);
     virtual void onNewTCPConnection();
     virtual void onBytesRead(const qint64 &);
     virtual void onBytesSend(const qint64 &);
