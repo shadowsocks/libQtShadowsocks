@@ -11,14 +11,17 @@ Usage
 -----
 
 ```
-Usage: ./shadowsocks-libqss [options]
+Usage: shadowsocks-libqss [options]
 
 Options:
   -h, --help                       Displays this help.
   -v, --version                    Displays version information.
   -c, --config-file <config.json>  specify config.json file.
   -s, --server-mode                run as shadowsocks server.
+  -t                               test encrypt/decrypt speed.
 ```
+
+If `-t` is specified, `shadowsocks-libqss` will do a speed test and print out the time used for encryption (using the method specified by `config.json` file). It'll exit after the speed test.
 
 By default, it runs as local client. You have to pass `-s` if you want it run in server mode.
 
