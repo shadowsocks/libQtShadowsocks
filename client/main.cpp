@@ -55,9 +55,7 @@ int main(int argc, char *argv[])
     Client c;
     if (c.readConfig(parser.value(configFile))) {
         if (parser.isSet(testSpeed)) {
-            qDebug() << "Encrypt Method      :" << c.getMethod();
-            qDebug() << "Datagram size       : 100 MB";
-            qDebug() << "Time used to encrypt:" << Utils::testSpeed(c.getMethod(), 100) << "ms";
+            Utils::testSpeed(c.getMethod(), 100);
             return 0;
         }
         else if (c.start(parser.isSet(serverMode))) {
@@ -68,6 +66,10 @@ int main(int argc, char *argv[])
         }
     }
     else {
+        if (parser.isSet(testSpeed)) {
+            qDebug() << "Testing all encryption methods...";
+            Utils::testSpeed(100);
+        }
         return 1;
     }
 }

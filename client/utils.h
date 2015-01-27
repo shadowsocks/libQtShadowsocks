@@ -2,11 +2,16 @@
 #define UTILS_H
 
 #include <QtGlobal>
+#include <QStringList>
 
 class Utils
 {
 public:
-    static int testSpeed(const QString &method, int data_size_mb = 100);//test 100MB data encrypt/decrypt speed by default. return time used (ms)
+    static void testSpeed(const QString &method, quint32 data_size_mb);//test data encrypt/decrypt speed. print result to terminal
+    static void testSpeed(quint32 data_size_mb);//test all methods
+
+private:
+    static const QStringList allMethods;
 };
 
 #endif // UTILS_H
