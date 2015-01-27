@@ -61,7 +61,7 @@ bool Encryptor::initialise(const QString &m, const QString &pwd)
     method = m.toUpper().toLocal8Bit();//local8bit or utf-8?
     password = pwd.toLocal8Bit();
 
-    if (m.compare("TABLE") == 0) {
+    if (method == "TABLE") {
         type = TABLE;
         tableInit();
         return true;
