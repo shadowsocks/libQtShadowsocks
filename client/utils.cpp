@@ -18,14 +18,13 @@ void Utils::testSpeed(const QString &method, quint32 data_size_mb)
 
     qDebug() << "Encrypt Method      :" << method;
     qDebug() << "Datagram size       :" << data_size_mb << "MB";
-    qDebug() << "Time used to encrypt:" << startTime.msecsTo(QTime::currentTime()) << "ms";
+    qDebug() << "Time used to encrypt:" << startTime.msecsTo(QTime::currentTime()) << "ms" << endl;
 }
 
 void Utils::testSpeed(quint32 data_size_mb)
 {
     foreach(const QString method, allMethods) {
         testSpeed(method, data_size_mb);
-        qDebug() << endl;
     }
 }
 
