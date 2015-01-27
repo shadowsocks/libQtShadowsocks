@@ -21,7 +21,7 @@ Options:
   -t                               test encrypt/decrypt speed.
 ```
 
-If `-t` is specified, `shadowsocks-libqss` will do a speed test and print out the time used for encryption (using the method specified by `config.json` file). It'll exit after the speed test.
+If `-t` is specified, `shadowsocks-libqss` will do a speed test and print out the time used for encryption (using the method specified by `config.json` file). If the `config.json` file doesn't exist, it'll test all encryption methods and print the results. _Note: `shadowsocks-libqss` will exit after the speed test._
 
 By default, it runs as local client. You have to pass `-s` if you want it run in server mode.
 

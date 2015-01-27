@@ -19,6 +19,8 @@ SOURCES  += client.cpp \
             main.cpp \
             utils.cpp
 
+OTHER_FILES += README.md
+
 isEmpty(INSTALL_PREFIX) {
     unix: INSTALL_PREFIX = /usr
     else: INSTALL_PREFIX = $$top_srcdir
