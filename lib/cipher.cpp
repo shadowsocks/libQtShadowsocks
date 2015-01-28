@@ -30,11 +30,11 @@ using namespace QSS;
 Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent) :
     QObject(parent)
 {
+    pipe = NULL;
     Botan::Keyed_Filter *filter;
     if (method.contains("RC4")) {
         flag = 2;
         rc4 = new RC4(key, iv, this);
-        pipe = NULL;
         return;
     }
     else {
@@ -42,11 +42,9 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
         if (method.contains("ChaCha")) {
             flag = 1;
             chacha = new ChaCha(key, iv, this);
-            pipe = NULL;
             return;
         }
 #endif
-
         std::string str(method.constData(), method.length());
         Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(key.constData()), key.size());
         Botan::InitializationVector _iv(reinterpret_cast<const Botan::byte *>(iv.constData()), iv.size());
