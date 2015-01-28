@@ -16,6 +16,8 @@ Build Dependencies
 - Qt5 >= 5.0 (`qtbase5-dev`)
 - Botan >= 1.10.x (`libbotan1.10-dev`)
 
+Compiler must support **C++11** to build this project successfully.
+
 Current Status
 --------------
 

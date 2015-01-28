@@ -36,6 +36,8 @@ public:
     CacheKey(const QHostAddress &rip, const quint16 &rp, const QHostAddress &dip, const quint16 &dp) : r(rip, rp), d(dip, dp) {}
     CacheKey(const QHostAddress &rip, const quint16 &rp, const Address &dA) : r(rip, rp), d(dA) {}
     CacheKey(const Address &rA, const Address &dA) : r(rA), d(dA) {}
+    CacheKey(const CacheKey &o) : r(o.r), d(o.d) {}
+    CacheKey(CacheKey &&) = default;
 
     Address r;
     Address d;
