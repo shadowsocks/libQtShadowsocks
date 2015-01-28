@@ -129,7 +129,7 @@ int Address::addressType() const
     }
 }
 
-Address &Address::operator = (const Address &o)
+Address &Address::operator= (const Address &o)
 {
     this->address = o.getAddress();
     this->ipAddress = o.getIPAddress();

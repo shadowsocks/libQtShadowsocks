@@ -62,9 +62,9 @@ public:
 
     int addressType() const;
 
-    Address& operator = (const Address &o);
+    Address& operator= (const Address &o);
 
-    inline bool operator<(const Address &o) const {
+    inline bool operator< (const Address &o) const {
         if (this->address == o.address) {
             return this->port < o.port;
         }
@@ -73,7 +73,7 @@ public:
         }
     }
 
-    inline bool operator==(const Address &o) const {
+    inline bool operator== (const Address &o) const {
         return (this->address == o.address) && (this->port == o.port);
     }
 

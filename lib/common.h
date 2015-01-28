@@ -40,7 +40,7 @@ public:
     Address r;
     Address d;
 
-    inline bool operator<(const CacheKey &o) const {
+    inline bool operator< (const CacheKey &o) const {
         if (this->r == o.r) {
             return this->d < o.d;
         }
