@@ -1,8 +1,6 @@
 /*
  * controller.h - the header file of Controller class
  *
- * Feel free to subclass this class if needed.
- *
  * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
@@ -44,19 +42,19 @@ class QSS_EXPORT Controller : public QObject
 public:
     Controller(bool is_local = true, QObject *parent = 0);
     Controller(const Profile & _profile, bool is_local = true, QObject *parent = 0);//overloaded function to construct a Controller with given profile
-    virtual ~Controller();
+    ~Controller();
 
     /*
      * You have to call setup before calling start()
      * You can also change the Profile by call setup again with new Profile
      */
-    virtual bool setup(const Profile &);
+    bool setup(const Profile &);
 
-    virtual quint16 getServerPort();
-    virtual QHostAddress getServerAddr();
-    virtual quint16 getLocalPort();
-    virtual QHostAddress getLocalAddr();
-    virtual int getTimeout();//return timeout interval (millisecond)
+    quint16 getServerPort();
+    QHostAddress getServerAddr();
+    quint16 getLocalPort();
+    QHostAddress getLocalAddr();
+    int getTimeout();//return timeout interval (millisecond)
 
 signals:
     /*
@@ -74,8 +72,8 @@ signals:
     void bytesSentChanged(const qint64 &);
 
 public slots:
-    virtual bool start();//return true if start successfully, otherwise return false
-    virtual void stop();
+    bool start();//return true if start successfully, otherwise return false
+    void stop();
 
 protected://children can access protected members
     bool valid;
@@ -92,10 +90,10 @@ protected://children can access protected members
     qint64 bytesSent;
 
 protected slots:
-    virtual void onTcpServerError(QAbstractSocket::SocketError err);
-    virtual void onNewTCPConnection();
-    virtual void onBytesRead(const qint64 &);
-    virtual void onBytesSend(const qint64 &);
+    void onTcpServerError(QAbstractSocket::SocketError err);
+    void onNewTCPConnection();
+    void onBytesRead(const qint64 &);
+    void onBytesSend(const qint64 &);
 };
 
 }
