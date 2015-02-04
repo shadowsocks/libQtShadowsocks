@@ -82,7 +82,7 @@ public:
     }
 
     inline bool operator== (const Address &o) const {
-        return (this->address == o.address) && (this->port == o.port);
+        return (this->address == o.address) && (this->port == o.port) && (this->ipAddrList == o.ipAddrList);
     }
 
 private:
