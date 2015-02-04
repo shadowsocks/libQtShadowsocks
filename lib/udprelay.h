@@ -27,6 +27,7 @@
 #include <QUdpSocket>
 #include <QHostAddress>
 #include <QMap>
+#include "address.h"
 #include "encryptor.h"
 #include "common.h"
 
@@ -52,8 +53,8 @@ signals:
 private:
     const bool isLocal;
     QUdpSocket *listen;
-    QUdpSocket *remote;
     Encryptor *encryptor;
+    Address destination;
 
     static QMap<CacheKey, QUdpSocket *> cache;
     static QMap<qintptr, Address> clientDescriptorToServerAddr;

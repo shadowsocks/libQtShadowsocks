@@ -45,15 +45,11 @@ UdpRelay::UdpRelay(bool is_local, QObject *parent) :
 
     if (isLocal) {
         listen->bind(c->getLocalAddr(), c->getLocalPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
-        remote = new QUdpSocket(this);
-        connect(remote, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
-        remote->connectToHost(c->getServerAddr(), c->getServerPort());
-        remote->setReadBufferSize(RecvSize);
-        remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+        destination.setAddress(c->getServerString());
+        destination.setPort(c->getServerPort());
     }
     else {
         listen->bind(c->getServerAddr(), c->getServerPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
-        remote = NULL;
     }
 
     listen->setReadBufferSize(RecvSize);
@@ -141,14 +137,13 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     if (isLocal) {
         data = encryptor->encryptAll(data);
-        destAddr.setIPAddress(remote->peerAddress());
-        destAddr.setPort(remote->peerPort());
+        destAddr = destination;
     }
     else {
         data = data.mid(header_length);
     }
 
-    client->writeDatagram(data, destAddr.getRealIPAddress(), destAddr.getPort());
+    client->writeDatagram(data, destAddr.getIPAddress(), destAddr.getPort());
 }
 
 void UdpRelay::onClientUdpSocketReadyRead()
@@ -189,7 +184,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.getPort() != 0) {
-        qint64 writtenBytes = listen->writeDatagram(response, clientAddress.getRealIPAddress(), clientAddress.getPort());
+        qint64 writtenBytes = listen->writeDatagram(response, clientAddress.getIPAddress(), clientAddress.getPort());
         emit bytesSend(writtenBytes);
     }
     else {
