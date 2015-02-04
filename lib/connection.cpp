@@ -34,7 +34,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     Controller *c = qobject_cast<Controller *>(parent);
 
     if(c == NULL) {
-        qCritical() << "Fatal. Connection's parent must be a BaseController object.";
+        qCritical() << "Fatal. Connection's parent must be a Controller object.";
         return;
     }
 
