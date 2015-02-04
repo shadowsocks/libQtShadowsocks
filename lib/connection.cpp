@@ -124,7 +124,7 @@ void Connection::handleStageHello(QByteArray &data)
 bool Connection::writeToRemote(const QByteArray &data)
 {
     if (!isLocal && remote->state() != QAbstractSocket::ConnectedState) {
-        remote->connectToHost(remoteAddress.getRealIPAddress(), remoteAddress.getPort());
+        remote->connectToHost(remoteAddress.getIPAddress(), remoteAddress.getPort());
     }
     qint64 s = remote->write(data);
     emit bytesSend(s);

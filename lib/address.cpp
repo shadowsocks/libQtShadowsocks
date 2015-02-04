@@ -96,7 +96,7 @@ int Address::ping(int timeout)
 {
     QTcpSocket socket;
     QTime startTime = QTime::currentTime();
-    socket.connectToHost(this->getRealIPAddress(), port);
+    socket.connectToHost(this->getIPAddress(), port);
     if (socket.waitForConnected(timeout)) {
         return startTime.msecsTo(QTime::currentTime());
     }
