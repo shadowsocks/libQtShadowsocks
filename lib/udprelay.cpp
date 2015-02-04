@@ -32,7 +32,7 @@ UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     Controller *c = qobject_cast<Controller *>(parent);
 
     if(c == NULL) {
-        qCritical() << "Fatal. UdpRelay's parent must be a BaseController object.";
+        qCritical() << "Fatal. UdpRelay's parent must be a Controller object.";
         return;
     }
 
