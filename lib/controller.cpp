@@ -127,7 +127,7 @@ void Controller::stop()
     emit debug("Stopped.");
 }
 
-quint16 Controller::getServerPort()
+quint16 Controller::getServerPort() const
 {
     return profile.server_port;
 }
@@ -143,7 +143,12 @@ QHostAddress Controller::getServerAddr()
     }
 }
 
-quint16 Controller::getLocalPort()
+QString Controller::getServerString() const
+{
+    return profile.server;
+}
+
+quint16 Controller::getLocalPort() const
 {
     return profile.local_port;
 }
@@ -160,7 +165,7 @@ QHostAddress Controller::getLocalAddr()
     }
 }
 
-int Controller::getTimeout()
+int Controller::getTimeout() const
 {
     return profile.timeout * 1000;
 }

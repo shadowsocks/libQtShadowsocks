@@ -50,11 +50,12 @@ public:
      */
     bool setup(const Profile &);
 
-    quint16 getServerPort();
+    quint16 getServerPort() const;
     QHostAddress getServerAddr();
-    quint16 getLocalPort();
+    QString getServerString() const;//return the server config from profile
+    quint16 getLocalPort() const;
     QHostAddress getLocalAddr();
-    int getTimeout();//return timeout interval (millisecond)
+    int getTimeout() const;//return timeout interval (millisecond)
 
 signals:
     /*
