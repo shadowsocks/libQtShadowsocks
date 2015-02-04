@@ -1,3 +1,10 @@
+libqtshadowsocks (1.4.1-1) stable; urgency=medium
+
+  * minor improvements
+  * fix udp issues
+
+ -- Symeon Huang <symeon@odroid-u3>  Wed, 04 Feb 2015 12:46:00 +0000
+
 libqtshadowsocks (1.4.0-1) stable; urgency=medium
 
   * use bundled RC4 cipher to avoid crashes.
