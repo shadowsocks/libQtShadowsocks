@@ -66,22 +66,17 @@ QHostAddress Address::getIPAddress()
 QHostAddress Address::getRealIPAddress()
 {
     if (ipAddrList.isEmpty()) {
-        //lookup the host
-        ipAddrList = QHostInfo::fromName(address).addresses();
-        if (ipAddrList.isEmpty()) {
-            qWarning() << "Can't look up the IP addresses of " << address;
-            ipAddrList.append(QHostAddress());
-        }
+        lookUpIP();
     }
     return ipAddrList.first();
 }
 
-bool Address::isIPValid() const
+bool Address::isIPValid()
 {
     if (ipAddrList.isEmpty()) {
-        return false;
+        lookUpIP();
     }
-    else if (ipAddrList.count() == 1 && ipAddrList.first().isNull()) {
+    if (ipAddrList.count() == 1 && ipAddrList.first().isNull()) {
         return false;
     }
     return true;
@@ -110,12 +105,14 @@ void Address::setAddress(const QString &a)
     address = a;
     QHostAddress ipAddress(a);
     if (!ipAddress.isNull()) {
+        ipAddrList.clear();
         ipAddrList.append(ipAddress);
     }
 }
 
 void Address::setIPAddress(const QHostAddress &ip)
 {
+    ipAddrList.clear();
     ipAddrList.append(ip);
     address = ip.toString();
 }
@@ -145,4 +142,13 @@ Address &Address::operator= (const Address &o)
     this->ipAddrList = o.ipAddrList;
     this->port = o.port;
     return *this;
+}
+
+void Address::lookUpIP()
+{
+    ipAddrList = QHostInfo::fromName(address).addresses();
+    if (ipAddrList.isEmpty()) {
+        qWarning() << "Can't look up the IP addresses of " << address;
+        ipAddrList.append(QHostAddress());
+    }
 }

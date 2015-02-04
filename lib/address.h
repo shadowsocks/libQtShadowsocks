@@ -50,7 +50,7 @@ public:
      */
     QHostAddress getRealIPAddress();
 
-    bool isIPValid() const;
+    bool isIPValid();
     quint16 getPort() const;
 
     /*
@@ -89,6 +89,8 @@ private:
     QString address;
     QList<QHostAddress> ipAddrList;
     quint16 port;
+
+    void lookUpIP();
 };
 
 }
