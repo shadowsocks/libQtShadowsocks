@@ -83,7 +83,7 @@ protected://children can access protected members
     UdpRelay *udpRelay;
     QObjectCleanupHandler *connectionCollector;
     Profile profile;
-    QList<QHostAddress> serverAddrList;
+    Address serverAddress;
     Botan::LibraryInitializer init;
 
     //the total bytes recevied or sent by/from all TCP and UDP connections.

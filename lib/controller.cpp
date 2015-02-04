@@ -68,19 +68,13 @@ Controller::~Controller()
 bool Controller::setup(const Profile &p)
 {
     profile = p;
-    serverAddrList.clear();
-    valid = true;
-    //try to use address directly at first (IP address)
-    QHostAddress s_addr(profile.server);
-    if (s_addr.isNull()) {
-        serverAddrList = QHostInfo::fromName(profile.server).addresses();
-        if(serverAddrList.isEmpty()) {//well, we can't get server ip address.
-            emit error("Error. Can't look up IP address of server " + profile.server);
-            valid = false;
-        }
+    serverAddress = Address(p.server, p.server_port);
+    if (serverAddress.isIPValid()) {
+        valid = true;
     }
     else {
-        serverAddrList.append(s_addr);
+        emit error("Error. Can't look up IP address of server " + profile.server);
+        valid = false;
     }
 
     emit info("Initialising ciphers...");
@@ -134,13 +128,7 @@ quint16 Controller::getServerPort() const
 
 QHostAddress Controller::getServerAddr()
 {
-    if (serverAddrList.isEmpty()) {
-        emit error("Server IP address list is empty.");
-        return QHostAddress();
-    }
-    else {
-        return serverAddrList.at(Common::randomNumber(serverAddrList.size()));
-    }
+    return serverAddress.getIPAddress();
 }
 
 QString Controller::getServerString() const
