@@ -134,7 +134,6 @@ void Connection::onLocalTcpSocketError()
 {
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit error("Local socket error: " + local->errorString());
-        deleteLater();
     }
 }
 
@@ -142,7 +141,6 @@ void Connection::onRemoteTcpSocketError()
 {
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit error("Remote socket error: " + remote->errorString());
-        deleteLater();
     }
 }
 
