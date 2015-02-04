@@ -47,7 +47,7 @@ public:
     quint16 getPort() const;
 
     /*
-     * Get the "ping" time of this Address
+     * Get the "ping" time of this Address (note: this is a blocking operation)
      * return -1 if the target can't be connected before timed out (3000 ms by default)
      * otherwise, the time used to connect will be returned
      */
