@@ -104,9 +104,7 @@ void Connection::handleStageHello(QByteArray &data)
     }
 
     QString con_info;
-    QHostAddress fromAddr = isLocal ? local->localAddress() : local->peerAddress();
-    quint16 fromPort = isLocal ? local->localPort() : local->peerPort();
-    QDebug(&con_info) << "Connecting" << remoteAddress.getAddress().toLocal8Bit() << "at port" << remoteAddress.getPort() << "from" << fromAddr.toString().toLocal8Bit() << "at port" << fromPort;
+    QDebug(&con_info) << "Connecting" << remoteAddress.getAddress().toLocal8Bit() << "at port" << remoteAddress.getPort() << "from" << local->peerAddress().toString().toLocal8Bit() << "at port" << local->peerPort();
     emit info(con_info);
     stage = STREAM;//skip DNS, because we use getRealIPAddress function of Address class, which will always return IP address.
 
