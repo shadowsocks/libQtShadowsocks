@@ -86,6 +86,8 @@ bool Controller::setup(const Profile &p)
         emit info(Encryptor::getInternalMethodName() + " (" + profile.method + ") initialised.");
     }
 
+    udpRelay->setup(serverAddress, getLocalAddr(), profile.local_port);
+
     return valid;
 }
 

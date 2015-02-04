@@ -21,7 +21,6 @@
  */
 
 #include "udprelay.h"
-#include "controller.h"
 
 using namespace QSS;
 
@@ -29,36 +28,31 @@ UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)
 {
-    Controller *c = qobject_cast<Controller *>(parent);
-
-    if(c == NULL) {
-        qCritical() << "Fatal. UdpRelay's parent must be a Controller object.";
-        return;
-    }
-
     encryptor = new Encryptor(this);
     listen = new QUdpSocket(this);
+    listen->setReadBufferSize(RecvSize);
+    listen->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
     connect(listen, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged);
     connect(listen, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead);
-    connect(listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
-
-    if (isLocal) {
-        listen->bind(c->getLocalAddr(), c->getLocalPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
-        destination.setAddress(c->getServerString());
-        destination.setPort(c->getServerPort());
-    }
-    else {
-        listen->bind(c->getServerAddr(), c->getServerPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
-    }
-
-    listen->setReadBufferSize(RecvSize);
-    listen->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    connect(listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);   
 }
 
 //static member
 QMap<CacheKey, QUdpSocket *> UdpRelay::cache;
 QMap<qintptr, Address> UdpRelay::clientDescriptorToServerAddr;
+
+void UdpRelay::setup(Address &serverAddress, const QHostAddress &localAddr, const quint16 &localPort)
+{
+    listen->close();
+    if (isLocal) {
+        listen->bind(localAddr, localPort, QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
+        destination = serverAddress;
+    }
+    else {
+        listen->bind(serverAddress.getIPAddress(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
+    }
+}
 
 void UdpRelay::onSocketError()
 {

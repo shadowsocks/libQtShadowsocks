@@ -20,9 +20,10 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <QDebug>
 #include "connection.h"
 #include "controller.h"
-#include <QDebug>
+#include "common.h"
 
 using namespace QSS;
 
