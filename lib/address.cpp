@@ -25,24 +25,23 @@
 #include <QHostInfo>
 #include <QTime>
 #include <QTcpSocket>
+#include "common.h"
 #include "address.h"
 
 using namespace QSS;
 
 Address::Address(const QString &a, const quint16 &p, QObject *parent) :
     QObject(parent),
-    address(a),
     port(p)
 {
-    ipAddress.setAddress(a);
+    setAddress(a);
 }
 
 Address::Address(const QHostAddress &ip, const quint16 &p, QObject *parent) :
     QObject(parent),
-    ipAddress(ip),
     port(p)
 {
-    address = ip.toString();
+    setIPAddress(ip);
 }
 
 Address::Address(const Address &o) :
@@ -56,29 +55,36 @@ QString Address::getAddress() const
     return address;
 }
 
-QHostAddress Address::getIPAddress() const
+QHostAddress Address::getIPAddress()
 {
-    return ipAddress;
+    if (ipAddrList.isEmpty()) {
+        return getRealIPAddress();
+    }
+    return ipAddrList.at(Common::randomNumber(ipAddrList.size()));
 }
 
 QHostAddress Address::getRealIPAddress()
 {
-    if (ipAddress.isNull()) {
+    if (ipAddrList.isEmpty()) {
         //lookup the host
-        QList<QHostAddress> ipList = QHostInfo::fromName(address).addresses();
-        if (ipList.isEmpty()) {
+        ipAddrList = QHostInfo::fromName(address).addresses();
+        if (ipAddrList.isEmpty()) {
             qWarning() << "Can't look up the IP addresses of " << address;
-        }
-        else {
-            ipAddress = ipList.first();
+            ipAddrList.append(QHostAddress());
         }
     }
-    return ipAddress;
+    return ipAddrList.first();
 }
 
 bool Address::isIPValid() const
 {
-    return !ipAddress.isNull();
+    if (ipAddrList.isEmpty()) {
+        return false;
+    }
+    else if (ipAddrList.count() == 1 && ipAddrList.first().isNull()) {
+        return false;
+    }
+    return true;
 }
 
 quint16 Address::getPort() const
@@ -102,13 +108,16 @@ int Address::ping(int timeout)
 void Address::setAddress(const QString &a)
 {
     address = a;
-    ipAddress.setAddress(a);
+    QHostAddress ipAddress(a);
+    if (!ipAddress.isNull()) {
+        ipAddrList.append(ipAddress);
+    }
 }
 
-void Address::setIPAddress(const QHostAddress &i)
+void Address::setIPAddress(const QHostAddress &ip)
 {
-    ipAddress = i;
-    address = i.toString();
+    ipAddrList.append(ip);
+    address = ip.toString();
 }
 
 void Address::setPort(const quint16 &p)
@@ -118,6 +127,7 @@ void Address::setPort(const quint16 &p)
 
 int Address::addressType() const
 {
+    QHostAddress ipAddress(address);
     if (ipAddress.isNull()) {//it's a domain if it can't be parsed
         return ADDRTYPE_HOST;
     }
@@ -131,8 +141,8 @@ int Address::addressType() const
 
 Address &Address::operator= (const Address &o)
 {
-    this->address = o.getAddress();
-    this->ipAddress = o.getIPAddress();
-    this->port = o.getPort();
+    this->address = o.address;
+    this->ipAddrList = o.ipAddrList;
+    this->port = o.port;
     return *this;
 }

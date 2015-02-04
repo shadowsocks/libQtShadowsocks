@@ -41,8 +41,15 @@ public:
     Address(Address &&) = default;//force the generation of default move constructor
 
     QString getAddress() const;
-    QHostAddress getIPAddress() const;
-    QHostAddress getRealIPAddress();//will try to lookup host if ipAddress is null. note it's a blocking operation
+    QHostAddress getIPAddress();//return a random IP address from ipAddrList if it's non-empty. otherwise, it'll call getRealIPAddress() function
+
+    /*
+     * getRealIPAddress() will try to lookup host if ipAddrList is empty and return the first result.
+     * Note it's a blocking operation
+     * You're recommended to use getIPAddress() function rather than calling this function.
+     */
+    QHostAddress getRealIPAddress();
+
     bool isIPValid() const;
     quint16 getPort() const;
 
@@ -80,7 +87,7 @@ public:
 
 private:
     QString address;
-    QHostAddress ipAddress;
+    QList<QHostAddress> ipAddrList;
     quint16 port;
 };
 
