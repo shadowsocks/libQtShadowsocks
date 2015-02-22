@@ -73,8 +73,15 @@ bool Controller::setup(const Profile &p)
         valid = true;
     }
     else {
-        emit error("Error. Can't look up IP address of server " + profile.server);
-        valid = false;
+        if (isLocal) {
+            emit error("Error. Can't look up IP address of server " + profile.server);
+            valid = false;
+        }
+        else {
+            emit error("Error. Can't get a valid IP address of server. Shadowsocks server will listen on all addresses.");
+            serverAddress.setIPAddress(QHostAddress::Any);
+            valid = true;
+        }
     }
 
     emit info("Initialising ciphers...");
