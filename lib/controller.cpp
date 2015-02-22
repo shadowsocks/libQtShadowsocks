@@ -68,7 +68,18 @@ Controller::~Controller()
 bool Controller::setup(const Profile &p)
 {
     profile = p;
-    serverAddress = Address(p.server, p.server_port);
+
+    /*
+     * the default QHostAddress constructor will construct "::" as AnyIPv6
+     * we explicitly use Any to enable dual stack which is the case in other shadowsocks ports
+     */
+    if (p.server == "::") {
+        serverAddress = Address(QHostAddress::Any, p.server_port);
+    }
+    else {
+        serverAddress = Address(p.server, p.server_port);
+    }
+
     if (serverAddress.isIPValid()) {
         valid = true;
     }
