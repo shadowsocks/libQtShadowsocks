@@ -60,7 +60,10 @@ QHostAddress Address::getIPAddress()
     if (ipAddrList.isEmpty()) {
         return getRealIPAddress();
     }
-    return ipAddrList.at(Common::randomNumber(ipAddrList.size()));
+    else if (ipAddrList.count() == 1) {
+        return ipAddrList.first();
+    }
+    return ipAddrList.at(Common::randomNumber(ipAddrList.count()));
 }
 
 QHostAddress Address::getRealIPAddress()
