@@ -116,14 +116,14 @@ void UdpRelay::onServerUdpSocketReadyRead()
         return;
     }
 
-    CacheKey key(r_addr, r_port, destAddr);
+    CacheKey key(Address(r_addr, r_port), destAddr);
     QUdpSocket *client = cache.value(key, NULL);
     if (client == NULL) {
         client = new QUdpSocket(this);
         client->setReadBufferSize(RecvSize);
         client->setSocketOption(QAbstractSocket::LowDelayOption, 1);
         cache.insert(key, client);
-        clientDescriptorToServerAddr.insert(client->socketDescriptor(), key.r);
+        clientDescriptorToServerAddr.insert(client->socketDescriptor(), key.first);
         connect(client, &QUdpSocket::readyRead, this, &UdpRelay::onClientUdpSocketReadyRead);
         connect(client, &QUdpSocket::disconnected, this, &UdpRelay::onClientDisconnected);
         emit debug("A new UDP client is connected.");

@@ -29,28 +29,8 @@
 
 namespace QSS {
 
-class CacheKey
-{
-public:
-    CacheKey(const QString &ra = QString(), const quint16 &rp = 0, const QString &da = QString(), const quint16 &dp = 0) : r(ra, rp), d(da, dp) {}
-    CacheKey(const QHostAddress &rip, const quint16 &rp, const QHostAddress &dip, const quint16 &dp) : r(rip, rp), d(dip, dp) {}
-    CacheKey(const QHostAddress &rip, const quint16 &rp, const Address &dA) : r(rip, rp), d(dA) {}
-    CacheKey(const Address &rA, const Address &dA) : r(rA), d(dA) {}
-    CacheKey(const CacheKey &o) : r(o.r), d(o.d) {}
-    CacheKey(CacheKey &&) = default;
-
-    Address r;
-    Address d;
-
-    inline bool operator< (const CacheKey &o) const {
-        if (this->r == o.r) {
-            return this->d < o.d;
-        }
-        else {
-            return this->r < o.r;
-        }
-    }
-};
+//fist: r; second: d
+typedef QPair<Address, Address> CacheKey;
 
 class Common//provide some common functions
 {
