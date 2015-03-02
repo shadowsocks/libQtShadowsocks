@@ -31,16 +31,16 @@
 using namespace QSS;
 
 Address::Address(const QString &a, const quint16 &p, QObject *parent) :
-    QObject(parent),
-    port(p)
+    QObject(parent)
 {
+    data.second = p;
     setAddress(a);
 }
 
 Address::Address(const QHostAddress &ip, const quint16 &p, QObject *parent) :
-    QObject(parent),
-    port(p)
+    QObject(parent)
 {
+    data.second = p;
     setIPAddress(ip);
 }
 
@@ -52,7 +52,7 @@ Address::Address(const Address &o) :
 
 QString Address::getAddress() const
 {
-    return address;
+    return data.first;
 }
 
 QHostAddress Address::getIPAddress()
@@ -87,14 +87,14 @@ bool Address::isIPValid()
 
 quint16 Address::getPort() const
 {
-    return port;
+    return data.second;
 }
 
 int Address::ping(int timeout)
 {
     QTcpSocket socket;
     QTime startTime = QTime::currentTime();
-    socket.connectToHost(this->getIPAddress(), port);
+    socket.connectToHost(this->getIPAddress(), data.second);
     if (socket.waitForConnected(timeout)) {
         return startTime.msecsTo(QTime::currentTime());
     }
@@ -105,7 +105,7 @@ int Address::ping(int timeout)
 
 void Address::setAddress(const QString &a)
 {
-    address = a;
+    data.first = a;
     QHostAddress ipAddress(a);
     if (!ipAddress.isNull()) {
         ipAddrList.clear();
@@ -117,17 +117,17 @@ void Address::setIPAddress(const QHostAddress &ip)
 {
     ipAddrList.clear();
     ipAddrList.append(ip);
-    address = ip.toString();
+    data.first = ip.toString();
 }
 
 void Address::setPort(const quint16 &p)
 {
-    port = p;
+    data.second = p;
 }
 
 int Address::addressType() const
 {
-    QHostAddress ipAddress(address);
+    QHostAddress ipAddress(data.first);
     if (ipAddress.isNull()) {//it's a domain if it can't be parsed
         return ADDRTYPE_HOST;
     }
@@ -141,17 +141,16 @@ int Address::addressType() const
 
 Address &Address::operator= (const Address &o)
 {
-    this->address = o.address;
+    this->data = o.data;
     this->ipAddrList = o.ipAddrList;
-    this->port = o.port;
     return *this;
 }
 
 void Address::lookUpIP()
 {
-    ipAddrList = QHostInfo::fromName(address).addresses();
+    ipAddrList = QHostInfo::fromName(data.first).addresses();
     if (ipAddrList.isEmpty()) {
-        qWarning() << "Can't look up the IP addresses of " << address;
+        qWarning() << "Can't look up the IP addresses of " << data.first;
         ipAddrList.append(QHostAddress());
     }
 }

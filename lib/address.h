@@ -27,6 +27,7 @@
 
 #include <QString>
 #include <QHostAddress>
+#include <QPair>
 #include <QObject>
 
 namespace QSS {
@@ -73,22 +74,16 @@ public:
     Address& operator= (const Address &o);
 
     inline bool operator< (const Address &o) const {
-        if (this->address == o.address) {
-            return this->port < o.port;
-        }
-        else {
-            return this->address < o.address;
-        }
+        return this->data < o.data;
     }
 
     inline bool operator== (const Address &o) const {
-        return (this->address == o.address) && (this->port == o.port) && (this->ipAddrList == o.ipAddrList);
+        return this->data == o.data;
     }
 
 private:
-    QString address;
+    QPair<QString, quint16> data;//first: address string; second: port
     QList<QHostAddress> ipAddrList;
-    quint16 port;
 
     void lookUpIP();
 };
