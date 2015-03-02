@@ -91,7 +91,7 @@ void Connection::handleStageHello(QByteArray &data)
         }
         else {
             emit error("Unknown command " + QString::number(cmd));
-            deleteLater();
+            //deleteLater();
             return;
         }
     }
@@ -150,7 +150,7 @@ void Connection::onLocalTcpSocketReadyRead()
 
     if (data.isEmpty()) {
         emit error("Received empty data.");
-        deleteLater();
+        //deleteLater();
         return;
     }
 
