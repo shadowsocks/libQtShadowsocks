@@ -1,3 +1,11 @@
+libqtshadowsocks (1.4.2-1) stable; urgency=medium
+
+  * dual-stack addresses for :: address
+  * use QPair to simplify Address class
+  * replace CacheKey with a QPair class
+
+ -- Symeon Huang <symeon@odroid-u3>  Wed, 05 Mar 2015 20:40:00 +0000
+
 libqtshadowsocks (1.4.1-1) stable; urgency=medium
 
   * minor improvements
