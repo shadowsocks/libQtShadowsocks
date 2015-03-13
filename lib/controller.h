@@ -84,7 +84,6 @@ protected://children can access protected members
     QObjectCleanupHandler *connectionCollector;
     Profile profile;
     Address serverAddress;
-    Botan::LibraryInitializer init;
 
     //the total bytes recevied or sent by/from all TCP and UDP connections.
     qint64 bytesReceived;

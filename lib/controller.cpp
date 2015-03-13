@@ -33,6 +33,8 @@ Controller::Controller(bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)
 {
+    Botan::LibraryInitializer::initialize();
+
     valid = false;
 
     tcpServer = new QTcpServer(this);
@@ -63,6 +65,7 @@ Controller::Controller(const Profile &_profile, bool is_local, QObject *parent) 
 Controller::~Controller()
 {
     delete connectionCollector;//we have to delete all connections at first. otherwise, the application will crash.
+    Botan::LibraryInitializer::deinitialize();
 }
 
 bool Controller::setup(const Profile &p)
