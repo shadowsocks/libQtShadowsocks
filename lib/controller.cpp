@@ -119,21 +119,25 @@ bool Controller::start()
         return false;
     }
 
+    bool listen_ret = false;
+
     QString sstr("TCP server listen at port ");
     if (isLocal) {
         emit info("Running in local mode.");
-        tcpServer->listen(getLocalAddr(), profile.local_port);
+        listen_ret = tcpServer->listen(getLocalAddr(), profile.local_port);
         sstr.append(QString::number(profile.local_port));
     }
     else {
         emit info("Running in server mode.");
-        tcpServer->listen(getServerAddr(), profile.server_port);
+        listen_ret = tcpServer->listen(getServerAddr(), profile.server_port);
         sstr.append(QString::number(profile.server_port));
     }
     emit info(sstr);
 
-    emit runningStateChanged(true);
-    return true;
+    if (listen_ret) {
+        emit runningStateChanged(true);
+    }
+    return listen_ret;
 }
 
 void Controller::stop()
