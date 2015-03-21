@@ -6,11 +6,11 @@ Introduction
 
 `libQtShadowsocks` is a lightweight library for `shadowsocks`.
 
-It is written in C++ using Qt5 frameworks. Therefore, the major purpose of this project is to provide a developer-friendly shadowsocks library, mainly for Qt applications, i.e. [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
+It is written in C++ using Qt 5 libraries. The major purpose is to provide a developer-friendly shadowsocks library, mainly for Qt applications, i.e. [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
 
-The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` can also be used as both Shadowsocks local client and Shadowsocks server.
+The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` (`shadowsocks-libQtShadowsocks`) can also be used as both Shadowsocks local client and Shadowsocks server.
 
-Check [installation wiki page](https://github.com/librehat/libQtShadowsocks/wiki/Installation) to see how to install this project/
+Check [installation wiki page](https://github.com/librehat/libQtShadowsocks/wiki/Installation) to see how to install this library.
 
 Current Status
 --------------
@@ -18,8 +18,8 @@ Current Status
 ###Supported Platforms###
 
 - Microsoft Windows (Vista or higher)
-- Linux
-- xBSD (untested)
+- Latest GNU/Linux distributions
+- \*BSD (untested)
 - Mac OS X (untested)
 
 ###Supported Methods###
@@ -49,6 +49,7 @@ Below features will possibly be implemented in future versions.
 - ~~ChaCha cipher (use bundled ChaCha for botan < 1.11)~~
 - ~~Multiple servers balance (v1.4)~~
 - Multiple profiles balance (v1.6)
+- Test compatibility on BSD platforms (v1.6)
 - TCP fast open on Linux platform (v1.8)
 
 Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to request a new feature.
