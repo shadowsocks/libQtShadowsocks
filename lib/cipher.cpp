@@ -30,7 +30,7 @@ using namespace QSS;
 Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent) :
     QObject(parent)
 {
-    pipe = NULL;
+    pipe = nullptr;
     Botan::Keyed_Filter *filter;
     if (method.contains("RC4")) {
         flag = 2;
@@ -57,7 +57,7 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
 
 Cipher::~Cipher()
 {
-    if (pipe != NULL)   delete pipe;
+    if (pipe)   delete pipe;
 }
 
 const QMap<QByteArray, QVector<int> > Cipher::keyIvMap = Cipher::generateKeyIvMap();

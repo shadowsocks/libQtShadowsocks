@@ -57,7 +57,7 @@ void UdpRelay::setup(Address &serverAddress, const QHostAddress &localAddr, cons
 void UdpRelay::onSocketError()
 {
     QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
-    if (sock == NULL) {
+    if (!sock) {
         emit error("Fatal. A false object calling onSocketError.");
         return;
     }
@@ -117,8 +117,8 @@ void UdpRelay::onServerUdpSocketReadyRead()
     }
 
     CacheKey key(Address(r_addr, r_port), destAddr);
-    QUdpSocket *client = cache.value(key, NULL);
-    if (client == NULL) {
+    QUdpSocket *client = cache.value(key, nullptr);
+    if (!client) {
         client = new QUdpSocket(this);
         client->setReadBufferSize(RecvSize);
         client->setSocketOption(QAbstractSocket::LowDelayOption, 1);
@@ -143,7 +143,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
 void UdpRelay::onClientUdpSocketReadyRead()
 {
     QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
-    if (sock == NULL) {
+    if (!sock) {
         emit error("Fatal. A false object calling onClientUdpSocketReadyRead.");
         return;
     }
@@ -189,7 +189,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 void UdpRelay::onClientDisconnected()
 {
     QUdpSocket *client = qobject_cast<QUdpSocket *>(sender());
-    if (client == NULL) {
+    if (!client) {
         emit error("Fatal. A false object calling onClientDisconnected.");
         return;
     }

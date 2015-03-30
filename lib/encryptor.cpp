@@ -28,8 +28,8 @@ using namespace QSS;
 Encryptor::Encryptor(QObject *parent) :
     QObject(parent)
 {
-    enCipher = NULL;
-    deCipher = NULL;
+    enCipher = nullptr;
+    deCipher = nullptr;
 }
 
 //define static member variables
@@ -44,13 +44,13 @@ QByteArray Encryptor::key;
 
 void Encryptor::reset()
 {
-    if (enCipher != NULL) {
+    if (enCipher) {
         enCipher->deleteLater();
-        enCipher = NULL;
+        enCipher = nullptr;
     }
-    if (deCipher != NULL) {
+    if (deCipher) {
         deCipher->deleteLater();
-        deCipher = NULL;
+        deCipher = nullptr;
     }
 }
 
@@ -196,7 +196,7 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
         }
         break;
     case CIPHER:
-        if (enCipher == NULL) {
+        if (!enCipher) {
             enCipher = new Cipher(method, key, iv, true, this);
             out = iv + enCipher->update(in);
         }
@@ -223,7 +223,7 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
         }
         break;
     case CIPHER:
-        if (deCipher == NULL) {
+        if (!deCipher) {
             deCipher = new Cipher(method, key, in.mid(0, ivLen), false, this);
             out = deCipher->update(in.mid(ivLen));
         }
@@ -251,7 +251,7 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
         }
         break;
     case CIPHER:
-        if (enCipher != NULL) {
+        if (enCipher) {
             enCipher->deleteLater();
         }
         enCipher = new Cipher(method, key, iv, true, this);
@@ -276,7 +276,7 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
         }
         break;
     case CIPHER:
-        if (deCipher != NULL) {
+        if (deCipher) {
             deCipher->deleteLater();
         }
         deCipher = new Cipher(method, key, in.mid(0, ivLen), false, this);

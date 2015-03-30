@@ -29,7 +29,7 @@
 Client::Client(QObject *parent) :
     QObject(parent)
 {
-    lc = NULL;
+    lc = nullptr;
 }
 
 bool Client::readConfig(const QString &file)
@@ -62,7 +62,7 @@ bool Client::readConfig(const QString &file)
 
 bool Client::start(bool _server)
 {
-    if (lc != NULL) {
+    if (lc) {
         lc->deleteLater();
     }
     lc = new QSS::Controller(!_server, this);
