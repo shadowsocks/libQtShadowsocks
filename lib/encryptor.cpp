@@ -36,8 +36,8 @@ Encryptor::Encryptor(QObject *parent) :
 Encryptor::TYPE Encryptor::type;
 QByteArray Encryptor::method;
 QByteArray Encryptor::password;
-QVector<quint8> Encryptor::encTable;
-QVector<quint8> Encryptor::decTable;
+QVector<quint8> Encryptor::encTable = QVector<quint8>(256);
+QVector<quint8> Encryptor::decTable = QVector<quint8>(256);
 int Encryptor::keyLen = 0;
 int Encryptor::ivLen = 0;
 QByteArray Encryptor::key;
@@ -103,21 +103,19 @@ void Encryptor::tableInit()
     quint32 i;
     quint64 key = 0;
 
-    encTable.fill(0, 256);
-    decTable.fill(0, 256);
     QByteArray digest = Cipher::md5Hash(password);
 
     for (i = 0; i < 8; ++i) {
         key += (static_cast<quint64>(digest[i]) << (8 * i));
     }
     for (i = 0; i < 256; ++i) {
-        encTable[i] = i;
+        encTable[i] = static_cast<quint8>(i);
     }
     for (i = 1; i < 1024; ++i) {
         encTable = mergeSort(encTable, i, key);
     }
     for (i = 0; i < 256; ++i) {
-        decTable[encTable[i]] = i;
+        decTable[encTable[i]] = static_cast<quint8>(i);
     }
 }
 
@@ -192,7 +190,7 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
     case TABLE:
         out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
-            out[i] = encTable.at(in[i]);
+            out[i] = static_cast<char>(encTable.at(in[i]));
         }
         break;
     case CIPHER:
@@ -220,7 +218,7 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
     case TABLE:
         out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
-            out[i] = decTable.at(in[i]);
+            out[i] = static_cast<char>(decTable.at(in[i]));
         }
         break;
     case CIPHER:
@@ -246,9 +244,9 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
 
     switch (type) {
     case TABLE:
-        out = QByteArray(in.size(), '0');
+        out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
-            out[i] = encTable.at(in[i]);
+            out[i] = static_cast<char>(encTable.at(in[i]));
         }
         break;
     case CIPHER:
@@ -272,9 +270,9 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
 
     switch (type) {
     case TABLE:
-        out = QByteArray(in.size(), '0');
+        out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
-            out[i] = decTable.at(in[i]);
+            out[i] = static_cast<char>(decTable.at(in[i]));
         }
         break;
     case CIPHER:
