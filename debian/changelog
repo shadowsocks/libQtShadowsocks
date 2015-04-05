@@ -1,3 +1,11 @@
+libqtshadowsocks (1.4.3-1) stable; urgency=medium
+
+  * fix possible crash due to Botan (de)initilisation
+  * fix TABLE method bug on x86 platforms
+  * code clean and other minor improvements
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Sun, 05 Apr 2015 18:09:00 +0000
+
 libqtshadowsocks (1.4.2-1) stable; urgency=medium
 
   * dual-stack addresses for :: address
