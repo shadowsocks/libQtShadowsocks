@@ -33,7 +33,7 @@ Encryptor::Encryptor(QObject *parent) :
 }
 
 //define static member variables
-Encryptor::TYPE Encryptor::type;
+Encryptor::TYPE Encryptor::type = Encryptor::TABLE;
 QByteArray Encryptor::method;
 QByteArray Encryptor::password;
 QVector<quint8> Encryptor::encTable = QVector<quint8>(256);
@@ -203,8 +203,6 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
             out = enCipher->update(in);
         }
         break;
-    default:
-        qWarning() << "Unknown encryption type";
     }
 
     return out;
@@ -231,8 +229,6 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
             out = deCipher->update(in);
         }
         break;
-    default:
-        qWarning() << "Unknown decryption type";
     }
 
     return out;
@@ -258,8 +254,6 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
         enCipher = new Cipher(method, key, iv, true, this);
         out = iv + enCipher->update(in);
         break;
-    default:
-        qWarning() << "Unknown encryption type";
     }
 
     return out;
@@ -284,8 +278,6 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
         deCipher = new Cipher(method, key, in.mid(0, ivLen), false, this);
         out = deCipher->update(in.mid(ivLen));
         break;
-    default:
-        qWarning() << "Unknown decryption type";
     }
 
     return out;
