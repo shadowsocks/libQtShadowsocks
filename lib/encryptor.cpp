@@ -108,7 +108,7 @@ void Encryptor::tableInit()
     QByteArray digest = Cipher::md5Hash(password);
 
     for (i = 0; i < 8; ++i) {
-        key += (quint64(digest.at(i)) << (8 * i));
+        key += (static_cast<quint64>(digest[i]) << (8 * i));
     }
     for (i = 0; i < 256; ++i) {
         encTable[i] = i;
