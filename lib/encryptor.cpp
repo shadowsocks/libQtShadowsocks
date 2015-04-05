@@ -186,7 +186,7 @@ void Encryptor::evpBytesToKey()
 QByteArray Encryptor::encrypt(const QByteArray &in)
 {
     QByteArray out;
-    QByteArray iv = Cipher::randomIv(ivLen);
+    QByteArray iv;
 
     switch (type) {
     case TABLE:
@@ -197,6 +197,7 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
         break;
     case CIPHER:
         if (!enCipher) {
+            iv = Cipher::randomIv(ivLen);
             enCipher = new Cipher(method, key, iv, true, this);
             out = iv + enCipher->update(in);
         }
@@ -241,7 +242,7 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
 QByteArray Encryptor::encryptAll(const QByteArray &in)
 {
     QByteArray out;
-    QByteArray iv = Cipher::randomIv(ivLen);
+    QByteArray iv;
 
     switch (type) {
     case TABLE:
@@ -254,6 +255,7 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
         if (enCipher) {
             enCipher->deleteLater();
         }
+        iv = Cipher::randomIv(ivLen);
         enCipher = new Cipher(method, key, iv, true, this);
         out = iv + enCipher->update(in);
         break;
