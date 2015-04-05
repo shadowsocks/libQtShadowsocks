@@ -49,9 +49,6 @@ public:
     QByteArray encryptAll(const QByteArray &);
     void reset();
 
-    static const QVector<quint8> octVec;
-    static int randomCompare(const quint8 &, const quint8 &, const quint32 &, const quint64 &);
-
     /*
      * Return true if initialised succesfully, otherwise return false.
      * Only need to call this function once if the encrpytion method and password don't change.
@@ -80,6 +77,7 @@ private:
     static int ivLen;
 
     static void tableInit();
+    static int randomCompare(const quint8 &, const quint8 &, const quint32 &, const quint64 &);
     static QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
     static void evpBytesToKey();
 
