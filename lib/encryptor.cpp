@@ -183,14 +183,14 @@ void Encryptor::evpBytesToKey()
 
 QByteArray Encryptor::encrypt(const QByteArray &in)
 {
-    QByteArray out;
-    QByteArray iv;
+    QByteArray out, iv;
+    const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
     switch (type) {
     case TABLE:
         out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
-            out[i] = static_cast<char>(encTable.at(in[i]));
+            out[i] = encTable[inp[i]];
         }
         break;
     case CIPHER:
@@ -213,12 +213,13 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
 QByteArray Encryptor::decrypt(const QByteArray &in)
 {
     QByteArray out;
+    const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
     switch (type) {
     case TABLE:
         out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
-            out[i] = static_cast<char>(decTable.at(in[i]));
+            out[i] = decTable[inp[i]];
         }
         break;
     case CIPHER:
@@ -239,14 +240,14 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
 
 QByteArray Encryptor::encryptAll(const QByteArray &in)
 {
-    QByteArray out;
-    QByteArray iv;
+    QByteArray out, iv;
+    const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
     switch (type) {
     case TABLE:
         out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
-            out[i] = static_cast<char>(encTable.at(in[i]));
+            out[i] = encTable[inp[i]];
         }
         break;
     case CIPHER:
@@ -267,12 +268,13 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
 QByteArray Encryptor::decryptAll(const QByteArray &in)
 {
     QByteArray out;
+    const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
     switch (type) {
     case TABLE:
         out.resize(in.size());
         for (int i = 0; i < in.size(); ++i) {
-            out[i] = static_cast<char>(decTable.at(in[i]));
+            out[i] = decTable[inp[i]];
         }
         break;
     case CIPHER:
