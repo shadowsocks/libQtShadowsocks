@@ -65,6 +65,8 @@ public:
      * otherwise, the time used to connect will be returned
      */
     int ping(int timeout = 3000);
+    //this is a non-blocking version of "ping", bind signal pong to get time
+    void pingNB(int timeout = 3000);
 
     void setAddress(const QString &);
     void setIPAddress(const QHostAddress &);
@@ -88,6 +90,7 @@ public:
 
 signals:
     void pingError(const QString &);
+    void pong(int time);
 
 private:
     QPair<QString, quint16> data;//first: address string; second: port
