@@ -77,8 +77,7 @@ QByteArray RC4::update(const QByteArray &input)
 void RC4::generate()
 {
     unsigned char sx, sy;
-    for (int i = 0; i < buffer.size(); i += 4)
-    {
+    for (int i = 0; i < buffer.size(); i += 4) {
         sx = state[x + 1]; y = (y + sx) % 256; sy = state[y];
         state[x + 1] = sy; state[y] = sx;
         buffer[i] = state[(sx + sy) % 256];
