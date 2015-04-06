@@ -42,7 +42,12 @@ public:
     Address(Address &&) = default;//force the generation of default move constructor
 
     QString getAddress() const;
-    QHostAddress getIPAddress();//return a random IP address from ipAddrList if it's non-empty. otherwise, it'll call getRealIPAddress() function
+
+    /*
+     * return a random IP address from ipAddrList if it's non-empty.
+     * otherwise, it'll call getRealIPAddress() function
+     */
+    QHostAddress getIPAddress();
 
     /*
      * getRealIPAddress() will try to lookup host if ipAddrList is empty and return the first result.
