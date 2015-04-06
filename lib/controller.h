@@ -68,6 +68,11 @@ signals:
     //connect this signal to get notified when running state is changed
     void runningStateChanged(bool);
 
+    //these two signals pass any new bytes read or sent
+    void newBytesReceived(const quint64 &);
+    void newBytesSent(const quint64 &);
+
+    //these two signals pass accumulated bytes read or sent so far (aka total in this session)
     void bytesReceivedChanged(const qint64 &);
     void bytesSentChanged(const qint64 &);
 

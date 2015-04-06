@@ -213,6 +213,7 @@ void Controller::onBytesRead(const qint64 &r)
 {
     if (r != -1) {//-1 means read failed. don't count
         bytesReceived += r;
+        emit newBytesReceived(r);
         emit bytesReceivedChanged(bytesReceived);
     }
 }
@@ -221,6 +222,7 @@ void Controller::onBytesSend(const qint64 &s)
 {
     if (s != -1) {//-1 means write failed. don't count
         bytesSent += s;
+        emit newBytesSent(s);
         emit bytesSentChanged(bytesSent);
     }
 }
