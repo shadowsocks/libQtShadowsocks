@@ -29,7 +29,6 @@
 #include <QObject>
 #include <QObjectCleanupHandler>
 #include <QTcpServer>
-#include <botan/init.h>
 #include "export.h"
 #include "profile.h"
 #include "udprelay.h"

@@ -22,6 +22,7 @@
 
 #include <QHostInfo>
 #include <QTcpSocket>
+#include <botan/init.h>
 
 #include "controller.h"
 #include "connection.h"
