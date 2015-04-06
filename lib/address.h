@@ -81,6 +81,9 @@ public:
         return this->data == o.data;
     }
 
+signals:
+    void pingError(const QString &);
+
 private:
     QPair<QString, quint16> data;//first: address string; second: port
     QList<QHostAddress> ipAddrList;

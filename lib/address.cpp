@@ -99,6 +99,7 @@ int Address::ping(int timeout)
         return startTime.msecsTo(QTime::currentTime());
     }
     else {
+        emit pingError(socket.errorString());
         return -1;
     }
 }
