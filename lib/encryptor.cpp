@@ -26,11 +26,10 @@
 using namespace QSS;
 
 Encryptor::Encryptor(QObject *parent) :
-    QObject(parent)
-{
-    enCipher = nullptr;
-    deCipher = nullptr;
-}
+    QObject(parent),
+    enCipher(nullptr),
+    deCipher(nullptr)
+{}
 
 //define static member variables
 Encryptor::TYPE Encryptor::type = Encryptor::TABLE;
@@ -141,12 +140,10 @@ QVector<quint8> Encryptor::mergeSort(const QVector<quint8> &array, quint32 salt,
     sorted.fill(0, length);
     for (int i = 0; i < length; ++i) {
         if (rightptr == right.size() || (leftptr < left.size() && randomCompare(left[leftptr], right[rightptr], salt, key) <= 0)) {
-            sorted[i] = left[leftptr];
-            leftptr++;
+            sorted[i] = left[leftptr++];
         }
         else if (leftptr == left.size() || (rightptr < right.size() && randomCompare(right[rightptr], left[leftptr], salt, key) <= 0)) {
-            sorted[i] = right[rightptr];
-            rightptr++;
+            sorted[i] = right[rightptr++];
         }
     }
     return sorted;
