@@ -24,7 +24,6 @@
 
 #include <QHostInfo>
 #include <QTime>
-#include <QTimer>
 #include <QTcpSocket>
 #include "common.h"
 #include "address.h"
@@ -103,26 +102,6 @@ int Address::ping(int timeout)
         emit pingError(socket.errorString());
         return -1;
     }
-}
-
-void Address::pingNB(int timeout)
-{
-    QTcpSocket *socket = new QTcpSocket(this);
-    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), [&](){
-        emit pingError(socket->errorString());
-    });
-
-    QTimer *timeoutTimer = new QTimer(this);
-    QTime startTime = QTime::currentTime();
-    connect(socket, &QTcpSocket::connected, [&](){
-        timeoutTimer->stop();
-        emit pong(startTime.msecsTo(QTime::currentTime()));
-    });
-    connect(timeoutTimer, &QTimer::timeout, [&](){
-        emit pong(-1);
-    });
-    timeoutTimer->start(timeout);
-    socket->connectToHost(this->getIPAddress(), data.second);
 }
 
 void Address::setAddress(const QString &a)
