@@ -43,10 +43,6 @@ AddressTester::AddressTester(const QHostAddress &_address, const quint16 &_port,
     connect(socket, &QTcpSocket::connected, this, &AddressTester::onConnected);
 }
 
-AddressTester::~AddressTester()
-{
-}
-
 void AddressTester::startLagTest(int timeout)
 {
     time = QTime::currentTime();
@@ -62,8 +58,9 @@ void AddressTester::onTimeout()
 
 void AddressTester::onSocketError()
 {
+    timer->stop();
     emit testErrorString(socket->errorString());
-    onTimeout();
+    emit lagTestFinished(-2);
 }
 
 void AddressTester::onConnected()
