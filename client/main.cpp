@@ -47,12 +47,14 @@ int main(int argc, char *argv[])
     QCommandLineOption configFile(QStringList() << "c" << "config-file", "specify config.json file.", "config.json", "config.json");
     QCommandLineOption serverMode(QStringList() << "s" << "server-mode", "run as shadowsocks server.");
     QCommandLineOption testSpeed("t", "test encrypt/decrypt speed.");
+    QCommandLineOption debug("d", "debug-level log.");
     parser.addOption(configFile);
+    parser.addOption(debug);
     parser.addOption(serverMode);
     parser.addOption(testSpeed);
     parser.process(a);
 
-    Client c;
+    Client c(parser.isSet(debug));
     if (c.readConfig(parser.value(configFile))) {
         if (parser.isSet(testSpeed)) {
             Utils::testSpeed(c.getMethod(), 100);

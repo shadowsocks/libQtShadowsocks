@@ -30,7 +30,7 @@ class Client : public QObject
 {
     Q_OBJECT
 public:
-    explicit Client(QObject *parent = 0);
+    explicit Client(bool _debug, QObject *parent = 0);
     bool readConfig(const QString &);
     QString getMethod() const;
 
@@ -38,6 +38,7 @@ public slots:
     bool start(bool _server = false);
 
 private:
+    bool debug;
     QSS::Controller *lc;
     QSS::Profile profile;
 

@@ -26,11 +26,11 @@
 #include <QDebug>
 #include "client.h"
 
-Client::Client(QObject *parent) :
-    QObject(parent)
-{
-    lc = nullptr;
-}
+Client::Client(bool _debug, QObject *parent) :
+    QObject(parent),
+    debug(_debug),
+    lc(nullptr)
+{}
 
 bool Client::readConfig(const QString &file)
 {
@@ -66,7 +66,7 @@ bool Client::start(bool _server)
         lc->deleteLater();
     }
     lc = new QSS::Controller(!_server, this);
-    connect (lc, &QSS::Controller::debug, this, &Client::logHandler);
+    connect (lc, debug ? &QSS::Controller::debug : &QSS::Controller::error, this, &Client::logHandler);
     lc->setup(profile);
     return lc->start() && cipherTest();
 }

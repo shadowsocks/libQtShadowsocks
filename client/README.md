@@ -17,6 +17,7 @@ Options:
   -h, --help                       Displays this help.
   -v, --version                    Displays version information.
   -c, --config-file <config.json>  specify config.json file.
+  -d,                              debug-level log.
   -s, --server-mode                run as shadowsocks server.
   -t                               test encrypt/decrypt speed.
 ```
