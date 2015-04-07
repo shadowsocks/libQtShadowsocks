@@ -106,7 +106,7 @@ void Connection::handleStageHello(QByteArray &data)
     QString con_info;
     QDebug(&con_info) << "Connecting" << remoteAddress.getAddress().toLocal8Bit() << "at port" << remoteAddress.getPort() << "from" << local->peerAddress().toString().toLocal8Bit() << "at port" << local->peerPort();
     emit info(con_info);
-    stage = STREAM;//skip DNS, because we use getRealIPAddress function of Address class, which will always return IP address.
+    stage = STREAM;//skip DNS, because we use getIPAddress function of Address class, which will always return IP address.
 
     if (isLocal) {
         static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
@@ -150,7 +150,6 @@ void Connection::onLocalTcpSocketReadyRead()
 
     if (data.isEmpty()) {
         emit error("Received empty data.");
-        //deleteLater();
         return;
     }
 
