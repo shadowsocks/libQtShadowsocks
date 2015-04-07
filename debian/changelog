@@ -1,10 +1,11 @@
 libqtshadowsocks (1.5.0-1) stable; urgency=medium
 
-  * add non-blocking pingNB function to get server latency
+  * add AddressTester class to perform lag test
   * add two signals to pass new bytes read and sent
   * add a -d option (debug switch) for shadowsocks-libqss
+  * remove ping function from Address class (an API break here)
 
- -- Symeon Huang <hzwhuang@gmail.com>  Tue, 07 Apr 2015 11:22:00 +0100
+ -- Symeon Huang <hzwhuang@gmail.com>  Tue, 07 Apr 2015 13:48:00 +0100
 
 libqtshadowsocks (1.4.3-1) stable; urgency=medium
 
