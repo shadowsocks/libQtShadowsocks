@@ -29,10 +29,11 @@
 #include <QHostAddress>
 #include <QPair>
 #include <QObject>
+#include "export.h"
 
 namespace QSS {
 
-class Address : public QObject
+class QSS_EXPORT Address : public QObject
 {
     Q_OBJECT
 public:

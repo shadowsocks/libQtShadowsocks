@@ -11,7 +11,8 @@ SOURCES  += \
             encryptor.cpp \
             udprelay.cpp \
             chacha.cpp \
-            rc4.cpp
+            rc4.cpp \
+            addresstester.cpp
 
 HEADERS  += \
             address.h \
@@ -25,4 +26,5 @@ HEADERS  += \
             QtShadowsocks \
             udprelay.h \
             chacha.h \
-            rc4.h
+            rc4.h \
+            addresstester.h
