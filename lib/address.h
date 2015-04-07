@@ -60,13 +60,6 @@ public:
     bool isIPValid();
     quint16 getPort() const;
 
-    /*
-     * Get the "ping" time of this Address (note: this is a blocking operation)
-     * return -1 if the target can't be connected before timed out (3000 ms by default)
-     * otherwise, the time used to connect will be returned
-     */
-    int ping(int timeout = 3000);
-
     void setAddress(const QString &);
     void setIPAddress(const QHostAddress &);
     void setPort(const quint16 &);
@@ -86,9 +79,6 @@ public:
     inline bool operator== (const Address &o) const {
         return this->data == o.data;
     }
-
-signals:
-    void pingError(const QString &);
 
 private:
     QPair<QString, quint16> data;//first: address string; second: port
