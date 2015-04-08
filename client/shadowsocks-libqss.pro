@@ -2,7 +2,7 @@
 # Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
 # Licensed Under LGPLv3
 
-QT       += core network concurrent
+QT       += core network
 
 QT       -= gui
 
