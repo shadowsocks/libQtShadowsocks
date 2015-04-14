@@ -71,6 +71,7 @@ private:
     static const qint64 RecvSize = 32736;//32KB, same as shadowsocks-python
 
 private slots:
+    void onRemoteStateChanged(QAbstractSocket::SocketState s);
     void onRemoteTcpSocketError();
     void onRemoteTcpSocketReadyRead();
     void onLocalTcpSocketError();

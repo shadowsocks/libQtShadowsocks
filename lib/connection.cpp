@@ -44,18 +44,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     timer->setInterval(c->getTimeout());
 
     local = localTcpSocket;
-    local->setParent(this);
-    local->setReadBufferSize(RecvSize);
-    local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    local->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-
     remote = new QTcpSocket(this);
-    remote->setReadBufferSize(RecvSize);
-    remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-    remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-    if (isLocal) {
-        remote->connectToHost(c->getServerAddr(), c->getServerPort());
-    }
 
     connect(timer, &QTimer::timeout, this, &Connection::onTimeout);
 
@@ -64,11 +53,24 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead);
     connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
+    connect(remote, &QTcpSocket::stateChanged, this, &Connection::onRemoteStateChanged);
     connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
     connect(remote, &QTcpSocket::disconnected, this, &Connection::deleteLater);
     connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead);
     connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
     connect(remote, &QTcpSocket::bytesWritten, this, &Connection::bytesSend);
+
+    local->setParent(this);
+    local->setReadBufferSize(RecvSize);
+    local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    local->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+
+    remote->setReadBufferSize(RecvSize);
+    remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+    if (isLocal) {
+        remote->connectToHost(c->getServerAddr(), c->getServerPort());
+    }
 }
 
 void Connection::handleStageHello(QByteArray &data)
@@ -137,6 +139,13 @@ void Connection::onLocalTcpSocketError()
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit error("Local socket error: " + local->errorString());
     }
+}
+
+void Connection::onRemoteStateChanged(QAbstractSocket::SocketState s)
+{
+    QString stateChanged("Remote TCP socket state changed to ");
+    QDebug(&stateChanged) << s;
+    emit info(stateChanged);
 }
 
 void Connection::onRemoteTcpSocketError()
