@@ -88,11 +88,9 @@ void Connection::handleStageHello(QByteArray &data)
             local->write(header + Common::packAddress(addr, port));
             stage = UDP_ASSOC;
             return;
-        }
-        else if (cmd == 1) {//CMD_CONNECT
+        } else if (cmd == 1) {//CMD_CONNECT
             data = data.mid(3);
-        }
-        else {
+        } else {
             emit error("Unknown command " + QString::number(cmd));
             //deleteLater();
             return;
@@ -117,8 +115,7 @@ void Connection::handleStageHello(QByteArray &data)
         local->write(response);
         data = encryptor->encrypt(data);
         writeToRemote(data);
-    }
-    else if (data.length() > header_length) {
+    } else if (data.length() > header_length) {
         writeToRemote(data.mid(header_length));
     }
 }
@@ -174,15 +171,13 @@ void Connection::onLocalTcpSocketReadyRead()
         }
         writeToRemote(data);
         return;
-    }
-    else if (isLocal && stage == INIT) {
+    } else if (isLocal && stage == INIT) {
         QByteArray auth;
         if (data[0] != char(5)) {
             auth.append(char(0));
             auth.append(char(91));
             emit error("A socket v4 connection was rejected.");
-        }
-        else {
+        } else {
             auth.append(char(5));
             auth.append(char(0));
             emit debug("Accept a local socket connection.");
@@ -190,8 +185,7 @@ void Connection::onLocalTcpSocketReadyRead()
         local->write(auth);
         stage = HELLO;
         return;
-    }
-    else if ((isLocal && stage == HELLO) || (!isLocal && stage == INIT)) {
+    } else if ((isLocal && stage == HELLO) || (!isLocal && stage == INIT)) {
         handleStageHello(data);
     }
 }
@@ -203,8 +197,7 @@ void Connection::onRemoteTcpSocketReadyRead()
 
     if (isLocal) {
         buf = encryptor->decrypt(buf);
-    }
-    else {
+    } else {
         buf = encryptor->encrypt(buf);
     }
     local->write(buf);

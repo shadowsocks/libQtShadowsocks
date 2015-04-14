@@ -76,8 +76,7 @@ bool Client::cipherTest()
     QSS::Encryptor e;
     if(e.selfTest()) {
         return true;
-    }
-    else {
+    } else {
         qCritical() << "Cipher test failed.";
         return false;
     }
