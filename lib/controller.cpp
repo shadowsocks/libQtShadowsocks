@@ -79,20 +79,17 @@ bool Controller::setup(const Profile &p)
      */
     if (p.server == "::") {
         serverAddress = Address(QHostAddress::Any, p.server_port);
-    }
-    else {
+    } else {
         serverAddress = Address(p.server, p.server_port);
     }
 
     if (serverAddress.isIPValid()) {
         valid = true;
-    }
-    else {
+    } else {
         if (isLocal) {
             emit error("Error. Can't look up IP address of server " + profile.server);
             valid = false;
-        }
-        else {
+        } else {
             emit error("Error. Can't get a valid IP address of server. Shadowsocks server will listen on all addresses.");
             serverAddress.setIPAddress(QHostAddress::Any);
             valid = true;
@@ -103,8 +100,7 @@ bool Controller::setup(const Profile &p)
     if (!Encryptor::initialise(profile.method, profile.password)) {
         emit error("Initialisation failed.");
         valid = false;
-    }
-    else {
+    } else {
         emit info(Encryptor::getInternalMethodName() + " (" + profile.method + ") initialised.");
     }
 
@@ -127,8 +123,7 @@ bool Controller::start()
         emit info("Running in local mode.");
         listen_ret = tcpServer->listen(getLocalAddr(), profile.local_port);
         sstr.append(QString::number(profile.local_port));
-    }
-    else {
+    } else {
         emit info("Running in server mode.");
         listen_ret = tcpServer->listen(getServerAddr(), profile.server_port);
         sstr.append(QString::number(profile.server_port));
@@ -174,8 +169,7 @@ QHostAddress Controller::getLocalAddr()
     QHostAddress addr(profile.local_address);
     if (!addr.isNull()) {
         return addr;
-    }
-    else {
+    } else {
         emit error("Can't get address from " + profile.local_address.toLocal8Bit() + ". Using localhost instead.");
         return QHostAddress::LocalHost;
     }

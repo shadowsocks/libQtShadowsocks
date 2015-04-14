@@ -67,17 +67,13 @@ bool Encryptor::initialise(const QString &m, const QString &pwd)
     type = CIPHER;
     if (method.contains("BF")) {
         method = "Blowfish/CFB";
-    }
-    else if (method.contains("CAST5")) {
+    } else if (method.contains("CAST5")) {
         method = "CAST-128/CFB";
-    }
-    else if (method.contains("SALSA20")) {
+    } else if (method.contains("SALSA20")) {
         method = "Salsa20";
-    }
-    else if (method.contains("CHACHA20")) {
+    } else if (method.contains("CHACHA20")) {
         method = "ChaCha";
-    }
-    else {
+    } else {
         method.replace("-C", "/C");//i.e. -CFB to /CFB
     }
 
@@ -141,8 +137,7 @@ QVector<quint8> Encryptor::mergeSort(const QVector<quint8> &array, quint32 salt,
     for (int i = 0; i < length; ++i) {
         if (rightptr == right.size() || (leftptr < left.size() && randomCompare(left[leftptr], right[rightptr], salt, key) <= 0)) {
             sorted[i] = left[leftptr++];
-        }
-        else if (leftptr == left.size() || (rightptr < right.size() && randomCompare(right[rightptr], left[leftptr], salt, key) <= 0)) {
+        } else if (leftptr == left.size() || (rightptr < right.size() && randomCompare(right[rightptr], left[leftptr], salt, key) <= 0)) {
             sorted[i] = right[rightptr++];
         }
     }
@@ -163,8 +158,7 @@ void Encryptor::evpBytesToKey()
     while (m.size() < keyLen + ivLen) {
         if (i == 0) {
             data = password;
-        }
-        else {
+        } else {
             data = m[i - 1] + password;
         }
         m.append(Cipher::md5Hash(data));
@@ -195,8 +189,7 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
             iv = Cipher::randomIv(ivLen);
             enCipher = new Cipher(method, key, iv, true, this);
             out = iv + enCipher->update(in);
-        }
-        else {
+        } else {
             out = enCipher->update(in);
         }
         break;
@@ -221,8 +214,7 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
         if (!deCipher) {
             deCipher = new Cipher(method, key, in.mid(0, ivLen), false, this);
             out = deCipher->update(in.mid(ivLen));
-        }
-        else {
+        } else {
             out = deCipher->update(in);
         }
         break;

@@ -57,8 +57,7 @@ QHostAddress Address::getIPAddress()
 {
     if (ipAddrList.isEmpty()) {
         return getRealIPAddress();
-    }
-    else if (ipAddrList.count() == 1) {
+    } else if (ipAddrList.count() == 1) {
         return ipAddrList.first();
     }
     return ipAddrList.at(Common::randomNumber(ipAddrList.count()));
@@ -115,11 +114,9 @@ int Address::addressType() const
     QHostAddress ipAddress(data.first);
     if (ipAddress.isNull()) {//it's a domain if it can't be parsed
         return ADDRTYPE_HOST;
-    }
-    else if (ipAddress.protocol() == QAbstractSocket::IPv4Protocol) {
+    } else if (ipAddress.protocol() == QAbstractSocket::IPv4Protocol) {
         return ADDRTYPE_IPV4;
-    }
-    else {
+    } else {
         return ADDRTYPE_IPV6;
     }
 }
