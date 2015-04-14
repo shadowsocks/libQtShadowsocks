@@ -38,9 +38,9 @@ AddressTester::AddressTester(const QHostAddress &_address, const quint16 &_port,
     timer->setSingleShot(true);
     time = QTime::currentTime();
 
-    connect(timer, &QTimer::timeout, this, &AddressTester::onTimeout);
-    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &AddressTester::onSocketError);
-    connect(socket, &QTcpSocket::connected, this, &AddressTester::onConnected);
+    connect(timer, &QTimer::timeout, this, &AddressTester::onTimeout, Qt::DirectConnection);
+    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &AddressTester::onSocketError, Qt::DirectConnection);
+    connect(socket, &QTcpSocket::connected, this, &AddressTester::onConnected, Qt::DirectConnection);
 }
 
 void AddressTester::startLagTest(int timeout)

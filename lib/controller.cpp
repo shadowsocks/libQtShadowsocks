@@ -44,17 +44,17 @@ Controller::Controller(bool is_local, QObject *parent) :
     udpRelay = new UdpRelay(isLocal, this);
     connectionCollector = new QObjectCleanupHandler;
 
-    connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
-    connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection);
+    connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError, Qt::DirectConnection);
+    connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection, Qt::DirectConnection);
 
-    connect(udpRelay, &UdpRelay::error, this, &Controller::error);
-    connect(udpRelay, &UdpRelay::info, this, &Controller::info);
-    connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);
-    connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead);
-    connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend);
+    connect(udpRelay, &UdpRelay::error, this, &Controller::error, Qt::DirectConnection);
+    connect(udpRelay, &UdpRelay::info, this, &Controller::info, Qt::DirectConnection);
+    connect(udpRelay, &UdpRelay::debug, this, &Controller::debug, Qt::DirectConnection);
+    connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead, Qt::DirectConnection);
+    connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend, Qt::DirectConnection);
 
-    connect(this, &Controller::error, this, &Controller::info);//you shouldn't bind any other classes' error with info (and info with debug). we only need to do that once here.
-    connect(this, &Controller::info, this, &Controller::debug);
+    connect(this, &Controller::error, this, &Controller::info, Qt::DirectConnection);//you shouldn't bind any other classes' error with info (and info with debug). we only need to do that once here.
+    connect(this, &Controller::info, this, &Controller::debug, Qt::DirectConnection);
 }
 
 Controller::Controller(const Profile &_profile, bool is_local, QObject *parent) :
