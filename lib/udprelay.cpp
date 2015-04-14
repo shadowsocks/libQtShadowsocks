@@ -139,7 +139,6 @@ void UdpRelay::onServerUdpSocketReadyRead()
     }
 
     client->writeDatagram(data, destAddr.getIPAddress(), destAddr.getPort());
-    client->flush();
 }
 
 void UdpRelay::onClientUdpSocketReadyRead()
@@ -181,7 +180,6 @@ void UdpRelay::onClientUdpSocketReadyRead()
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.getPort() != 0) {
         listen->writeDatagram(response, clientAddress.getIPAddress(), clientAddress.getPort());
-        listen->flush();
     }
     else {
         emit debug("Drop a UDP packet from somewhere else we know.");
