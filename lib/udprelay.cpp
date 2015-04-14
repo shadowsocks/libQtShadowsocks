@@ -74,7 +74,7 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 {
     QString stateChanged("Listen UDP socket state changed to ");
     QDebug(&stateChanged) << s;
-    emit info(stateChanged);
+    emit debug(stateChanged);
 }
 
 void UdpRelay::onServerUdpSocketReadyRead()

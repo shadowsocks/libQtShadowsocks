@@ -142,7 +142,7 @@ void Connection::onRemoteStateChanged(QAbstractSocket::SocketState s)
 {
     QString stateChanged("Remote TCP socket state changed to ");
     QDebug(&stateChanged) << s;
-    emit info(stateChanged);
+    emit debug(stateChanged);
 }
 
 void Connection::onRemoteTcpSocketError()
