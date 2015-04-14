@@ -206,7 +206,6 @@ void Controller::onNewTCPConnection()
     connect (con, &Connection::bytesRead, this, &Controller::onBytesRead);
     connect (con, &Connection::bytesSend, this, &Controller::onBytesSend);
     connectionCollector->add(con);
-    emit debug("A new TCP connection.");
 }
 
 void Controller::onBytesRead(const qint64 &r)
