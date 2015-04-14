@@ -33,10 +33,10 @@ UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     listen->setReadBufferSize(RecvSize);
     listen->setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
-    connect(listen, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged, Qt::DirectConnection);
-    connect(listen, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead, Qt::DirectConnection);
-    connect(listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError, Qt::DirectConnection);
-    connect(listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend, Qt::DirectConnection);
+    connect(listen, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged);
+    connect(listen, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead);
+    connect(listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
+    connect(listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend);
 }
 
 //static member

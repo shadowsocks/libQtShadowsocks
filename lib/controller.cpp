@@ -44,17 +44,17 @@ Controller::Controller(bool is_local, QObject *parent) :
     udpRelay = new UdpRelay(isLocal, this);
     connectionCollector = new QObjectCleanupHandler;
 
-    connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError, Qt::DirectConnection);
-    connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection, Qt::DirectConnection);
+    connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
+    connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection);
 
-    connect(udpRelay, &UdpRelay::error, this, &Controller::error, Qt::DirectConnection);
-    connect(udpRelay, &UdpRelay::info, this, &Controller::info, Qt::DirectConnection);
-    connect(udpRelay, &UdpRelay::debug, this, &Controller::debug, Qt::DirectConnection);
-    connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead, Qt::DirectConnection);
-    connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend, Qt::DirectConnection);
+    connect(udpRelay, &UdpRelay::error, this, &Controller::error);
+    connect(udpRelay, &UdpRelay::info, this, &Controller::info);
+    connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);
+    connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead);
+    connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend);
 
-    connect(this, &Controller::error, this, &Controller::info, Qt::DirectConnection);//you shouldn't bind any other classes' error with info (and info with debug). we only need to do that once here.
-    connect(this, &Controller::info, this, &Controller::debug, Qt::DirectConnection);
+    connect(this, &Controller::error, this, &Controller::info);//you shouldn't bind any other classes' error with info (and info with debug). we only need to do that once here.
+    connect(this, &Controller::info, this, &Controller::debug);
 }
 
 Controller::Controller(const Profile &_profile, bool is_local, QObject *parent) :
@@ -200,11 +200,11 @@ void Controller::onNewTCPConnection()
 {
     QTcpSocket *ts = tcpServer->nextPendingConnection();
     Connection *con = new Connection(ts, isLocal, this);
-    connect (con, &Connection::debug, this, &Controller::debug, Qt::DirectConnection);
-    connect (con, &Connection::info, this, &Controller::info, Qt::DirectConnection);
-    connect (con, &Connection::error, this, &Controller::error, Qt::DirectConnection);
-    connect (con, &Connection::bytesRead, this, &Controller::onBytesRead, Qt::DirectConnection);
-    connect (con, &Connection::bytesSend, this, &Controller::onBytesSend, Qt::DirectConnection);
+    connect (con, &Connection::debug, this, &Controller::debug);
+    connect (con, &Connection::info, this, &Controller::info);
+    connect (con, &Connection::error, this, &Controller::error);
+    connect (con, &Connection::bytesRead, this, &Controller::onBytesRead);
+    connect (con, &Connection::bytesSend, this, &Controller::onBytesSend);
     connectionCollector->add(con);
     emit debug("A new TCP connection.");
 }

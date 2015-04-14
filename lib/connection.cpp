@@ -57,18 +57,18 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
         remote->connectToHost(c->getServerAddr(), c->getServerPort());
     }
 
-    connect(timer, &QTimer::timeout, this, &Connection::onTimeout, Qt::DirectConnection);
+    connect(timer, &QTimer::timeout, this, &Connection::onTimeout);
 
-    connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onLocalTcpSocketError, Qt::DirectConnection);
-    connect(local, &QTcpSocket::disconnected, this, &Connection::deleteLater, Qt::DirectConnection);
-    connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead, Qt::DirectConnection);
-    connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start), Qt::DirectConnection);
+    connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onLocalTcpSocketError);
+    connect(local, &QTcpSocket::disconnected, this, &Connection::deleteLater);
+    connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead);
+    connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
-    connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError, Qt::DirectConnection);
-    connect(remote, &QTcpSocket::disconnected, this, &Connection::deleteLater, Qt::DirectConnection);
-    connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead, Qt::DirectConnection);
-    connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start), Qt::DirectConnection);
-    connect(remote, &QTcpSocket::bytesWritten, this, &Connection::bytesSend, Qt::DirectConnection);
+    connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
+    connect(remote, &QTcpSocket::disconnected, this, &Connection::deleteLater);
+    connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead);
+    connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
+    connect(remote, &QTcpSocket::bytesWritten, this, &Connection::bytesSend);
 }
 
 void Connection::handleStageHello(QByteArray &data)
