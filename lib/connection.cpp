@@ -84,6 +84,7 @@ void Connection::handleStageHello(QByteArray &data)
             QHostAddress addr = local->peerAddress();
             quint16 port = local->peerPort();
             local->write(header + Common::packAddress(addr, port));
+            local->flush();
             stage = UDP_ASSOC;
             return;
         }
@@ -112,6 +113,7 @@ void Connection::handleStageHello(QByteArray &data)
         static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
         QByteArray response(res, 10);
         local->write(response);
+        local->flush();
         data = encryptor->encrypt(data);
         writeToRemote(data);
     }
@@ -125,7 +127,8 @@ bool Connection::writeToRemote(const QByteArray &data)
     if (!isLocal && remote->state() != QAbstractSocket::ConnectedState) {
         remote->connectToHost(remoteAddress.getIPAddress(), remoteAddress.getPort());
     }
-    return remote->write(data) != -1;
+    remote->write(data);
+    return remote->flush();
 }
 
 void Connection::onLocalTcpSocketError()
@@ -179,6 +182,7 @@ void Connection::onLocalTcpSocketReadyRead()
             emit debug("Accept a local socket connection.");
         }
         local->write(auth);
+        local->flush();
         stage = HELLO;
         return;
     }
@@ -199,6 +203,7 @@ void Connection::onRemoteTcpSocketReadyRead()
         buf = encryptor->encrypt(buf);
     }
     local->write(buf);
+    local->flush();
 }
 
 void Connection::onTimeout()
