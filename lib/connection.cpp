@@ -93,6 +93,7 @@ void Connection::handleStageHello(QByteArray &data)
         }
         else {
             emit error("Unknown command " + QString::number(cmd));
+            //deleteLater();
             return;
         }
     }
@@ -154,7 +155,6 @@ void Connection::onLocalTcpSocketReadyRead()
         return;
     }
 
-    emit debug("Received data from local server");
     if (!isLocal) {
         data = encryptor->decrypt(data);
         if (data.isEmpty()) {
@@ -195,7 +195,7 @@ void Connection::onRemoteTcpSocketReadyRead()
 {
     QByteArray buf = remote->readAll();
     emit bytesRead(buf.size());
-    emit debug("Received data from remote server");
+
     if (isLocal) {
         buf = encryptor->decrypt(buf);
     }
