@@ -36,6 +36,7 @@ UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     connect(listen, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged, Qt::DirectConnection);
     connect(listen, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead, Qt::DirectConnection);
     connect(listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError, Qt::DirectConnection);
+    connect(listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend, Qt::DirectConnection);
 }
 
 //static member
@@ -178,8 +179,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.getPort() != 0) {
-        qint64 writtenBytes = listen->writeDatagram(response, clientAddress.getIPAddress(), clientAddress.getPort());
-        emit bytesSend(writtenBytes);
+        listen->writeDatagram(response, clientAddress.getIPAddress(), clientAddress.getPort());
     }
     else {
         emit debug("Drop a UDP packet from somewhere else we know.");

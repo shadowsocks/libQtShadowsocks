@@ -68,6 +68,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     connect(remote, &QTcpSocket::disconnected, this, &Connection::deleteLater, Qt::DirectConnection);
     connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead, Qt::DirectConnection);
     connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start), Qt::DirectConnection);
+    connect(remote, &QTcpSocket::bytesWritten, this, &Connection::bytesSend, Qt::DirectConnection);
 }
 
 void Connection::handleStageHello(QByteArray &data)
@@ -125,9 +126,7 @@ bool Connection::writeToRemote(const QByteArray &data)
     if (!isLocal && remote->state() != QAbstractSocket::ConnectedState) {
         remote->connectToHost(remoteAddress.getIPAddress(), remoteAddress.getPort());
     }
-    qint64 s = remote->write(data);
-    emit bytesSend(s);
-    return s != -1;
+    return remote->write(data) != -1;
 }
 
 void Connection::onLocalTcpSocketError()

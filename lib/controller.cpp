@@ -200,11 +200,11 @@ void Controller::onNewTCPConnection()
 {
     QTcpSocket *ts = tcpServer->nextPendingConnection();
     Connection *con = new Connection(ts, isLocal, this);
-    connect (con, &Connection::debug, this, &Controller::debug);
-    connect (con, &Connection::info, this, &Controller::info);
-    connect (con, &Connection::error, this, &Controller::error);
-    connect (con, &Connection::bytesRead, this, &Controller::onBytesRead);
-    connect (con, &Connection::bytesSend, this, &Controller::onBytesSend);
+    connect (con, &Connection::debug, this, &Controller::debug, Qt::DirectConnection);
+    connect (con, &Connection::info, this, &Controller::info, Qt::DirectConnection);
+    connect (con, &Connection::error, this, &Controller::error, Qt::DirectConnection);
+    connect (con, &Connection::bytesRead, this, &Controller::onBytesRead, Qt::DirectConnection);
+    connect (con, &Connection::bytesSend, this, &Controller::onBytesSend, Qt::DirectConnection);
     connectionCollector->add(con);
     emit debug("A new TCP connection.");
 }
