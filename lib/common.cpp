@@ -74,8 +74,7 @@ QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
     QByteArray port_ns = QByteArray::fromRawData(reinterpret_cast<char *>(&port_net), 2);
     if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
         type.append(static_cast<char>(Address::ADDRTYPE_IPV6));
-    }
-    else {
+    } else {
         type.append(static_cast<char>(Address::ADDRTYPE_IPV4));
     }
     return type + addr.toString().toLocal8Bit() + port_ns;
@@ -94,40 +93,33 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
                 dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(2 + addrlen, 2).data())));
                 dest.setAddress(QString(host));
                 header_length = 4 + addrlen;
-            }
-            else {
+            } else {
                 qDebug() << "Host header is too short";
             }
-        }
-        else {
+        } else {
             qDebug() << "Host header is too short to contain a port";
         }
-    }
-    else if (addrtype == Address::ADDRTYPE_IPV4) {
+    } else if (addrtype == Address::ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
             QByteArray d_addr(INET_ADDRSTRLEN, '0');
             inet_ntop(AF_INET, reinterpret_cast<void *>(data.mid(1, 4).data()), d_addr.data(), INET_ADDRSTRLEN);
             dest.setAddress(QString(d_addr));
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data())));
             header_length = 7;
-        }
-        else {
+        } else {
             qDebug() << "IPv4 header is too short";
         }
-    }
-    else if (addrtype == Address::ADDRTYPE_IPV6) {
+    } else if (addrtype == Address::ADDRTYPE_IPV6) {
         if (data.length() >= 19) {
             QByteArray d_addr(INET6_ADDRSTRLEN, '0');
             inet_ntop(AF_INET6, reinterpret_cast<void *>(data.mid(1, 16).data()), d_addr.data(), INET6_ADDRSTRLEN);
             dest.setAddress(QString(d_addr));
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data())));
             header_length = 19;
-        }
-        else {
+        } else {
             qDebug() << "IPv6 header is too short";
         }
-    }
-    else {
+    } else {
         qDebug() << "Unsupported addrtype" << addrtype << "maybe wrong password";
     }
 }

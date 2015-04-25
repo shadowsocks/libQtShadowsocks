@@ -36,8 +36,7 @@ RC4::RC4(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
     QByteArray realKey;
     if (_iv.isEmpty()) {//old deprecated rc4's iv is empty
         realKey = _key;
-    }
-    else {//otherwise, it's rc4-md5
+    } else {//otherwise, it's rc4-md5
         realKey = Cipher::md5Hash(_key + _iv);
         realKey.resize(_key.size());
     }

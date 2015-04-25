@@ -59,15 +59,12 @@ int main(int argc, char *argv[])
         if (parser.isSet(testSpeed)) {
             Utils::testSpeed(c.getMethod(), 100);
             return 0;
-        }
-        else if (c.start(parser.isSet(serverMode))) {
+        } else if (c.start(parser.isSet(serverMode))) {
             return a.exec();
-        }
-        else {
+        } else {
             return 2;
         }
-    }
-    else {
+    } else {
         if (parser.isSet(testSpeed)) {
             qDebug() << "Testing all encryption methods...";
             Utils::testSpeed(100);

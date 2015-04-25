@@ -36,8 +36,7 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
         flag = 2;
         rc4 = new RC4(key, iv, this);
         return;
-    }
-    else {
+    } else {
 #if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
         if (method.contains("ChaCha")) {
             flag = 1;
@@ -88,11 +87,9 @@ QByteArray Cipher::update(const QByteArray &data)
 {
     if (flag == 1) {
         return chacha->update(data);
-    }
-    else if (flag == 2) {
+    } else if (flag == 2) {
         return rc4->update(data);
-    }
-    else {
+    } else {
         pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
         size_t id = pipe->message_count() - 1;
         SecureByteArray c = pipe->read_all(id);
@@ -122,8 +119,7 @@ bool Cipher::isSupported(const QByteArray &method)
 
     if (method.contains("RC4")) {
         return true;
-    }
-    else {
+    } else {
         //have_algorithm function take only the **algorithm** (so we need to omit the mode)
         int length = method.lastIndexOf('/');//note Salsa20 don't have '/'
         std::string algorithm(method.constData(), length != -1 ? length : method.length());

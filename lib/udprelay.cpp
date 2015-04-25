@@ -49,8 +49,7 @@ void UdpRelay::setup(Address &serverAddress, const QHostAddress &localAddr, cons
     if (isLocal) {
         listen->bind(localAddr, localPort, QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
         destination = serverAddress;
-    }
-    else {
+    } else {
         listen->bind(serverAddress.getIPAddress(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
     }
 }
@@ -64,8 +63,7 @@ void UdpRelay::onSocketError()
     }
     if (sock == listen) {
         emit error("UDP server socket error " + sock->errorString());
-    }
-    else {
+    } else {
         emit error("UDP client socket error " + sock->errorString());
     }
 }
@@ -74,7 +72,7 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 {
     QString stateChanged("Listen UDP socket state changed to ");
     QDebug(&stateChanged) << s;
-    emit info(stateChanged);
+    emit debug(stateChanged);
 }
 
 void UdpRelay::onServerUdpSocketReadyRead()
@@ -104,8 +102,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
             return;
         }
         data.remove(0, 2);
-    }
-    else {
+    } else {
         data = encryptor->decryptAll(data);
     }
 
@@ -133,8 +130,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
     if (isLocal) {
         data = encryptor->encryptAll(data);
         destAddr = destination;
-    }
-    else {
+    } else {
         data = data.mid(header_length);
     }
 
@@ -171,8 +167,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
             return;
         }
         response = QByteArray(3, char(0)) + data;
-    }
-    else {
+    } else {
         data.prepend(Common::packAddress(r_addr, r_port));
         response = encryptor->encryptAll(data);
     }
@@ -180,8 +175,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.getPort() != 0) {
         listen->writeDatagram(response, clientAddress.getIPAddress(), clientAddress.getPort());
-    }
-    else {
+    } else {
         emit debug("Drop a UDP packet from somewhere else we know.");
     }
 }
