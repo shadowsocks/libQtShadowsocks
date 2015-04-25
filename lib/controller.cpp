@@ -132,7 +132,10 @@ bool Controller::start()
 
     if (listen_ret) {
         emit runningStateChanged(true);
+    } else {
+        emit error("Listen failed.");
     }
+
     return listen_ret;
 }
 
