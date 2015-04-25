@@ -67,17 +67,16 @@ bool Encryptor::initialise(const QString &m, const QString &pwd)
     type = CIPHER;
     if (method.contains("BF")) {
         method = "Blowfish/CFB";
-    }
-    else if (method.contains("CAST5")) {
+    } else if (method.contains("CAST5")) {
         method = "CAST-128/CFB";
-    }
-    else if (method.contains("SALSA20")) {
+    } else if (method.contains("SALSA20")) {
         method = "Salsa20";
-    }
-    else if (method.contains("CHACHA20")) {
+    } else if (method.contains("CHACHA20")) {
         method = "ChaCha";
-    }
-    else {
+    } else {
+        if (method.contains("CAMELLIA")) {
+                method.replace("CAMELLIA", "Camellia");
+        }
         method.replace("-C", "/C");//i.e. -CFB to /CFB
     }
 

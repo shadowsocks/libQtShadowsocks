@@ -69,6 +69,9 @@ QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
     map.insert("AES-192/CFB", {24, 16});
     map.insert("AES-256/CFB", {32, 16});
     map.insert("Blowfish/CFB", {16, 8});
+    map.insert("Camellia-128/CFB", {16, 16});
+    map.insert("Camellia-192/CFB", {24, 16});
+    map.insert("Camellia-256/CFB", {32, 16});
     map.insert("CAST-128/CFB", {16, 8});
     map.insert("ChaCha", {32, 8});
     map.insert("DES/CFB", {8, 8});
