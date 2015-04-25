@@ -1,5 +1,5 @@
 /*
- * encryptor.h - the source file of Encryptor class
+ * encryptor.cpp - the source file of Encryptor class
  *
  * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
  *

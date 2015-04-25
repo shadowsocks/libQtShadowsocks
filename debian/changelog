@@ -1,3 +1,12 @@
+libqtshadowsocks (1.5.1-1) stable; urgency=medium
+
+  * add support for camellia method
+  * set signal-slot connection as auto type
+  * refine error/info/debug output
+  * code clean and code style improvements
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Sat, 25 Apr 2015 19:54:00 +0100
+
 libqtshadowsocks (1.5.0-1) stable; urgency=medium
 
   * add AddressTester class to perform lag test
