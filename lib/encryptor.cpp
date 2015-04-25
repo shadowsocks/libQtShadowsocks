@@ -277,7 +277,7 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
 
 bool Encryptor::selfTest()
 {
-    QByteArray test("barfoo!"), test2("Hello World!"), test3("libShadowsocks!");
+    QByteArray test("barfoo!"), test2("Hello World!"), test3("libQtShadowsocks!");
     QByteArray res  = decrypt(encrypt(test)),
                res2 = decrypt(encrypt(test2)),
                res3 = decrypt(encrypt(test3));
