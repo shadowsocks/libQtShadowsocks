@@ -6,7 +6,7 @@ Introduction
 
 `libQtShadowsocks` is a lightweight library for `shadowsocks`.
 
-Written in C++ using Qt 5 libraries, it aims to provide a developer-friendly shadowsocks library, mainly for Qt applications, i.e. [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
+Written in C++ using Qt 5 framework, it aims to provide a developer-friendly shadowsocks library, mainly for Qt applications such as [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
 
 The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` (`shadowsocks-libQtShadowsocks`) can also be used as both Shadowsocks local client and Shadowsocks server.
 
@@ -24,19 +24,22 @@ Current Status
 
 ###Supported Methods###
 
-- Table
+- TABLE
 - AES-128-CFB
 - AES-192-CFB
 - AES-256-CFB
 - BF-CFB
+- CAMELLIA-128-CFB
+- CAMELLIA-192-CFB
+- CAMELLIA-256-CFB
 - CAST5-CFB
-- ChaCha20
+- CHACHA20
 - DES-CFB
 - IDEA-CFB
 - RC2-CFB
 - RC4
 - RC4-MD5
-- Salsa20
+- SALSA20
 - SEED-CFB
 
 RoadMap
