@@ -28,5 +28,4 @@ void Utils::testSpeed(quint32 data_size_mb)
     }
 }
 
-const QStringList Utils::allMethods = QStringList() << "TABLE" << "AES-128-CFB" << "AES-192-CFB" << "AES-256-CFB" << "BF-CFB" << "CAST5-CFB" \
-                                                    << "ChaCha20" << "DES-CFB" << "IDEA-CFB" << "RC2-CFB" << "RC4" << "RC4-MD5" << "Salsa20" << "SEED-CFB";
+const QStringList Utils::allMethods = QStringList() << "TABLE" << "AES-128-CFB" << "AES-192-CFB" << "AES-256-CFB" << "BF-CFB" << "Camellia-128-CFB" << "Camellia-192-CFB" << "Camellia-256-CFB" << "CAST5-CFB" << "ChaCha20" << "DES-CFB" << "IDEA-CFB" << "RC2-CFB" << "RC4" << "RC4-MD5" << "Salsa20" << "SEED-CFB";
