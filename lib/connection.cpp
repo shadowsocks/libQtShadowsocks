@@ -39,7 +39,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     }
 
     stage = INIT;
-    encryptor = new Encryptor(this);
+    encryptor = new Encryptor(c->getEncryptorPrivate(), this);
     timer = new QTimer(this);
     timer->setInterval(c->getTimeout());
 

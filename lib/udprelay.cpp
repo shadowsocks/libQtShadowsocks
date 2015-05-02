@@ -21,6 +21,8 @@
  */
 
 #include "udprelay.h"
+#include "controller.h"
+#include <QDebug>
 
 using namespace QSS;
 
@@ -28,7 +30,14 @@ UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)
 {
-    encryptor = new Encryptor(this);
+    Controller *c = qobject_cast<Controller *>(parent);
+
+    if(!c) {
+        qCritical() << "Fatal. Connection's parent must be a Controller object.";
+        return;
+    }
+
+    encryptor = new Encryptor(c->getEncryptorPrivate(), this);
     listen = new QUdpSocket(this);
     listen->setReadBufferSize(RecvSize);
     listen->setSocketOption(QAbstractSocket::LowDelayOption, 1);

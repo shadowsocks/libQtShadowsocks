@@ -32,6 +32,7 @@
 #include "export.h"
 #include "profile.h"
 #include "udprelay.h"
+#include "encryptorprivate.h"
 
 namespace QSS {
 
@@ -49,6 +50,7 @@ public:
      */
     bool setup(const Profile &);
 
+    const EncryptorPrivate* getEncryptorPrivate() const;
     quint16 getServerPort() const;
     QHostAddress getServerAddr();
     QString getServerString() const;//return the server config from profile
@@ -83,6 +85,7 @@ public slots:
 protected://children can access protected members
     bool valid;
     const bool isLocal;//run on local-side (client) or server-side (server)
+    EncryptorPrivate *ep;
     QTcpServer *tcpServer;
     UdpRelay *udpRelay;
     QObjectCleanupHandler *connectionCollector;

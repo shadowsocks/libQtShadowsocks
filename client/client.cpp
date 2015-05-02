@@ -73,7 +73,8 @@ bool Client::start(bool _server)
 
 bool Client::cipherTest()
 {
-    QSS::Encryptor e;
+    QSS::EncryptorPrivate ep(profile.method, profile.password);
+    QSS::Encryptor e(&ep);
     if(e.selfTest()) {
         return true;
     } else {

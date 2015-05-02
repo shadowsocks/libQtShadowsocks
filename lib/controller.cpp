@@ -32,7 +32,8 @@ using namespace QSS;
 
 Controller::Controller(bool is_local, QObject *parent) :
     QObject(parent),
-    isLocal(is_local)
+    isLocal(is_local),
+    ep(nullptr)
 {
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
@@ -101,11 +102,15 @@ bool Controller::setup(const Profile &p)
     }
 
     emit info("Initialising ciphers...");
-    if (!Encryptor::initialise(profile.method, profile.password)) {
+    if (ep) {
+        ep->deleteLater();
+    }
+    ep = new EncryptorPrivate(profile.method, profile.password, this);
+    if (ep->isValid()) {
+        emit info(ep->getInternalMethodName() + " (" + profile.method + ") initialised.");
+    } else {
         emit error("Initialisation failed.");
         valid = false;
-    } else {
-        emit info(Encryptor::getInternalMethodName() + " (" + profile.method + ") initialised.");
     }
 
     udpRelay->setup(serverAddress, getLocalAddr(), profile.local_port);
@@ -149,6 +154,11 @@ void Controller::stop()
     connectionCollector->clear();
     emit runningStateChanged(false);
     emit debug("Stopped.");
+}
+
+const EncryptorPrivate* Controller::getEncryptorPrivate() const
+{
+    return ep;
 }
 
 quint16 Controller::getServerPort() const
