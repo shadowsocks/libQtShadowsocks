@@ -8,7 +8,7 @@ Introduction
 
 Written in C++ using Qt 5 framework, it aims to provide a developer-friendly shadowsocks library, mainly for Qt applications such as [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
 
-The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` (`shadowsocks-libQtShadowsocks`) can also be used as both Shadowsocks local client and Shadowsocks server.
+The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` (`shadowsocks-libqss`) can also be used as a standalone program in both shadowsocks local-side and shadowsocks server-side.
 
 Check [installation wiki page](https://github.com/librehat/libQtShadowsocks/wiki/Installation) to see how to install this library and/or `shadowsocks-libqss`.
 
@@ -18,7 +18,7 @@ Current Status
 ###Supported Platforms###
 
 - Microsoft Windows (Vista or above)
-- Latest GNU/Linux distributions
+- GNU/Linux
 - \*BSD (untested)
 - Mac OS X (untested)
 
@@ -51,10 +51,11 @@ Below features will possibly be implemented in future versions.
 - ~~Server ping (v1.2)~~
 - ~~ChaCha cipher (use bundled ChaCha for botan < 1.11)~~
 - ~~Multiple servers balance (v1.4)~~
-- Multiple profiles balance (v1.6)
 - HTTP proxy (v1.6)
-- Test compatibility on BSD platforms (v1.6)
-- TCP fast open on Linux platform (v1.8)
+- Asynchronous DNS query (v1.6)
+- Test compatibility on BSD platforms (v1.8)
+- Multiple profiles balance (v1.8)
+- QML module (v1.10)
 
 Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to request a new feature.
 
