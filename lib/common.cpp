@@ -36,6 +36,11 @@
 
 using namespace QSS;
 
+const QByteArray Common::version()
+{
+    return QSS_VERSION;
+}
+
 QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
 {
     QByteArray ss_header;

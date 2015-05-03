@@ -21,6 +21,9 @@ isEmpty(BOTAN_VER) {
     BOTAN_VER = 1.10
 }
 
+VERSION   = 1.6.0
+DEFINES  += QSS_VERSION=\\\"$$VERSION\\\"
+
 win32: {
     DEFINES    += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
     DEFINES    += "_WIN32_WINNT=0x0600"#drop support for Windows XP
@@ -37,8 +40,6 @@ else {
 include(QtShadowsocks.pri)
 
 unix: {
-    VERSION     = 1.5.1
-
     CONFIG     += create_pc create_prl no_install_prl link_pkgconfig
 
     contains(DEFINES, LIB64): target.path = $$INSTALL_PREFIX/lib64

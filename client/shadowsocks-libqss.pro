@@ -8,9 +8,6 @@ QT       -= gui
 
 TARGET    = shadowsocks-libqss
 
-VERSION   = 1.5.1
-DEFINES  += APP_VERSION=\\\"$$VERSION\\\"
-
 CONFIG   += console c++11
 
 TEMPLATE  = app
