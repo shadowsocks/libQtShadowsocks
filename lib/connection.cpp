@@ -176,7 +176,7 @@ void Connection::onLocalTcpSocketReadyRead()
         if (data[0] != char(5)) {
             auth.append(char(0));
             auth.append(char(91));
-            emit error("A socket v4 connection was rejected.");
+            emit error("An invalid socket connection was rejected. Please make sure the connection type is SOCKS5.");
         } else {
             auth.append(char(5));
             auth.append(char(0));
