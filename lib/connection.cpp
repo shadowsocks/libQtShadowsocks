@@ -198,7 +198,6 @@ void Connection::onLocalTcpSocketReadyRead()
         } else {
             auth.append(char(5));
             auth.append(char(0));
-            emit debug("Accept a local socket connection.");
         }
         local->write(auth);
         stage = ADDR;
