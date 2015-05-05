@@ -32,6 +32,7 @@ using namespace QSS;
 
 Controller::Controller(bool is_local, QObject *parent) :
     QObject(parent),
+    valid(true),
     isLocal(is_local),
     ep(nullptr)
 {
@@ -40,8 +41,6 @@ Controller::Controller(bool is_local, QObject *parent) :
     } catch (std::exception &e) {
         qDebug("%s\n", e.what());
     }
-
-    valid = false;
 
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
