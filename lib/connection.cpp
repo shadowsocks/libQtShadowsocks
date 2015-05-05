@@ -92,7 +92,7 @@ void Connection::handleStageHello(QByteArray &data)
             data = data.mid(3);
         } else {
             emit error("Unknown command " + QString::number(cmd));
-            //deleteLater();
+            deleteLater();
             return;
         }
     }
