@@ -45,6 +45,10 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
 
     local = localTcpSocket;
     remote = new QTcpSocket(this);
+    serverAddress = c->getServerAddress();
+
+    connect(&remoteAddress, &Address::lookedUp, this, &Connection::onDNSResolved);
+    connect(&serverAddress, &Address::lookedUp, this, &Connection::onDNSResolved);
 
     connect(timer, &QTimer::timeout, this, &Connection::onTimeout);
 
@@ -68,9 +72,6 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     remote->setReadBufferSize(RecvSize);
     remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
-    if (isLocal) {
-        remote->connectToHost(c->getServerAddr(), c->getServerPort());
-    }
 }
 
 void Connection::handleStageHello(QByteArray &data)
@@ -107,23 +108,29 @@ void Connection::handleStageHello(QByteArray &data)
     QString con_info;
     QDebug(&con_info) << "Connecting" << remoteAddress.getAddress().toLocal8Bit() << "at port" << remoteAddress.getPort() << "from" << local->peerAddress().toString().toLocal8Bit() << "at port" << local->peerPort();
     emit info(con_info);
-    stage = STREAM;//skip DNS, because we use getIPAddress function of Address class, which will always return IP address.
 
+    stage = DNS;
     if (isLocal) {
-        static char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
-        QByteArray response(res, 10);
+        static const char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
+        static const QByteArray response(res, 10);
         local->write(response);
-        data = encryptor->encrypt(data);
-        writeToRemote(data);
+
+        dataToWrite.append(encryptor->encrypt(data));
+        serverAddress.lookUp();
     } else if (data.length() > header_length) {
-        writeToRemote(data.mid(header_length));
+        dataToWrite.append(data.mid(header_length));
+        remoteAddress.lookUp();
     }
 }
 
 bool Connection::writeToRemote(const QByteArray &data)
 {
-    if (!isLocal && remote->state() != QAbstractSocket::ConnectedState) {
-        remote->connectToHost(remoteAddress.getIPAddress(), remoteAddress.getPort());
+    if (remote->state() != QAbstractSocket::ConnectedState) {
+        if (isLocal) {
+            remote->connectToHost(serverAddress.getRandomIP(), serverAddress.getPort());
+        } else {
+            remote->connectToHost(remoteAddress.getRandomIP(), remoteAddress.getPort());
+        }
     }
     return remote->write(data) != -1;
 }
@@ -132,6 +139,17 @@ void Connection::onLocalTcpSocketError()
 {
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit error("Local socket error: " + local->errorString());
+    }
+}
+
+void Connection::onDNSResolved(const bool success, const QString errStr)
+{
+    if (success) {
+        writeToRemote(dataToWrite);
+        stage = STREAM;
+    } else {
+        emit error("DNS resolve failed: " + errStr);
+        deleteLater();
     }
 }
 
@@ -165,12 +183,12 @@ void Connection::onLocalTcpSocketReadyRead()
             return;
         }
     }
+
     if (stage == STREAM) {
         if (isLocal) {
             data = encryptor->encrypt(data);
         }
         writeToRemote(data);
-        return;
     } else if (isLocal && stage == INIT) {
         QByteArray auth;
         if (data[0] != char(5)) {
@@ -184,7 +202,11 @@ void Connection::onLocalTcpSocketReadyRead()
         }
         local->write(auth);
         stage = HELLO;
-        return;
+    } else if (stage == DNS) {//DNS stage is the same as CONNECTING
+        if (isLocal) {
+            data = encryptor->encrypt(data);
+        }
+        dataToWrite.append(data);
     } else if ((isLocal && stage == HELLO) || (!isLocal && stage == INIT)) {
         handleStageHello(data);
     }

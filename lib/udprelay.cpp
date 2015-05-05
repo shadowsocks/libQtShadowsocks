@@ -59,7 +59,7 @@ void UdpRelay::setup(Address &serverAddress, const QHostAddress &localAddr, cons
         listen->bind(localAddr, localPort, QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
         destination = serverAddress;
     } else {
-        listen->bind(serverAddress.getIPAddress(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
+        listen->bind(serverAddress.getRandomIP(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
     }
 }
 
@@ -143,7 +143,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data = data.mid(header_length);
     }
 
-    client->writeDatagram(data, destAddr.getIPAddress(), destAddr.getPort());
+    client->writeDatagram(data, destAddr.getRandomIP(), destAddr.getPort());
 }
 
 void UdpRelay::onClientUdpSocketReadyRead()
@@ -183,7 +183,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.getPort() != 0) {
-        listen->writeDatagram(response, clientAddress.getIPAddress(), clientAddress.getPort());
+        listen->writeDatagram(response, clientAddress.getRandomIP(), clientAddress.getPort());
     } else {
         emit debug("Drop a UDP packet from somewhere else we know.");
     }

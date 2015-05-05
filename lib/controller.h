@@ -51,8 +51,7 @@ public:
     bool setup(const Profile &);
 
     const EncryptorPrivate* getEncryptorPrivate() const;
-    quint16 getServerPort() const;
-    QHostAddress getServerAddr();
+    Address getServerAddress() const;
     QString getServerString() const;//return the server config from profile
     quint16 getLocalPort() const;
     QHostAddress getLocalAddr();

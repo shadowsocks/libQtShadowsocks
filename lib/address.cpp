@@ -22,7 +22,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <QHostInfo>
 #include "common.h"
 #include "address.h"
 
@@ -53,38 +52,34 @@ QString Address::getAddress() const
     return data.first;
 }
 
-QHostAddress Address::getIPAddress()
+QHostAddress Address::getRandomIP() const
 {
     if (ipAddrList.isEmpty()) {
-        return getRealIPAddress();
+        return QHostAddress();
     } else if (ipAddrList.count() == 1) {
         return ipAddrList.first();
+    } else {
+        return ipAddrList.at(Common::randomNumber(ipAddrList.count()));
     }
-    return ipAddrList.at(Common::randomNumber(ipAddrList.count()));
 }
 
-QHostAddress Address::getRealIPAddress()
+bool Address::isIPValid() const
 {
-    if (ipAddrList.isEmpty()) {
-        lookUpIP();
-    }
-    return ipAddrList.first();
-}
-
-bool Address::isIPValid()
-{
-    if (ipAddrList.isEmpty()) {
-        lookUpIP();
-    }
-    if (ipAddrList.count() == 1 && ipAddrList.first().isNull()) {
-        return false;
-    }
-    return true;
+    return !ipAddrList.isEmpty();
 }
 
 quint16 Address::getPort() const
 {
     return data.second;
+}
+
+void Address::lookUp()
+{
+    if (isIPValid()) {
+        emit lookedUp(true, QString());
+    } else {
+        QHostInfo::lookupHost(data.first, this, SLOT(onLookUpFinished(QHostInfo)));
+    }
 }
 
 void Address::setAddress(const QString &a)
@@ -128,11 +123,12 @@ Address &Address::operator= (const Address &o)
     return *this;
 }
 
-void Address::lookUpIP()
+void Address::onLookUpFinished(const QHostInfo &host)
 {
-    ipAddrList = QHostInfo::fromName(data.first).addresses();
-    if (ipAddrList.isEmpty()) {
-        qWarning() << "Can't look up the IP addresses of " << data.first;
-        ipAddrList.append(QHostAddress());
+    if (host.error() != QHostInfo::NoError) {
+        emit lookedUp(false, host.errorString());
+    } else {
+        ipAddrList = host.addresses();
+        emit lookedUp(true, QString());
     }
 }

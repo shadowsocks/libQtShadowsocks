@@ -27,6 +27,7 @@
 
 #include <QString>
 #include <QHostAddress>
+#include <QHostInfo>
 #include <QPair>
 #include <QObject>
 #include "export.h"
@@ -43,22 +44,16 @@ public:
     Address(Address &&) = default;//force the generation of default move constructor
 
     QString getAddress() const;
-
-    /*
-     * return a random IP address from ipAddrList if it's non-empty.
-     * otherwise, it'll call getRealIPAddress() function
-     */
-    QHostAddress getIPAddress();
-
-    /*
-     * getRealIPAddress() will try to lookup host if ipAddrList is empty and return the first result.
-     * Note it's a blocking operation
-     * You're recommended to use getIPAddress() function rather than calling this function.
-     */
-    QHostAddress getRealIPAddress();
-
-    bool isIPValid();
+    QHostAddress getRandomIP() const;
+    bool isIPValid() const;
     quint16 getPort() const;
+
+    /*
+     * lookedUp signal will pass if it's successful
+     * then you can use getRandomIP() to get a random IP address
+     * Note this function will emit lookedUp signal immediately if there is already a valid IP
+     */
+    void lookUp();
 
     void setAddress(const QString &);
     void setIPAddress(const QHostAddress &);
@@ -80,11 +75,15 @@ public:
         return this->data == o.data;
     }
 
+signals:
+    void lookedUp(const bool success, const QString errStr);
+
 private:
     QPair<QString, quint16> data;//first: address string; second: port
     QList<QHostAddress> ipAddrList;
 
-    void lookUpIP();
+private slots:
+    void onLookUpFinished(const QHostInfo &host);
 };
 
 }

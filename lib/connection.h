@@ -39,7 +39,7 @@ class Connection : public QObject
 public:
     explicit Connection(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
 
-    enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, STREAM};//we don't have REPLY, DESTROYED stages. the DNS is not implemented neither.
+    enum STAGE {INIT, HELLO, UDP_ASSOC, DNS, STREAM};//we don't have REPLY, DESTROYED stages.
 
 signals:
     void debug(const QString &);
@@ -64,6 +64,8 @@ private:
 
     STAGE stage;
     Address remoteAddress;
+    Address serverAddress;
+    QByteArray dataToWrite;
 
     void handleStageHello(QByteArray &);
     bool writeToRemote(const QByteArray &);
@@ -71,6 +73,7 @@ private:
     static const qint64 RecvSize = 32736;//32KB, same as shadowsocks-python
 
 private slots:
+    void onDNSResolved(const bool success, const QString errStr);
     void onRemoteStateChanged(QAbstractSocket::SocketState s);
     void onRemoteTcpSocketError();
     void onRemoteTcpSocketReadyRead();
