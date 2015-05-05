@@ -38,7 +38,7 @@ Controller::Controller(bool is_local, QObject *parent) :
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
     } catch (std::exception &e) {
-        qDebug(e.what());
+        qDebug("%s\n", e.what());
     }
 
     valid = false;
