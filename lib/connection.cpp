@@ -141,7 +141,6 @@ void Connection::onDNSResolved(const bool success, const QString errStr)
         } else {
             remote->connectToHost(remoteAddress.getRandomIP(), remoteAddress.getPort());
         }
-        emit debug("DNS resovled successfully.");
     } else {
         emit error("DNS resolve failed: " + errStr);
         deleteLater();
@@ -158,7 +157,6 @@ void Connection::onRemoteConnected()
     stage = STREAM;
     writeToRemote(dataToWrite);
     dataToWrite.clear();
-    emit debug("Remote Socket Connected");
 }
 
 void Connection::onRemoteTcpSocketError()
@@ -174,6 +172,7 @@ void Connection::onLocalTcpSocketReadyRead()
 
     if (data.isEmpty()) {
         emit error("Received empty data.");
+        deleteLater();
         return;
     }
 
@@ -203,7 +202,7 @@ void Connection::onLocalTcpSocketReadyRead()
         }
         local->write(auth);
         stage = ADDR;
-    } else if (stage == CONNECTING) {
+    } else if (stage == CONNECTING || stage == DNS) {//take DNS into account, otherwise some data will get lost
         if (isLocal) {
             data = encryptor->encrypt(data);
         }
@@ -211,7 +210,6 @@ void Connection::onLocalTcpSocketReadyRead()
     } else if ((isLocal && stage == ADDR) || (!isLocal && stage == INIT)) {
         handleStageAddr(data);
     }
-    emit debug("Received data from local socket.");
 }
 
 void Connection::onRemoteTcpSocketReadyRead()
@@ -225,7 +223,6 @@ void Connection::onRemoteTcpSocketReadyRead()
         buf = encryptor->encrypt(buf);
     }
     local->write(buf);
-    emit debug("Received data from remote socket.");
 }
 
 void Connection::onTimeout()
