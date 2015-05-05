@@ -137,9 +137,9 @@ void Connection::onDNSResolved(const bool success, const QString errStr)
     if (success) {
         stage = CONNECTING;
         if (isLocal) {
-            remote->connectToHost(serverAddress.getRandomIP(), serverAddress.getPort());
+            remote->connectToHost(serverAddress.getFirstIP(), serverAddress.getPort());
         } else {
-            remote->connectToHost(remoteAddress.getRandomIP(), remoteAddress.getPort());
+            remote->connectToHost(remoteAddress.getFirstIP(), remoteAddress.getPort());
         }
     } else {
         emit error("DNS resolve failed: " + errStr);

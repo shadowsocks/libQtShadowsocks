@@ -44,7 +44,22 @@ public:
     Address(Address &&) = default;//force the generation of default move constructor
 
     QString getAddress() const;
+
+    /*
+     * Because the ipAddrList might include both IPv4 and IPv6 addresses
+     * getRandomIP() will literally return a random IP address (either IPv4 or IPv6)
+     * If there is no valid IP, a default constructed QHostAddress will be returned.
+     * TODO: detect IPv4/IPv6 reachability automatically
+     */
     QHostAddress getRandomIP() const;
+
+    /*
+     * Normally the order is platform-dependent and it'd consider IPv4 and IPv6 precedence
+     * which *might* be more suitable to use this function to get a reachable IP address
+     * If there is no valid IP, a default constructed QHostAddress will be returned.
+     */
+    QHostAddress getFirstIP() const;
+
     bool isIPValid() const;
     quint16 getPort() const;
 

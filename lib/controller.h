@@ -100,6 +100,7 @@ protected slots:
     void onNewTCPConnection();
     void onBytesRead(const qint64 &);
     void onBytesSend(const qint64 &);
+    void onServerAddressLookedUp(const bool success, const QString err);
 };
 
 }

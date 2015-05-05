@@ -57,6 +57,8 @@ Controller::Controller(bool is_local, QObject *parent) :
     connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead);
     connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend);
 
+    connect(&serverAddress, &Address::lookedUp, this, &Controller::onServerAddressLookedUp);
+
     connect(this, &Controller::error, this, &Controller::info);//you shouldn't bind any other classes' error with info (and info with debug). we only need to do that once here.
     connect(this, &Controller::info, this, &Controller::debug);
 }
@@ -85,6 +87,7 @@ bool Controller::setup(const Profile &p)
         serverAddress = Address(QHostAddress::Any, p.server_port);
     } else {
         serverAddress = Address(p.server, p.server_port);
+        serverAddress.lookUp();
     }
 
     emit info("Initialising ciphers...");
@@ -120,7 +123,7 @@ bool Controller::start()
         sstr.append(QString::number(profile.local_port));
     } else {
         emit info("Running in server mode.");
-        listen_ret = tcpServer->listen(getServerAddress().getRandomIP(), profile.server_port);
+        listen_ret = tcpServer->listen(getServerAddress().getFirstIP(), profile.server_port);
         sstr.append(QString::number(profile.server_port));
     }
     emit info(sstr);
@@ -215,5 +218,12 @@ void Controller::onBytesSend(const qint64 &s)
         bytesSent += s;
         emit newBytesSent(s);
         emit bytesSentChanged(bytesSent);
+    }
+}
+
+void Controller::onServerAddressLookedUp(const bool success, const QString err)
+{
+    if (!success) {
+        emit error("Shadowsocks server DNS lookup failed: " + err);
     }
 }

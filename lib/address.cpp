@@ -24,6 +24,7 @@
 
 #include "common.h"
 #include "address.h"
+#include <QDebug>
 
 using namespace QSS;
 
@@ -56,11 +57,14 @@ QHostAddress Address::getRandomIP() const
 {
     if (ipAddrList.isEmpty()) {
         return QHostAddress();
-    } else if (ipAddrList.count() == 1) {
-        return ipAddrList.first();
     } else {
         return ipAddrList.at(Common::randomNumber(ipAddrList.count()));
     }
+}
+
+QHostAddress Address::getFirstIP() const
+{
+    return ipAddrList.isEmpty() ? QHostAddress() : ipAddrList.first();
 }
 
 bool Address::isIPValid() const
