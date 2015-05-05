@@ -1,3 +1,12 @@
+libqtshadowsocks (1.6.0-1) stable; urgency=medium
+
+  * implement asychronous DNS query
+  * implement CONNECTING stage (conform to python version)
+  * fix a non thread-safe bug
+  * output refine and other improvements
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Tue, 05 May 2015 15:14:00 +0100
+
 libqtshadowsocks (1.5.1-1) stable; urgency=medium
 
   * add support for camellia method
