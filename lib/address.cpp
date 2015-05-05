@@ -85,9 +85,9 @@ void Address::lookUp()
 void Address::setAddress(const QString &a)
 {
     data.first = a;
+    ipAddrList.clear();
     QHostAddress ipAddress(a);
     if (!ipAddress.isNull()) {
-        ipAddrList.clear();
         ipAddrList.append(ipAddress);
     }
 }

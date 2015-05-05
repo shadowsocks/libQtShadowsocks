@@ -57,7 +57,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead);
     connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
-    connect(remote, &QTcpSocket::stateChanged, this, &Connection::onRemoteStateChanged);
+    connect(remote, &QTcpSocket::connected, this, &Connection::onRemoteConnected);
     connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
     connect(remote, &QTcpSocket::disconnected, this, &Connection::deleteLater);
     connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead);
@@ -74,7 +74,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
 
-void Connection::handleStageHello(QByteArray &data)
+void Connection::handleStageAddr(QByteArray &data)
 {
     if (isLocal) {
         int cmd = static_cast<int>(data.at(1));
@@ -117,22 +117,12 @@ void Connection::handleStageHello(QByteArray &data)
 
         dataToWrite.append(encryptor->encrypt(data));
         serverAddress.lookUp();
-    } else if (data.length() > header_length) {
-        dataToWrite.append(data.mid(header_length));
+    } else {
+        if (data.length() > header_length) {
+            dataToWrite.append(data.mid(header_length));
+        }
         remoteAddress.lookUp();
     }
-}
-
-bool Connection::writeToRemote(const QByteArray &data)
-{
-    if (remote->state() != QAbstractSocket::ConnectedState) {
-        if (isLocal) {
-            remote->connectToHost(serverAddress.getRandomIP(), serverAddress.getPort());
-        } else {
-            remote->connectToHost(remoteAddress.getRandomIP(), remoteAddress.getPort());
-        }
-    }
-    return remote->write(data) != -1;
 }
 
 void Connection::onLocalTcpSocketError()
@@ -145,19 +135,30 @@ void Connection::onLocalTcpSocketError()
 void Connection::onDNSResolved(const bool success, const QString errStr)
 {
     if (success) {
-        writeToRemote(dataToWrite);
-        stage = STREAM;
+        stage = CONNECTING;
+        if (isLocal) {
+            remote->connectToHost(serverAddress.getRandomIP(), serverAddress.getPort());
+        } else {
+            remote->connectToHost(remoteAddress.getRandomIP(), remoteAddress.getPort());
+        }
+        emit debug("DNS resovled successfully.");
     } else {
         emit error("DNS resolve failed: " + errStr);
         deleteLater();
     }
 }
 
-void Connection::onRemoteStateChanged(QAbstractSocket::SocketState s)
+bool Connection::writeToRemote(const QByteArray &data)
 {
-    QString stateChanged("Remote TCP socket state changed to ");
-    QDebug(&stateChanged) << s;
-    emit debug(stateChanged);
+    return remote->write(data) != -1;
+}
+
+void Connection::onRemoteConnected()
+{
+    stage = STREAM;
+    writeToRemote(dataToWrite);
+    dataToWrite.clear();
+    emit debug("Remote Socket Connected");
 }
 
 void Connection::onRemoteTcpSocketError()
@@ -201,15 +202,16 @@ void Connection::onLocalTcpSocketReadyRead()
             emit debug("Accept a local socket connection.");
         }
         local->write(auth);
-        stage = HELLO;
-    } else if (stage == DNS) {//DNS stage is the same as CONNECTING
+        stage = ADDR;
+    } else if (stage == CONNECTING) {
         if (isLocal) {
             data = encryptor->encrypt(data);
         }
         dataToWrite.append(data);
-    } else if ((isLocal && stage == HELLO) || (!isLocal && stage == INIT)) {
-        handleStageHello(data);
+    } else if ((isLocal && stage == ADDR) || (!isLocal && stage == INIT)) {
+        handleStageAddr(data);
     }
+    emit debug("Received data from local socket.");
 }
 
 void Connection::onRemoteTcpSocketReadyRead()
@@ -223,6 +225,7 @@ void Connection::onRemoteTcpSocketReadyRead()
         buf = encryptor->encrypt(buf);
     }
     local->write(buf);
+    emit debug("Received data from remote socket.");
 }
 
 void Connection::onTimeout()
