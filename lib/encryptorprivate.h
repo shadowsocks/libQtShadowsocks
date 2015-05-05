@@ -42,7 +42,7 @@ public:
      * encryption method and password.
      * If the initialisation doesn't succeed, the isValid() function will return false
      */
-    EncryptorPrivate (const QString &method, const QString &password, QObject *parent = 0);
+    explicit EncryptorPrivate (const QString &method, const QString &password, QObject *parent = 0);
 
     bool isValid() const;
 

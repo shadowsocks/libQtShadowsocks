@@ -37,8 +37,8 @@ class QSS_EXPORT Address : public QObject
 {
     Q_OBJECT
 public:
-    Address(const QString &a = QString(), const quint16 &p = 0, QObject *parent = 0);
-    Address(const QHostAddress &ip, const quint16 &p, QObject *parent = 0);
+    explicit Address(const QString &a = QString(), const quint16 &p = 0, QObject *parent = 0);
+    explicit Address(const QHostAddress &ip, const quint16 &p, QObject *parent = 0);
     Address(const Address &o);
     Address(Address &&) = default;//force the generation of default move constructor
 
