@@ -32,7 +32,7 @@ namespace QSS {
 //fist: r; second: d
 typedef QPair<Address, Address> CacheKey;
 
-class Common//provide some common functions
+class QSS_EXPORT Common//provide some common functions
 {
 public:
     virtual ~Common() = 0;//You should never initialise Common class.
