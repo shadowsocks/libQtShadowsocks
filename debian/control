@@ -16,16 +16,16 @@ Package: libqtshadowsocks
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: A Shadowsocks library written in C++/Qt5
+Description: A lightweight and ultra-fast shadowsocks library written in C++/Qt
 
 Package: libqtshadowsocks-dev
 Section: libdevel
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libqtshadowsocks
-Description: A Shadowsocks library written in C++/Qt5 (development)
+Description: Development files of libQtShadowsocks
 
 Package: shadowsocks-libqtshadowsocks
 Section: net
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, libqtshadowsocks
-Description: A CLI Shadowsocks client using libQtShadowsocks
+Description: A CLI shadowsocks client using libQtShadowsocks
