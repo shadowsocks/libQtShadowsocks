@@ -36,32 +36,32 @@ EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject
     if (method == "TABLE") {
         type = TABLE;
         tableInit();
-    }
-
-    type = CIPHER;
-    if (method.contains("BF")) {
-        method = "Blowfish/CFB";
-    } else if (method.contains("CAST5")) {
-        method = "CAST-128/CFB";
-    } else if (method.contains("SALSA20")) {
-        method = "Salsa20";
-    } else if (method.contains("CHACHA20")) {
-        method = "ChaCha";
     } else {
-        if (method.contains("CAMELLIA")) {
-                method.replace("CAMELLIA", "Camellia");
+        type = CIPHER;
+        if (method.contains("BF")) {
+            method = "Blowfish/CFB";
+        } else if (method.contains("CAST5")) {
+            method = "CAST-128/CFB";
+        } else if (method.contains("SALSA20")) {
+            method = "Salsa20";
+        } else if (method.contains("CHACHA20")) {
+            method = "ChaCha";
+        } else {
+            if (method.contains("CAMELLIA")) {
+                    method.replace("CAMELLIA", "Camellia");
+            }
+            method.replace("-C", "/C");//i.e. -CFB to /CFB
         }
-        method.replace("-C", "/C");//i.e. -CFB to /CFB
-    }
 
-    QVector<int> ki = Cipher::keyIvMap.value(method);
-    if (ki.isEmpty() || !Cipher::isSupported(method)) {
-        qCritical() << "The method" << m.toLocal8Bit() << "is not supported.";
-        valid = false;
+        QVector<int> ki = Cipher::keyIvMap.value(method);
+        if (ki.isEmpty() || !Cipher::isSupported(method)) {
+            qCritical() << "The method" << m.toLocal8Bit() << "is not supported.";
+            valid = false;
+        }
+        keyLen = ki[0];
+        ivLen = ki[1];
+        evpBytesToKey();
     }
-    keyLen = ki[0];
-    ivLen = ki[1];
-    evpBytesToKey();
 }
 
 bool EncryptorPrivate::isValid() const
