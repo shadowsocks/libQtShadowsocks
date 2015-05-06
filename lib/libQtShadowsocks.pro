@@ -49,7 +49,7 @@ unix: {
     INSTALLS   += target header_files
 
     QMAKE_PKGCONFIG_NAME = QtShadowsocks
-    QMAKE_PKGCONFIG_DESCRIPTION = A Shadowsocks library written in C++/Qt5
+    QMAKE_PKGCONFIG_DESCRIPTION = A lightweight and ultra-fast shadowsocks library written in C++/Qt
     QMAKE_PKGCONFIG_PREFIX  = $$INSTALL_PREFIX
     QMAKE_PKGCONFIG_LIBDIR  = $$target.path
     QMAKE_PKGCONFIG_INCDIR  = $$header_files.path
