@@ -55,6 +55,12 @@ signals:
     void bytesSend(const qint64 &);
 
 private:
+    static const qint64 RecvSize = 32736;//32KB, same as shadowsocks-python
+
+    STAGE stage;
+    Address remoteAddress;
+    Address serverAddress;
+    QByteArray dataToWrite;
     const bool isLocal;
 
     QTcpSocket *local;
@@ -62,15 +68,8 @@ private:
     QTimer *timer;
     Encryptor *encryptor;
 
-    STAGE stage;
-    Address remoteAddress;
-    Address serverAddress;
-    QByteArray dataToWrite;
-
     void handleStageAddr(QByteArray &);
     bool writeToRemote(const QByteArray &);
-
-    static const qint64 RecvSize = 32736;//32KB, same as shadowsocks-python
 
 private slots:
     void onDNSResolved(const bool success, const QString errStr);

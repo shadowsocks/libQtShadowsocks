@@ -82,18 +82,18 @@ public slots:
     void stop();
 
 protected://children can access protected members
+    //the total bytes recevied or sent by/from all TCP and UDP connections.
+    qint64 bytesReceived;
+    qint64 bytesSent;
+
+    Profile profile;
+    Address serverAddress;
     bool valid;
     const bool isLocal;//run on local-side (client) or server-side (server)
     EncryptorPrivate *ep;
     QTcpServer *tcpServer;
     UdpRelay *udpRelay;
     QObjectCleanupHandler *connectionCollector;
-    Profile profile;
-    Address serverAddress;
-
-    //the total bytes recevied or sent by/from all TCP and UDP connections.
-    qint64 bytesReceived;
-    qint64 bytesSent;
 
 protected slots:
     void onTcpServerError(QAbstractSocket::SocketError err);

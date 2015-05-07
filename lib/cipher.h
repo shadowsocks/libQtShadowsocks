@@ -80,9 +80,9 @@ public:
     static bool isSupported(const QByteArray &method);
 
 private:
+    int flag;//0:pipe, 1: chacha, 2: rc4
     Botan::Pipe *pipe;
     RC4 *rc4;
-    int flag;//0:pipe, 1: chacha, 2: rc4
 
 #if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
     ChaCha *chacha;

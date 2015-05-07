@@ -52,14 +52,15 @@ signals:
     void bytesSend(const qint64 &);
 
 private:
+    static const qint64 RecvSize = 65536;//64KB, same as shadowsocks-python (udprelay)
+
+    Address destination;
     const bool isLocal;
     QUdpSocket *listen;
     Encryptor *encryptor;
-    Address destination;
 
     static QMap<CacheKey, QUdpSocket *> cache;
     static QMap<qintptr, Address> clientDescriptorToServerAddr;
-    static const qint64 RecvSize = 65536;//64KB, same as shadowsocks-python (udprelay)
 
 private slots:
     void onSocketError();

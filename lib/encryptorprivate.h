@@ -53,15 +53,15 @@ public:
     QString getInternalMethodName() const;
 
 private:
-    bool valid;
-    TYPE type;
-    QByteArray method;
-    QByteArray password;
-    QVector<quint8> encTable;
-    QVector<quint8> decTable;
     int keyLen;
     int ivLen;
+    TYPE type;
+    QVector<quint8> encTable;
+    QVector<quint8> decTable;
+    QByteArray method;
+    QByteArray password;
     QByteArray key;
+    bool valid;
 
     void tableInit();
     void evpBytesToKey();

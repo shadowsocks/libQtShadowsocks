@@ -45,10 +45,10 @@ public slots:
 private:
     void generate();
 
+    quint32 position;
     unsigned char x, y;
     QVector<unsigned char> state;
     QVector<unsigned char> buffer;
-    quint32 position;
 };
 
 }
