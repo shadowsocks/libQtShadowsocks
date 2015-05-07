@@ -78,6 +78,8 @@ void EncryptorPrivate::tableInit()
 {
     quint32 i;
     quint64 k = 0;
+    encTable.resize(256);
+    decTable.resize(256);
 
     QByteArray digest = Cipher::md5Hash(password);
 
