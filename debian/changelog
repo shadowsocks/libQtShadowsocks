@@ -1,3 +1,9 @@
+libqtshadowsocks (1.6.1-1) stable; urgency=medium
+
+  * fix crashes when TABLE is used
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Fri, 08 May 2015 21:36:00 +0100
+
 libqtshadowsocks (1.6.0-1) stable; urgency=medium
 
   * implement asynchronous DNS query
