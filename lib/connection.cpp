@@ -74,7 +74,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
 
-void Connection::handleStageAddr(QByteArray &data)
+void Connection::handleStageAddr(QByteArray data)
 {
     if (isLocal) {
         int cmd = static_cast<int>(data.at(1));

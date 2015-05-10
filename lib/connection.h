@@ -68,7 +68,7 @@ private:
     QTimer *timer;
     Encryptor *encryptor;
 
-    void handleStageAddr(QByteArray &);
+    void handleStageAddr(QByteArray);
     bool writeToRemote(const QByteArray &);
 
 private slots:
