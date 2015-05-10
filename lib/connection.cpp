@@ -215,12 +215,7 @@ void Connection::onRemoteTcpSocketReadyRead()
 {
     QByteArray buf = remote->readAll();
     emit bytesRead(buf.size());
-
-    if (isLocal) {
-        buf = encryptor->decrypt(buf);
-    } else {
-        buf = encryptor->encrypt(buf);
-    }
+    buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
     local->write(buf);
 }
 
