@@ -23,6 +23,7 @@
 #include <botan/auto_rng.h>
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
+#include <stdexcept>
 #include "cipher.h"
 
 using namespace QSS;
@@ -30,20 +31,16 @@ using namespace QSS;
 Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent) :
     QObject(parent),
     pipe(nullptr),
-    rc4(nullptr)
+    rc4(nullptr),
+    chacha(nullptr)
 {
     if (method.contains("RC4")) {
-        flag = 2;
         rc4 = new RC4(key, iv, this);
     } else {
 #if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
         if (method.contains("ChaCha")) {
-            flag = 1;
             chacha = new ChaCha(key, iv, this);
-            return;
         } else {
-            chacha = nullptr;
-        }
 #endif
         std::string str(method.constData(), method.length());
         Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(key.constData()), key.size());
@@ -51,7 +48,9 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
         Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
         //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
         pipe = new Botan::Pipe(filter);
-        flag = 0;
+#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
+        }
+#endif
     }
 }
 
@@ -86,16 +85,18 @@ QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
 
 QByteArray Cipher::update(const QByteArray &data)
 {
-    if (flag == 1) {
+    if (chacha) {
         return chacha->update(data);
-    } else if (flag == 2) {
+    } else if (rc4) {
         return rc4->update(data);
-    } else {
+    } else if (pipe) {
         pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
         size_t id = pipe->message_count() - 1;
         SecureByteArray c = pipe->read_all(id);
         QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)), c.size());
         return out;
+    } else {
+        throw std::runtime_error("Underlying ciphers are all uninitialised!");
     }
 }
 
