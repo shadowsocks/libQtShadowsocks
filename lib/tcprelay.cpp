@@ -1,5 +1,5 @@
 /*
- * connection.cpp - the source file of Connection class
+ * tcprelay.cpp - the source file of TcpRelay class
  *
  * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
  *
@@ -22,20 +22,20 @@
 
 #include <QDebug>
 #include <stdexcept>
-#include "connection.h"
+#include "tcprelay.h"
 #include "controller.h"
 #include "common.h"
 
 using namespace QSS;
 
-Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *parent) :
+TcpRelay::TcpRelay(QTcpSocket *localTcpSocket, bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)
 {
     Controller *c = qobject_cast<Controller *>(parent);
 
     if(!c) {
-        throw std::invalid_argument("Connection's parent must be a Controller object.");
+        throw std::invalid_argument("TcpRelay's parent must be a Controller object.");
     }
 
     stage = INIT;
@@ -47,22 +47,22 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     remote = new QTcpSocket(this);
     serverAddress = c->getServerAddress();
 
-    connect(&remoteAddress, &Address::lookedUp, this, &Connection::onDNSResolved);
-    connect(&serverAddress, &Address::lookedUp, this, &Connection::onDNSResolved);
+    connect(&remoteAddress, &Address::lookedUp, this, &TcpRelay::onDNSResolved);
+    connect(&serverAddress, &Address::lookedUp, this, &TcpRelay::onDNSResolved);
 
-    connect(timer, &QTimer::timeout, this, &Connection::onTimeout);
+    connect(timer, &QTimer::timeout, this, &TcpRelay::onTimeout);
 
-    connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onLocalTcpSocketError);
-    connect(local, &QTcpSocket::disconnected, this, &Connection::deleteLater);
-    connect(local, &QTcpSocket::readyRead, this, &Connection::onLocalTcpSocketReadyRead);
+    connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &TcpRelay::onLocalTcpSocketError);
+    connect(local, &QTcpSocket::disconnected, this, &TcpRelay::deleteLater);
+    connect(local, &QTcpSocket::readyRead, this, &TcpRelay::onLocalTcpSocketReadyRead);
     connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
-    connect(remote, &QTcpSocket::connected, this, &Connection::onRemoteConnected);
-    connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &Connection::onRemoteTcpSocketError);
-    connect(remote, &QTcpSocket::disconnected, this, &Connection::deleteLater);
-    connect(remote, &QTcpSocket::readyRead, this, &Connection::onRemoteTcpSocketReadyRead);
+    connect(remote, &QTcpSocket::connected, this, &TcpRelay::onRemoteConnected);
+    connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &TcpRelay::onRemoteTcpSocketError);
+    connect(remote, &QTcpSocket::disconnected, this, &TcpRelay::deleteLater);
+    connect(remote, &QTcpSocket::readyRead, this, &TcpRelay::onRemoteTcpSocketReadyRead);
     connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
-    connect(remote, &QTcpSocket::bytesWritten, this, &Connection::bytesSend);
+    connect(remote, &QTcpSocket::bytesWritten, this, &TcpRelay::bytesSend);
 
     local->setParent(this);
     local->setReadBufferSize(RecvSize);
@@ -74,7 +74,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
 
-void Connection::handleStageAddr(QByteArray data)
+void TcpRelay::handleStageAddr(QByteArray data)
 {
     if (isLocal) {
         int cmd = static_cast<int>(data.at(1));
@@ -125,14 +125,14 @@ void Connection::handleStageAddr(QByteArray data)
     }
 }
 
-void Connection::onLocalTcpSocketError()
+void TcpRelay::onLocalTcpSocketError()
 {
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit error("Local socket error: " + local->errorString());
     }
 }
 
-void Connection::onDNSResolved(const bool success, const QString errStr)
+void TcpRelay::onDNSResolved(const bool success, const QString errStr)
 {
     if (success) {
         stage = CONNECTING;
@@ -147,26 +147,26 @@ void Connection::onDNSResolved(const bool success, const QString errStr)
     }
 }
 
-bool Connection::writeToRemote(const QByteArray &data)
+bool TcpRelay::writeToRemote(const QByteArray &data)
 {
     return remote->write(data) != -1;
 }
 
-void Connection::onRemoteConnected()
+void TcpRelay::onRemoteConnected()
 {
     stage = STREAM;
     writeToRemote(dataToWrite);
     dataToWrite.clear();
 }
 
-void Connection::onRemoteTcpSocketError()
+void TcpRelay::onRemoteTcpSocketError()
 {
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit error("Remote socket error: " + remote->errorString());
     }
 }
 
-void Connection::onLocalTcpSocketReadyRead()
+void TcpRelay::onLocalTcpSocketReadyRead()
 {
     QByteArray data = local->readAll();
 
@@ -211,7 +211,7 @@ void Connection::onLocalTcpSocketReadyRead()
     }
 }
 
-void Connection::onRemoteTcpSocketReadyRead()
+void TcpRelay::onRemoteTcpSocketReadyRead()
 {
     QByteArray buf = remote->readAll();
     emit bytesRead(buf.size());
@@ -219,8 +219,8 @@ void Connection::onRemoteTcpSocketReadyRead()
     local->write(buf);
 }
 
-void Connection::onTimeout()
+void TcpRelay::onTimeout()
 {
-    emit info("Connection timeout.");
+    emit info("TCP connection timeout.");
     deleteLater();
 }

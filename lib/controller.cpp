@@ -25,7 +25,7 @@
 #include <botan/init.h>
 
 #include "controller.h"
-#include "connection.h"
+#include "tcprelay.h"
 #include "encryptor.h"
 
 using namespace QSS;
@@ -194,12 +194,12 @@ void Controller::onTcpServerError(QAbstractSocket::SocketError err)
 void Controller::onNewTCPConnection()
 {
     QTcpSocket *ts = tcpServer->nextPendingConnection();
-    Connection *con = new Connection(ts, isLocal, this);
-    connect (con, &Connection::debug, this, &Controller::debug);
-    connect (con, &Connection::info, this, &Controller::info);
-    connect (con, &Connection::error, this, &Controller::error);
-    connect (con, &Connection::bytesRead, this, &Controller::onBytesRead);
-    connect (con, &Connection::bytesSend, this, &Controller::onBytesSend);
+    TcpRelay *con = new TcpRelay(ts, isLocal, this);
+    connect (con, &TcpRelay::debug, this, &Controller::debug);
+    connect (con, &TcpRelay::info, this, &Controller::info);
+    connect (con, &TcpRelay::error, this, &Controller::error);
+    connect (con, &TcpRelay::bytesRead, this, &Controller::onBytesRead);
+    connect (con, &TcpRelay::bytesSend, this, &Controller::onBytesSend);
     connectionCollector->add(con);
 }
 

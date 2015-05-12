@@ -1,7 +1,5 @@
 /*
- * connection.h - the header file of Connection class
- *
- * This class represents TCP connection only.
+ * tcprelay.h - the header file of TcpRelay class
  *
  * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
  *
@@ -22,8 +20,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef CONNECTION_H
-#define CONNECTION_H
+#ifndef TCPRELAY_H
+#define TCPRELAY_H
 
 #include <QObject>
 #include <QTcpSocket>
@@ -33,11 +31,11 @@
 
 namespace QSS {
 
-class Connection : public QObject
+class TcpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit Connection(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
+    explicit TcpRelay(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
 
     enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM};//we don't have DESTROYED stage
 
@@ -82,4 +80,4 @@ private slots:
 };
 
 }
-#endif // CONNECTION_H
+#endif // TCPRELAY_H
