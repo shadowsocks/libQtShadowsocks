@@ -55,20 +55,23 @@ int main(int argc, char *argv[])
     parser.process(a);
 
     Client c(parser.isSet(debug));
+    int ret_code = 0;
     if (c.readConfig(parser.value(configFile))) {
         if (parser.isSet(testSpeed)) {
             Utils::testSpeed(c.getMethod(), 100);
-            return 0;
         } else if (c.start(parser.isSet(serverMode))) {
-            return a.exec();
+            ret_code = a.exec();
         } else {
-            return 2;
+            ret_code = 2;
         }
     } else {
         if (parser.isSet(testSpeed)) {
             qDebug() << "Testing all encryption methods...";
             Utils::testSpeed(100);
+        } else {
+            ret_code = 1;
         }
-        return 1;
     }
+
+    return ret_code;
 }
