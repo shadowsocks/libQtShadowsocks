@@ -28,30 +28,31 @@
 using namespace QSS;
 
 Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent) :
-    QObject(parent)
+    QObject(parent),
+    pipe(nullptr),
+    rc4(nullptr)
 {
-    pipe = nullptr;
-    Botan::Keyed_Filter *filter;
     if (method.contains("RC4")) {
         flag = 2;
         rc4 = new RC4(key, iv, this);
-        return;
     } else {
 #if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
         if (method.contains("ChaCha")) {
             flag = 1;
             chacha = new ChaCha(key, iv, this);
             return;
+        } else {
+            chacha = nullptr;
         }
 #endif
         std::string str(method.constData(), method.length());
         Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(key.constData()), key.size());
         Botan::InitializationVector _iv(reinterpret_cast<const Botan::byte *>(iv.constData()), iv.size());
-        filter = Botan::get_cipher(str, _key, _iv, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
+        Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
+        //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
+        pipe = new Botan::Pipe(filter);
+        flag = 0;
     }
-    //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
-    pipe = new Botan::Pipe(filter);
-    flag = 0;
 }
 
 Cipher::~Cipher()
