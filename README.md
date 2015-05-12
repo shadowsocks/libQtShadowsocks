@@ -8,7 +8,7 @@ Introduction
 
 Written in C++ using Qt 5 framework, it aims to provide a developer-friendly shadowsocks library, mainly for Qt applications such as [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
 
-The `client` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `client` (`shadowsocks-libqss`) can also be used as a standalone program in both shadowsocks local-side and shadowsocks server-side.
+The `shadowsocks-libqss` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `shadowsocks-libqss` can also be used as a standalone program in both shadowsocks local-side and shadowsocks server-side.
 
 Check [installation wiki page](https://github.com/librehat/libQtShadowsocks/wiki/Installation) to see how to install this library and/or `shadowsocks-libqss`.
 
