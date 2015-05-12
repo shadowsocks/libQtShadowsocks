@@ -21,6 +21,7 @@
  */
 
 #include <QDebug>
+#include <stdexcept>
 #include "connection.h"
 #include "controller.h"
 #include "common.h"
@@ -34,8 +35,7 @@ Connection::Connection(QTcpSocket *localTcpSocket, bool is_local, QObject *paren
     Controller *c = qobject_cast<Controller *>(parent);
 
     if(!c) {
-        qCritical() << "Fatal. Connection's parent must be a Controller object.";
-        return;
+        throw std::invalid_argument("Connection's parent must be a Controller object.");
     }
 
     stage = INIT;

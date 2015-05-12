@@ -23,6 +23,7 @@
 #include "udprelay.h"
 #include "controller.h"
 #include <QDebug>
+#include <stdexcept>
 
 using namespace QSS;
 
@@ -33,8 +34,7 @@ UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     Controller *c = qobject_cast<Controller *>(parent);
 
     if(!c) {
-        qCritical() << "Fatal. Connection's parent must be a Controller object.";
-        return;
+        throw std::invalid_argument("UdpRelay's parent must be a Controller object.");
     }
 
     encryptor = new Encryptor(c->getEncryptorPrivate(), this);
