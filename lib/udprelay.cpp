@@ -21,23 +21,15 @@
  */
 
 #include "udprelay.h"
-#include "controller.h"
 #include <QDebug>
-#include <stdexcept>
 
 using namespace QSS;
 
-UdpRelay::UdpRelay(bool is_local, QObject *parent) :
+UdpRelay::UdpRelay(const EncryptorPrivate *ep, bool is_local, QObject *parent) :
     QObject(parent),
     isLocal(is_local)
 {
-    Controller *c = qobject_cast<Controller *>(parent);
-
-    if(!c) {
-        throw std::invalid_argument("UdpRelay's parent must be a Controller object.");
-    }
-
-    encryptor = new Encryptor(c->getEncryptorPrivate(), this);
+    encryptor = new Encryptor(ep, this);
     listen = new QUdpSocket(this);
     listen->setReadBufferSize(RecvSize);
     listen->setSocketOption(QAbstractSocket::LowDelayOption, 1);

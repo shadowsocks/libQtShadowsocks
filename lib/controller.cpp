@@ -45,7 +45,7 @@ Controller::Controller(bool is_local, QObject *parent) :
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
 
-    udpRelay = new UdpRelay(isLocal, this);
+    udpRelay = new UdpRelay(ep, isLocal, this);
     connectionCollector = new QObjectCleanupHandler;
 
     connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
@@ -194,7 +194,7 @@ void Controller::onTcpServerError(QAbstractSocket::SocketError err)
 void Controller::onNewTCPConnection()
 {
     QTcpSocket *ts = tcpServer->nextPendingConnection();
-    TcpRelay *con = new TcpRelay(ts, isLocal, this);
+    TcpRelay *con = new TcpRelay(ts, getTimeout(), serverAddress, ep, isLocal, this);
     connect (con, &TcpRelay::debug, this, &Controller::debug);
     connect (con, &TcpRelay::info, this, &Controller::info);
     connect (con, &TcpRelay::error, this, &Controller::error);

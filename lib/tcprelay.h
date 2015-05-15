@@ -35,7 +35,7 @@ class TcpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpRelay(QTcpSocket *localTcpSocket, bool is_local = true, QObject *parent = 0);
+    explicit TcpRelay(QTcpSocket *localTcpSocket, int timeout, const Address &server_addr, const EncryptorPrivate *ep, bool is_local = true, QObject *parent = 0);
 
     enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM};//we don't have DESTROYED stage
 

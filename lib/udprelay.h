@@ -37,7 +37,7 @@ class UdpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit UdpRelay(bool is_local = true, QObject *parent = 0);
+    explicit UdpRelay(const EncryptorPrivate *ep, bool is_local = true, QObject *parent = 0);
     void setup(Address &serverAddress, const QHostAddress &localAddr, const quint16 &localPort);
 
 signals:

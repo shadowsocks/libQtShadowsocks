@@ -21,31 +21,23 @@
  */
 
 #include <QDebug>
-#include <stdexcept>
 #include "tcprelay.h"
-#include "controller.h"
 #include "common.h"
 
 using namespace QSS;
 
-TcpRelay::TcpRelay(QTcpSocket *localTcpSocket, bool is_local, QObject *parent) :
+TcpRelay::TcpRelay(QTcpSocket *localTcpSocket, int timeout, const Address &server_addr, const EncryptorPrivate *ep, bool is_local, QObject *parent) :
     QObject(parent),
-    isLocal(is_local)
+    stage(INIT),
+    serverAddress(server_addr),
+    isLocal(is_local),
+    local(localTcpSocket)
 {
-    Controller *c = qobject_cast<Controller *>(parent);
-
-    if(!c) {
-        throw std::invalid_argument("TcpRelay's parent must be a Controller object.");
-    }
-
-    stage = INIT;
-    encryptor = new Encryptor(c->getEncryptorPrivate(), this);
+    encryptor = new Encryptor(ep, this);
     timer = new QTimer(this);
-    timer->setInterval(c->getTimeout());
+    timer->setInterval(timeout);
 
-    local = localTcpSocket;
     remote = new QTcpSocket(this);
-    serverAddress = c->getServerAddress();
 
     connect(&remoteAddress, &Address::lookedUp, this, &TcpRelay::onDNSResolved);
     connect(&serverAddress, &Address::lookedUp, this, &TcpRelay::onDNSResolved);
