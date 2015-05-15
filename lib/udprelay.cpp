@@ -25,11 +25,11 @@
 
 using namespace QSS;
 
-UdpRelay::UdpRelay(const EncryptorPrivate *ep, bool is_local, QObject *parent) :
+UdpRelay::UdpRelay(bool is_local, QObject *parent) :
     QObject(parent),
-    isLocal(is_local)
+    isLocal(is_local),
+    encryptor(nullptr)
 {
-    encryptor = new Encryptor(ep, this);
     listen = new QUdpSocket(this);
     listen->setReadBufferSize(RecvSize);
     listen->setSocketOption(QAbstractSocket::LowDelayOption, 1);
@@ -44,7 +44,7 @@ UdpRelay::UdpRelay(const EncryptorPrivate *ep, bool is_local, QObject *parent) :
 QMap<CacheKey, QUdpSocket *> UdpRelay::cache;
 QMap<qintptr, Address> UdpRelay::clientDescriptorToServerAddr;
 
-void UdpRelay::setup(Address &serverAddress, const QHostAddress &localAddr, const quint16 &localPort)
+void UdpRelay::setup(const EncryptorPrivate *ep, const Address &serverAddress, const QHostAddress &localAddr, const quint16 &localPort)
 {
     listen->close();
     if (isLocal) {
@@ -53,6 +53,10 @@ void UdpRelay::setup(Address &serverAddress, const QHostAddress &localAddr, cons
     } else {
         listen->bind(serverAddress.getFirstIP(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
     }
+    if (encryptor) {
+        encryptor->deleteLater();
+    }
+    encryptor = new Encryptor(ep, this);
 }
 
 void UdpRelay::onSocketError()
@@ -78,6 +82,11 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
+    if (!encryptor) {
+        emit error("Fatal. Encryptor in UdpRelay is NULL!");
+        return;
+    }
+
     if (listen->pendingDatagramSize() > RecvSize) {
         emit error("Datagram is too large. discarded.");
         return;
@@ -140,6 +149,11 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
 void UdpRelay::onClientUdpSocketReadyRead()
 {
+    if (!encryptor) {
+        emit error("Fatal. Encryptor in UdpRelay is NULL!");
+        return;
+    }
+
     QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
     if (!sock) {
         emit error("Fatal. A false object calling onClientUdpSocketReadyRead.");

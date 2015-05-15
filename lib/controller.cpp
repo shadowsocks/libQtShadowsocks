@@ -45,7 +45,7 @@ Controller::Controller(bool is_local, QObject *parent) :
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
 
-    udpRelay = new UdpRelay(ep, isLocal, this);
+    udpRelay = new UdpRelay(isLocal, this);
     connectionCollector = new QObjectCleanupHandler;
 
     connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
@@ -102,7 +102,7 @@ bool Controller::setup(const Profile &p)
         valid = false;
     }
 
-    udpRelay->setup(serverAddress, getLocalAddr(), profile.local_port);
+    udpRelay->setup(ep, serverAddress, getLocalAddr(), profile.local_port);
 
     return valid;
 }
