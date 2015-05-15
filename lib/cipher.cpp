@@ -91,8 +91,7 @@ QByteArray Cipher::update(const QByteArray &data)
         return rc4->update(data);
     } else if (pipe) {
         pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
-        size_t id = pipe->message_count() - 1;
-        SecureByteArray c = pipe->read_all(id);
+        SecureByteArray c = pipe->read_all(Botan::Pipe::LAST_MESSAGE);
         QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)), c.size());
         return out;
     } else {
