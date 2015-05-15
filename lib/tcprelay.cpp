@@ -102,6 +102,7 @@ void TcpRelay::handleStageAddr(QByteArray data)
     Common::parseHeader(data, remoteAddress, header_length);
     if (header_length == 0) {
         emit error("Can't parse header");
+        deleteLater();
         return;
     }
 
@@ -130,6 +131,7 @@ void TcpRelay::onLocalTcpSocketError()
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit error("Local socket error: " + local->errorString());
     }
+    deleteLater();
 }
 
 void TcpRelay::onDNSResolved(const bool success, const QString errStr)
@@ -164,6 +166,7 @@ void TcpRelay::onRemoteTcpSocketError()
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit error("Remote socket error: " + remote->errorString());
     }
+    deleteLater();
 }
 
 void TcpRelay::onLocalTcpSocketReadyRead()
@@ -171,7 +174,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     QByteArray data = local->readAll();
 
     if (data.isEmpty()) {
-        emit error("Received empty data.");
+        emit error("Local received empty data.");
         deleteLater();
         return;
     }
@@ -214,6 +217,11 @@ void TcpRelay::onLocalTcpSocketReadyRead()
 void TcpRelay::onRemoteTcpSocketReadyRead()
 {
     QByteArray buf = remote->readAll();
+    if (buf.isEmpty()) {
+        emit error("Remote received empty data.");
+        deleteLater();
+        return;
+    }
     emit bytesRead(buf.size());
     buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
     local->write(buf);
