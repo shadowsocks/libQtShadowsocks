@@ -11,7 +11,7 @@ Usage
 -----
 
 ```
-Usage: ./shadowsocks-libqss [options]
+Usage: shadowsocks-libqss [options]
 
 Options:
   -h, --help           Displays this help.
@@ -20,8 +20,7 @@ Options:
   -s <server_address>  host name or IP address of your remote server.
   -p <server_port>     port number of your remote server.
   -b <local_address>   local address to bind. useless in server mode.
-  -l <local_port>      port number of your local server. useless in server
-                       mode.
+  -l <local_port>      port number of your local server. useless in server mode.
   -k <password>        password of your remote server.
   -m <method>          encryption method.
   -t <timeout>         socket timeout in seconds.
