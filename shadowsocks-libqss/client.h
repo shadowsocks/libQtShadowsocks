@@ -32,6 +32,7 @@ class Client : public QObject
 public:
     explicit Client(bool _debug, QObject *parent = 0);
     bool readConfig(const QString &);
+    void setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout);
     QString getMethod() const;
 
 public slots:

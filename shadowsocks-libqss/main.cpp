@@ -44,34 +44,47 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption configFile(QStringList() << "c" << "config-file", "specify config.json file.", "config.json", "config.json");
-    QCommandLineOption serverMode(QStringList() << "s" << "server-mode", "run as shadowsocks server.");
-    QCommandLineOption testSpeed("t", "test encrypt/decrypt speed.");
-    QCommandLineOption debug("d", "debug-level log.");
+    QCommandLineOption configFile("c", "specify config.json file.", "config_file", "config.json");
+    QCommandLineOption serverAddress("s", "host name or IP address of your remote server.", "server_address");
+    QCommandLineOption serverPort("p", "port number of your remote server.", "server_port");
+    QCommandLineOption localAddress("b", "local address to bind. useless in server mode.", "local_address", "127.0.0.1");
+    QCommandLineOption localPort("l", "port number of your local server. useless in server mode.", "local_port");
+    QCommandLineOption password("k", "password of your remote server.", "password");
+    QCommandLineOption encryptionMethod("m", "encryption method.", "method");
+    QCommandLineOption timeout("t", "socket timeout in seconds.", "timeout");
+    QCommandLineOption serverMode(QStringList() << "S" << "server-mode", "run as shadowsocks server.");
+    QCommandLineOption testSpeed(QStringList() << "T" << "speed-test", "test encrypt/decrypt speed.");
+    QCommandLineOption debug(QStringList() << "d" << "debug", "debug-level log.");
     parser.addOption(configFile);
-    parser.addOption(debug);
+    parser.addOption(serverAddress);
+    parser.addOption(serverPort);
+    parser.addOption(localAddress);
+    parser.addOption(localPort);
+    parser.addOption(password);
+    parser.addOption(encryptionMethod);
+    parser.addOption(timeout);
     parser.addOption(serverMode);
     parser.addOption(testSpeed);
+    parser.addOption(debug);
     parser.process(a);
 
     Client c(parser.isSet(debug));
-    int ret_code = 0;
-    if (c.readConfig(parser.value(configFile))) {
-        if (parser.isSet(testSpeed)) {
-            Utils::testSpeed(c.getMethod(), 100);
-        } else if (c.start(parser.isSet(serverMode))) {
-            ret_code = a.exec();
-        } else {
-            ret_code = 2;
-        }
-    } else {
-        if (parser.isSet(testSpeed)) {
+
+    if (!c.readConfig(parser.value(configFile))) {
+        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout));
+    }
+
+    if (parser.isSet(testSpeed)) {
+        if (c.getMethod().isEmpty()) {
             qDebug() << "Testing all encryption methods...";
             Utils::testSpeed(100);
         } else {
-            ret_code = 1;
+            Utils::testSpeed(c.getMethod(), 100);
         }
+        return 0;
+    } else if (c.start(parser.isSet(serverMode))) {
+        return a.exec();
+    } else {
+        return 2;
     }
-
-    return ret_code;
 }

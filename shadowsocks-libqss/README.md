@@ -11,20 +11,28 @@ Usage
 -----
 
 ```
-Usage: shadowsocks-libqss [options]
+Usage: ./shadowsocks-libqss [options]
 
 Options:
-  -h, --help                       Displays this help.
-  -v, --version                    Displays version information.
-  -c, --config-file <config.json>  specify config.json file.
-  -d,                              debug-level log.
-  -s, --server-mode                run as shadowsocks server.
-  -t                               test encrypt/decrypt speed.
+  -h, --help           Displays this help.
+  -v, --version        Displays version information.
+  -c <config_file>     specify config.json file.
+  -s <server_address>  host name or IP address of your remote server.
+  -p <server_port>     port number of your remote server.
+  -b <local_address>   local address to bind. useless in server mode.
+  -l <local_port>      port number of your local server. useless in server
+                       mode.
+  -k <password>        password of your remote server.
+  -m <method>          encryption method.
+  -t <timeout>         socket timeout in seconds.
+  -S, --server-mode    run as shadowsocks server.
+  -T, --speed-test     test encrypt/decrypt speed.
+  -d, --debug          debug-level log.
 ```
 
-If `-t` is specified, `shadowsocks-libqss` will do a speed test and print out the time used for encryption (using the method specified by `config.json` file). If the `config.json` file doesn't exist, it'll test all encryption methods and print the results. _Note: `shadowsocks-libqss` will exit after the speed test._
+If `-T` or `--speed-test` is specified, `shadowsocks-libqss` will do a speed test and print out the time used for specified encryption method. If no method is set, it'll test all encryption methods and print the results. _Note: `shadowsocks-libqss` will exit after the speed test._
 
-By default, it runs as local client. You have to pass `-s` if you want it run in server mode.
+By default, it runs as local client. You have to pass `-S` or `--server-mode` if you want it run in server mode.
 
 There is a `config.json` example for reference.
 
