@@ -46,6 +46,8 @@ EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject
             method = "Salsa20";
         } else if (method.contains("CHACHA20")) {
             method = "ChaCha";
+        } else if (method.contains("SERPENT-CFB")) {
+            method = "Serpent/CFB";
         } else {
             if (method.contains("CAMELLIA")) {
                     method.replace("CAMELLIA", "Camellia");

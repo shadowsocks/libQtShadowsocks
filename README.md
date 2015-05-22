@@ -41,6 +41,7 @@ Current Status
 - RC4-MD5
 - SALSA20
 - SEED-CFB
+- SERPENT-CFB
 
 RoadMap
 -------

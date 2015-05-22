@@ -80,6 +80,7 @@ QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
     map.insert("RC4-MD5", {16, 16});
     map.insert("Salsa20", {32, 8});
     map.insert("SEED/CFB", {16, 16});
+    map.insert("Serpent/CFB", {32, 16});//256-bit Serpent
     return map;
 }
 
