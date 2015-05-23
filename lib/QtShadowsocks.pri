@@ -13,7 +13,8 @@ SOURCES  += \
             encryptorprivate.cpp \
             rc4.cpp \
             tcprelay.cpp \
-            udprelay.cpp
+            udprelay.cpp \
+            httpproxy.cpp
 
 
 HEADERS  += \
@@ -30,4 +31,5 @@ HEADERS  += \
             QtShadowsocks \
             rc4.h \
             tcprelay.h \
-            udprelay.h
+            udprelay.h \
+            httpproxy.h

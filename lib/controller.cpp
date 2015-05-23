@@ -34,7 +34,8 @@ Controller::Controller(bool is_local, QObject *parent) :
     QObject(parent),
     valid(true),
     isLocal(is_local),
-    ep(nullptr)
+    ep(nullptr),
+    httpProxy(nullptr)
 {
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
@@ -103,6 +104,11 @@ bool Controller::setup(const Profile &p)
     }
 
     udpRelay->setup(ep, serverAddress, getLocalAddr(), profile.local_port);
+
+    if (httpProxy) {
+        httpProxy->deleteLater();
+    }//FIXME!!!!!!!!!!!!!
+    httpProxy = new HttpProxy(profile.local_port, QHostAddress::LocalHost, 9999, this);
 
     return valid;
 }

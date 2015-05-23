@@ -29,10 +29,11 @@
 #include <QObject>
 #include <QObjectCleanupHandler>
 #include <QTcpServer>
+#include "encryptorprivate.h"
 #include "export.h"
+#include "httpproxy.h"
 #include "profile.h"
 #include "udprelay.h"
-#include "encryptorprivate.h"
 
 namespace QSS {
 
@@ -94,6 +95,7 @@ protected://children can access protected members
     QTcpServer *tcpServer;
     UdpRelay *udpRelay;
     QObjectCleanupHandler *connectionCollector;
+    HttpProxy *httpProxy;
 
 protected slots:
     void onTcpServerError(QAbstractSocket::SocketError err);
