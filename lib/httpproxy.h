@@ -47,6 +47,7 @@ private:
     QNetworkProxy upstreamProxy;
 
 private slots:
+    void onSocketError(QAbstractSocket::SocketError);
     void onSocketReadyRead();
     void onProxySocketConnected();
     void onProxySocketConnectedHttps();//this function is used for HTTPS transparent proxy

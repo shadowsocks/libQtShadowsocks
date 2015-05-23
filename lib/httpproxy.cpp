@@ -22,6 +22,7 @@
 
 #include "httpproxy.h"
 #include "socketstream.h"
+#include <QDebug>
 #include <QTcpSocket>
 #include <QUrl>
 
@@ -42,7 +43,16 @@ void HttpProxy::incomingConnection(qintptr socketDescriptor)
     QTcpSocket *socket = new QTcpSocket(this);
     connect(socket, &QTcpSocket::readyRead, this, &HttpProxy::onSocketReadyRead);
     connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
+    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &HttpProxy::onSocketError);
     socket->setSocketDescriptor(socketDescriptor);
+}
+
+void HttpProxy::onSocketError(QAbstractSocket::SocketError err)
+{
+    QString errStr("HTTP socket error: ");
+    QDebug(&errStr) << err;
+    emit error(errStr);
+    sender()->deleteLater();
 }
 
 void HttpProxy::onSocketReadyRead()
@@ -106,6 +116,7 @@ void HttpProxy::onSocketReadyRead()
         connect (proxySocket, &QTcpSocket::connected, this, &HttpProxy::onProxySocketConnectedHttps);
     }
     connect (proxySocket, &QTcpSocket::disconnected, proxySocket, &QTcpSocket::deleteLater);
+    connect (proxySocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &HttpProxy::onSocketError);
     proxySocket->connectToHost(host, port);
 }
 
