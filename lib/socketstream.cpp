@@ -1,5 +1,5 @@
 /*
- * httpproxy.h - the header file of HttpProxy class
+ * socketstream.cpp - the source file of SocketStream class
  *
  * Copyright (C) 2015 Symeon Huang <hzwhuang@gmail.com>
  *
@@ -20,39 +20,25 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HTTPPROXY_H
-#define HTTPPROXY_H
+#include "socketstream.h"
 
-#include <QTcpServer>
-#include <QNetworkProxy>
-#include "export.h"
+using namespace QSS;
 
-namespace QSS {
-
-class QSS_EXPORT HttpProxy : public QTcpServer
+SocketStream::SocketStream(QAbstractSocket *a, QAbstractSocket *b,  QObject *parent) :
+    QObject(parent),
+    as(a),
+    bs(b)
 {
-    Q_OBJECT
-public:
-    explicit HttpProxy(quint16 socks_port, const QHostAddress &http_addr, quint16 http_port, QObject *parent = 0);
-    ~HttpProxy();
-
-signals:
-    void error(const QString &);
-
-protected:
-    void incomingConnection(qintptr handle);
-
-private:
-    bool listenning;
-    QNetworkProxy upstreamProxy;
-
-private slots:
-    void onSocketReadyRead();
-    void onProxySocketConnected();
-    void onProxySocketConnectedHttps();//this function is used for HTTPS transparent proxy
-    void onProxySocketReadyRead();
-};
-
+    connect (as, &QAbstractSocket::readyRead, this, &SocketStream::onSocketAReadyRead);
+    connect (bs, &QAbstractSocket::readyRead, this, &SocketStream::onSocketBReadyRead);
 }
 
-#endif // HTTPPROXY_H
+void SocketStream::onSocketAReadyRead()
+{
+    bs->write(as->readAll());
+}
+
+void SocketStream::onSocketBReadyRead()
+{
+    as->write(bs->readAll());
+}

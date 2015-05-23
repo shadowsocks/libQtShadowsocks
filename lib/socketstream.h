@@ -1,5 +1,5 @@
 /*
- * httpproxy.h - the header file of HttpProxy class
+ * socketstream.h - the header file of SocketStream class
  *
  * Copyright (C) 2015 Symeon Huang <hzwhuang@gmail.com>
  *
@@ -20,39 +20,34 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef HTTPPROXY_H
-#define HTTPPROXY_H
+#ifndef SOCKETSTREAM_H
+#define SOCKETSTREAM_H
 
-#include <QTcpServer>
-#include <QNetworkProxy>
+#include <QObject>
+#include <QAbstractSocket>
 #include "export.h"
 
 namespace QSS {
 
-class QSS_EXPORT HttpProxy : public QTcpServer
+class QSS_EXPORT SocketStream : public QObject
 {
     Q_OBJECT
 public:
-    explicit HttpProxy(quint16 socks_port, const QHostAddress &http_addr, quint16 http_port, QObject *parent = 0);
-    ~HttpProxy();
-
-signals:
-    void error(const QString &);
-
-protected:
-    void incomingConnection(qintptr handle);
+    /*
+     * a light-weight class dedicated to stream data between two sockets
+     * all available data from socket a will be written to socket b, and vice versa
+     */
+    explicit SocketStream(QAbstractSocket *a, QAbstractSocket *b, QObject *parent = 0);
 
 private:
-    bool listenning;
-    QNetworkProxy upstreamProxy;
+    QAbstractSocket *as;
+    QAbstractSocket *bs;
 
 private slots:
-    void onSocketReadyRead();
-    void onProxySocketConnected();
-    void onProxySocketConnectedHttps();//this function is used for HTTPS transparent proxy
-    void onProxySocketReadyRead();
+    void onSocketAReadyRead();
+    void onSocketBReadyRead();
 };
 
 }
 
-#endif // HTTPPROXY_H
+#endif // SOCKETSTREAM_H

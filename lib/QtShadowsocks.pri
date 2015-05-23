@@ -14,7 +14,8 @@ SOURCES  += \
             rc4.cpp \
             tcprelay.cpp \
             udprelay.cpp \
-            httpproxy.cpp
+            httpproxy.cpp \
+            socketstream.cpp
 
 
 HEADERS  += \
@@ -32,4 +33,5 @@ HEADERS  += \
             rc4.h \
             tcprelay.h \
             udprelay.h \
-            httpproxy.h
+            httpproxy.h \
+            socketstream.h

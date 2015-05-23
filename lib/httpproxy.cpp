@@ -1,5 +1,5 @@
 /*
- * httpproxy.h - the source file of HttpProxy class
+ * httpproxy.cpp - the source file of HttpProxy class
  *
  * Copyright (C) 2015 Symeon Huang <hzwhuang@gmail.com>
  *
@@ -21,6 +21,7 @@
  */
 
 #include "httpproxy.h"
+#include "socketstream.h"
 #include <QTcpSocket>
 #include <QUrl>
 
@@ -34,24 +35,20 @@ HttpProxy::HttpProxy(quint16 socks_port, const QHostAddress &http_addr, quint16 
 }
 
 HttpProxy::~HttpProxy()
-{
-    /*while(!socketList.isEmpty()) {
-        socketList.takeLast()->deleteLater();
-    }*/
-}
+{}
 
 void HttpProxy::incomingConnection(qintptr socketDescriptor)
 {
     QTcpSocket *socket = new QTcpSocket(this);
-    socketList.append(socket);
     connect(socket, &QTcpSocket::readyRead, this, &HttpProxy::onSocketReadyRead);
-    connect(socket, &QTcpSocket::disconnected, this, &HttpProxy::onSocketDisconnected);
+    connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
     socket->setSocketDescriptor(socketDescriptor);
 }
 
 void HttpProxy::onSocketReadyRead()
 {
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
+    QTcpSocket *proxySocket = nullptr;
 
     QByteArray reqData = socket->readAll();
     int pos = reqData.indexOf("\r\n");
@@ -65,16 +62,9 @@ void HttpProxy::onSocketReadyRead()
 
     QString host;
     quint16 port;
+    QString key;
 
-    if (method == "CONNECT") {
-        /*
-         * according to http://tools.ietf.org/html/draft-luotonen-ssl-tunneling-03
-         * the first line would CONNECT HOST:PORT VERSION
-         */
-        QList<QByteArray> host_port_list = address.split(':');
-        host = QString(host_port_list.first());
-        port = host_port_list.last().toUShort();
-    } else {
+    if (method != "CONNECT") {
         QUrl url = QUrl::fromEncoded(address);
         if (!url.isValid()) {
             emit error("Invalid URL: " + url.toString());
@@ -89,45 +79,34 @@ void HttpProxy::onSocketReadyRead()
         }
         reqLine = method + " " + req.toUtf8() + " " + version + "\r\n";
         reqData.prepend(reqLine);
-    }
-
-    QString key = host + ':' + QString::number(port);
-    QTcpSocket *proxySocket = socket->findChild<QTcpSocket *>(key);
-    if (proxySocket) {
-        proxySocket->write(reqData);
-    } else {
-        proxySocket = new QTcpSocket(socket);
-        proxySocket->setObjectName(key);
-        proxySocket->setProxy(upstreamProxy);
-        if (method != "CONNECT") {
-            proxySocket->setProperty("reqData", reqData);
-            connect (proxySocket, &QTcpSocket::connected, this, &HttpProxy::onProxySocketConnected);
-        } else {
-            connect (proxySocket, &QTcpSocket::connected, this, &HttpProxy::onProxySocketConnectedHttps);
+        key = host + ':' + QString::number(port);
+        proxySocket = socket->findChild<QTcpSocket *>(key);
+        if (proxySocket) {
+            proxySocket->write(reqData);
+            return;//if we find an existing socket, then use it and return
         }
+    } else {//CONNECT method
+        /*
+         * according to http://tools.ietf.org/html/draft-luotonen-ssl-tunneling-03
+         * the first line would CONNECT HOST:PORT VERSION
+         */
+        QList<QByteArray> host_port_list = address.split(':');
+        host = QString(host_port_list.first());
+        port = host_port_list.last().toUShort();
+    }
+
+    proxySocket = new QTcpSocket(socket);
+    proxySocket->setProxy(upstreamProxy);
+    if (method != "CONNECT") {
+        proxySocket->setObjectName(key);
+        proxySocket->setProperty("reqData", reqData);
+        connect (proxySocket, &QTcpSocket::connected, this, &HttpProxy::onProxySocketConnected);
         connect (proxySocket, &QTcpSocket::readyRead, this, &HttpProxy::onProxySocketReadyRead);
-        connect (proxySocket, &QTcpSocket::disconnected, proxySocket, &QTcpSocket::deleteLater);
-        proxySocket->connectToHost(host, port);
-    }
-}
-
-void HttpProxy::onSocketReadyReadHttps()
-{
-    QTcpSocket *socket = qobject_cast<QTcpSocket *>(sender());
-    QString key = socket->property("httpsKey").toString();
-    QTcpSocket *proxySocket = socket->findChild<QTcpSocket *>(key);
-    if (proxySocket) {
-        proxySocket->write(socket->readAll());
     } else {
-        emit error("Can't find the proxy socket child to stream HTTPS connection");
+        connect (proxySocket, &QTcpSocket::connected, this, &HttpProxy::onProxySocketConnectedHttps);
     }
-}
-
-void HttpProxy::onSocketDisconnected()
-{
-    QTcpSocket *socket = qobject_cast<QTcpSocket*>(sender());
-    socketList.removeAll(socket);
-    socket->deleteLater();
+    connect (proxySocket, &QTcpSocket::disconnected, proxySocket, &QTcpSocket::deleteLater);
+    proxySocket->connectToHost(host, port);
 }
 
 void HttpProxy::onProxySocketConnected()
@@ -142,8 +121,10 @@ void HttpProxy::onProxySocketConnectedHttps()
     QTcpSocket *proxySocket = qobject_cast<QTcpSocket *>(sender());
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(proxySocket->parent());
     disconnect(socket, &QTcpSocket::readyRead, this, &HttpProxy::onSocketReadyRead);
-    connect(socket, &QTcpSocket::readyRead, this, &HttpProxy::onSocketReadyReadHttps);
-    socket->setProperty("httpsKey", proxySocket->objectName());
+
+    /* once it's connected, we use a light-weight SocketStream class to do the job */
+    SocketStream *stream = new SocketStream(socket, proxySocket, this);
+    connect(socket, &QTcpSocket::disconnected, stream, &SocketStream::deleteLater);
     static const QByteArray httpsHeader = "HTTP/1.0 200 Connection established\r\n\r\n";
     socket->write(httpsHeader);
 }
