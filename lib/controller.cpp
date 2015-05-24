@@ -33,6 +33,7 @@ using namespace QSS;
 Controller::Controller(bool is_local, QObject *parent) :
     QObject(parent),
     valid(true),
+    useHttp(false),
     isLocal(is_local),
     ep(nullptr),
     httpProxy(nullptr)
@@ -76,9 +77,10 @@ Controller::~Controller()
     Botan::LibraryInitializer::deinitialize();
 }
 
-bool Controller::setup(const Profile &p)
+bool Controller::setup(const Profile &p, bool http_proxy)
 {
     profile = p;
+    useHttp = http_proxy;
 
     /*
      * the default QHostAddress constructor will construct "::" as AnyIPv6
@@ -105,10 +107,13 @@ bool Controller::setup(const Profile &p)
 
     udpRelay->setup(ep, serverAddress, getLocalAddr(), profile.local_port);
 
+    if (tcpServer->isListening()) {
+        tcpServer->close();
+    }
     if (httpProxy) {
         httpProxy->deleteLater();
-    }//FIXME!!!!!!!!!!!!!
-    httpProxy = new HttpProxy(profile.local_port, QHostAddress::LocalHost, 9999, this);
+        httpProxy = nullptr;
+    }
 
     return valid;
 }
@@ -125,19 +130,24 @@ bool Controller::start()
     QString sstr("TCP server listen at port ");
     if (isLocal) {
         emit info("Running in local mode.");
-        listen_ret = tcpServer->listen(getLocalAddr(), profile.local_port);
         sstr.append(QString::number(profile.local_port));
+        listen_ret = tcpServer->listen(getLocalAddr(), useHttp ? 0 : profile.local_port);
+        if (useHttp && listen_ret) {
+            httpProxy = new HttpProxy(tcpServer->serverPort(), getLocalAddr(), profile.local_port, this);
+            emit info("Running as a HTTP proxy server");
+            emit info("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
+        }
     } else {
         emit info("Running in server mode.");
-        listen_ret = tcpServer->listen(getServerAddress().getFirstIP(), profile.server_port);
         sstr.append(QString::number(profile.server_port));
+        listen_ret = tcpServer->listen(getServerAddress().getFirstIP(), profile.server_port);
     }
-    emit info(sstr);
 
     if (listen_ret) {
+        emit info(sstr);
         emit runningStateChanged(true);
     } else {
-        emit error("Listen failed.");
+        emit error("TCP server listen failed.");
     }
 
     return listen_ret;
@@ -145,6 +155,10 @@ bool Controller::start()
 
 void Controller::stop()
 {
+    if (httpProxy) {
+        httpProxy->deleteLater();
+        httpProxy = nullptr;
+    }
     tcpServer->close();
     connectionCollector->clear();
     emit runningStateChanged(false);

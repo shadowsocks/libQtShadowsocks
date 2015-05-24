@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
     QCommandLineOption password("k", "password of your remote server.", "password");
     QCommandLineOption encryptionMethod("m", "encryption method.", "method");
     QCommandLineOption timeout("t", "socket timeout in seconds.", "timeout");
+    QCommandLineOption http(QStringList() << "H" << "http-proxy", "run as a HTTP proxy server. ignored in server mode.");
     QCommandLineOption serverMode(QStringList() << "S" << "server-mode", "run as shadowsocks server.");
     QCommandLineOption testSpeed(QStringList() << "T" << "speed-test", "test encrypt/decrypt speed.");
     QCommandLineOption debug(QStringList() << "d" << "debug", "debug-level log.");
@@ -63,6 +64,7 @@ int main(int argc, char *argv[])
     parser.addOption(password);
     parser.addOption(encryptionMethod);
     parser.addOption(timeout);
+    parser.addOption(http);
     parser.addOption(serverMode);
     parser.addOption(testSpeed);
     parser.addOption(debug);
@@ -71,7 +73,7 @@ int main(int argc, char *argv[])
     Client c(parser.isSet(debug));
 
     if (!c.readConfig(parser.value(configFile))) {
-        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout));
+        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http));
     }
 
     if (parser.isSet(testSpeed)) {

@@ -19,7 +19,8 @@ SOURCES  += client.cpp \
             main.cpp \
             utils.cpp
 
-OTHER_FILES += README.md
+OTHER_FILES += README.md \
+               config.json
 
 isEmpty(INSTALL_PREFIX) {
     unix: INSTALL_PREFIX = /usr

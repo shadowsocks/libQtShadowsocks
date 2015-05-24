@@ -29,6 +29,7 @@
 Client::Client(bool _debug, QObject *parent) :
     QObject(parent),
     debug(_debug),
+    useHttp(false),
     lc(nullptr)
 {}
 
@@ -56,11 +57,12 @@ bool Client::readConfig(const QString &file)
     profile.server = confObj["server"].toString();
     profile.server_port = confObj["server_port"].toInt();
     profile.timeout = confObj["timeout"].toInt();
+    useHttp = confObj["http_proxy"].toBool();
 
     return true;
 }
 
-void Client::setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout)
+void Client::setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy)
 {
     profile.server = remote_addr;
     profile.server_port = remote_port.toInt();
@@ -69,6 +71,7 @@ void Client::setup(const QString &remote_addr, const QString &remote_port, const
     profile.password = password;
     profile.method = method;
     profile.timeout = timeout.toInt();
+    useHttp = http_proxy;
 }
 
 bool Client::start(bool _server)
@@ -78,7 +81,7 @@ bool Client::start(bool _server)
     }
     lc = new QSS::Controller(!_server, this);
     connect (lc, debug ? &QSS::Controller::debug : &QSS::Controller::info, this, &Client::logHandler);
-    lc->setup(profile);
+    lc->setup(profile, useHttp);
     return lc->start() && cipherTest();
 }
 

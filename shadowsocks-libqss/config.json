@@ -5,5 +5,6 @@
     "local_port":1080,
     "password":"barfoo!",
     "timeout":600,
-    "method":"rc4-md5"
+    "method":"rc4-md5",
+    "http_proxy": false
 }
