@@ -52,8 +52,8 @@ Below features will possibly be implemented in future versions.
 - ~~Server ping (v1.2)~~
 - ~~ChaCha cipher (use bundled ChaCha for botan < 1.11)~~
 - ~~Multiple servers balance (v1.4)~~
-- ~~HTTP proxy(abandoned)~~
 - ~~Asynchronous DNS query (v1.6)~~
+- ~~HTTP proxy(v1.7)~~
 - Test compatibility on BSD platforms (v1.8)
 - Multiple profiles balance (v1.8)
 - QML module (v1.10)

@@ -24,6 +24,7 @@ Options:
   -k <password>        password of your remote server.
   -m <method>          encryption method.
   -t <timeout>         socket timeout in seconds.
+  -H, --http-proxy     run as a HTTP proxy server. ignored in server mode.
   -S, --server-mode    run as shadowsocks server.
   -T, --speed-test     test encrypt/decrypt speed.
   -d, --debug          debug-level log.
@@ -33,7 +34,7 @@ If `-T` or `--speed-test` is specified, `shadowsocks-libqss` will do a speed tes
 
 By default, it runs as local client. You have to pass `-S` or `--server-mode` if you want it run in server mode.
 
-There is a `config.json` example for reference.
+If `config.json` is specified, most command-line options will be ignored. There is a `config.json` example for reference.
 
 License
 -------
