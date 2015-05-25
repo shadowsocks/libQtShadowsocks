@@ -28,15 +28,19 @@
 
 using namespace QSS;
 
-HttpProxy::HttpProxy(quint16 socks_port, const QHostAddress &http_addr, quint16 http_port, QObject *parent) : QTcpServer(parent)
+HttpProxy::HttpProxy(QObject *parent) : QTcpServer(parent)
 {
-    upstreamProxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, "127.0.0.1", socks_port);
     this->setMaxPendingConnections(FD_SETSIZE);
-    listenning = this->listen(http_addr, http_port);
 }
 
 HttpProxy::~HttpProxy()
 {}
+
+bool HttpProxy::httpListen(const QHostAddress &http_addr, quint16 http_port, quint16 socks_port)
+{
+    upstreamProxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, "127.0.0.1", socks_port);
+    return this->listen(http_addr, http_port);
+}
 
 void HttpProxy::incomingConnection(qintptr socketDescriptor)
 {

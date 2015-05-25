@@ -35,8 +35,7 @@ Controller::Controller(bool is_local, QObject *parent) :
     valid(true),
     useHttp(false),
     isLocal(is_local),
-    ep(nullptr),
-    httpProxy(nullptr)
+    ep(nullptr)
 {
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
@@ -46,8 +45,9 @@ Controller::Controller(bool is_local, QObject *parent) :
 
     tcpServer = new QTcpServer(this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
-
     udpRelay = new UdpRelay(isLocal, this);
+    httpProxy = new HttpProxy(this);
+
     connectionCollector = new QObjectCleanupHandler;
 
     connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
@@ -107,12 +107,11 @@ bool Controller::setup(const Profile &p, bool http_proxy)
 
     udpRelay->setup(ep, serverAddress, getLocalAddr(), profile.local_port);
 
+    if (httpProxy->isListening()) {
+        httpProxy->close();
+    }
     if (tcpServer->isListening()) {
         tcpServer->close();
-    }
-    if (httpProxy) {
-        httpProxy->deleteLater();
-        httpProxy = nullptr;
     }
 
     return valid;
@@ -133,9 +132,13 @@ bool Controller::start()
         sstr.append(QString::number(profile.local_port));
         listen_ret = tcpServer->listen(getLocalAddr(), useHttp ? 0 : profile.local_port);
         if (useHttp && listen_ret) {
-            httpProxy = new HttpProxy(tcpServer->serverPort(), getLocalAddr(), profile.local_port, this);
-            emit info("Running as a HTTP proxy server");
             emit info("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
+            if (httpProxy->httpListen(getLocalAddr(), profile.local_port, tcpServer->serverPort())) {
+                emit info("Running as a HTTP proxy server");
+            } else {
+                emit error("HTTP proxy server listen failed.");
+                listen_ret = false;
+            }
         }
     } else {
         emit info("Running in server mode.");
@@ -155,10 +158,7 @@ bool Controller::start()
 
 void Controller::stop()
 {
-    if (httpProxy) {
-        httpProxy->deleteLater();
-        httpProxy = nullptr;
-    }
+    httpProxy->close();
     tcpServer->close();
     connectionCollector->clear();
     emit runningStateChanged(false);

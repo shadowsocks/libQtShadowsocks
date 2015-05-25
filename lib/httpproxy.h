@@ -33,8 +33,14 @@ class QSS_EXPORT HttpProxy : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit HttpProxy(quint16 socks_port, const QHostAddress &http_addr, quint16 http_port, QObject *parent = 0);
+    explicit HttpProxy(QObject *parent = 0);
     ~HttpProxy();
+
+    /*
+     * DO NOT use listen() function, use httpListen instead
+     * The socks_port is local socks proxy server port
+     */
+    bool httpListen(const QHostAddress &http_addr, quint16 http_port, quint16 socks_port);
 
 signals:
     void error(const QString &);
@@ -43,7 +49,6 @@ protected:
     void incomingConnection(qintptr handle);
 
 private:
-    bool listenning;
     QNetworkProxy upstreamProxy;
 
 private slots:
