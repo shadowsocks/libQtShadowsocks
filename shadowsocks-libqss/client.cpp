@@ -29,7 +29,6 @@
 Client::Client(bool _debug, QObject *parent) :
     QObject(parent),
     debug(_debug),
-    useHttp(false),
     lc(nullptr)
 {}
 
@@ -57,7 +56,7 @@ bool Client::readConfig(const QString &file)
     profile.server = confObj["server"].toString();
     profile.server_port = confObj["server_port"].toInt();
     profile.timeout = confObj["timeout"].toInt();
-    useHttp = confObj["http_proxy"].toBool();
+    profile.http_proxy = confObj["http_proxy"].toBool();
 
     return true;
 }
@@ -71,7 +70,7 @@ void Client::setup(const QString &remote_addr, const QString &remote_port, const
     profile.password = password;
     profile.method = method;
     profile.timeout = timeout.toInt();
-    useHttp = http_proxy;
+    profile.http_proxy = http_proxy;
 }
 
 bool Client::start(bool _server)
@@ -81,7 +80,7 @@ bool Client::start(bool _server)
     }
     lc = new QSS::Controller(!_server, this);
     connect (lc, debug ? &QSS::Controller::debug : &QSS::Controller::info, this, &Client::logHandler);
-    lc->setup(profile, useHttp);
+    lc->setup(profile);
     return lc->start() && cipherTest();
 }
 

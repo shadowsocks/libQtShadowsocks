@@ -40,7 +40,6 @@ public slots:
 
 private:
     bool debug;
-    bool useHttp;
     QSS::Controller *lc;
     QSS::Profile profile;
 

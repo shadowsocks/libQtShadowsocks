@@ -36,7 +36,16 @@ struct Profile {
     quint16 local_port;
     int timeout;
 
-    Profile() : server_port(8388), local_port(1080), timeout(600) {}
+    /*
+     * Set http_proxy to true then the local will serve as HTTP proxy server.
+     * Because the HttpProxy is a second-level proxy, the actual process is to
+     * use a random available port as SOCKS5 and then set HttpProxy listen on
+     * the local port and forward traffics via SOCKS5 proxy.
+     * It's false by default.
+     */
+    bool http_proxy;
+
+    Profile() : server_port(8388), local_port(1080), timeout(600), http_proxy(false) {}
 };
 
 }

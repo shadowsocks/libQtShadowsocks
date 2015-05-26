@@ -49,13 +49,8 @@ public:
      * You have to call setup before calling start() unless you use the overloaded
      * convenient construction function. This function can also be used to change
      * Profile without the need to create a new Controller.
-     * Set http_proxy to true then the local will serve as HTTP proxy server.
-     * Because the HttpProxy is a second-level proxy, the actual process is to
-     * use a random available port as SOCKS5 and then set HttpProxy listen on
-     * the local port and forward traffics via SOCKS5 proxy.
-     * The value http_proxy is ignored in server mode.
      */
-    bool setup(const Profile &, bool http_proxy = false);
+    bool setup(const Profile &);
 
     const EncryptorPrivate* getEncryptorPrivate() const;
     Address getServerAddress() const;
@@ -96,7 +91,6 @@ protected://children can access protected members
     Profile profile;
     Address serverAddress;
     bool valid;
-    bool useHttp;
     const bool isLocal;//run on local-side (client) or server-side (server)
     EncryptorPrivate *ep;
     QTcpServer *tcpServer;

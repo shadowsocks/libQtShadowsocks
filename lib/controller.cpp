@@ -33,7 +33,6 @@ using namespace QSS;
 Controller::Controller(bool is_local, QObject *parent) :
     QObject(parent),
     valid(true),
-    useHttp(false),
     isLocal(is_local),
     ep(nullptr)
 {
@@ -77,10 +76,9 @@ Controller::~Controller()
     Botan::LibraryInitializer::deinitialize();
 }
 
-bool Controller::setup(const Profile &p, bool http_proxy)
+bool Controller::setup(const Profile &p)
 {
     profile = p;
-    useHttp = http_proxy;
 
     /*
      * the default QHostAddress constructor will construct "::" as AnyIPv6
@@ -130,8 +128,8 @@ bool Controller::start()
     if (isLocal) {
         emit info("Running in local mode.");
         sstr.append(QString::number(profile.local_port));
-        listen_ret = tcpServer->listen(getLocalAddr(), useHttp ? 0 : profile.local_port);
-        if (useHttp && listen_ret) {
+        listen_ret = tcpServer->listen(getLocalAddr(), profile.http_proxy ? 0 : profile.local_port);
+        if (profile.http_proxy && listen_ret) {
             emit info("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
             if (httpProxy->httpListen(getLocalAddr(), profile.local_port, tcpServer->serverPort())) {
                 emit info("Running as a HTTP proxy server");
