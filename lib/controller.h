@@ -61,12 +61,11 @@ public:
 
 signals:
     /*
-     * Log level.
-     * i.e. info signal will be emitted if there is an "error", but info won't transfer "debug" output.
+     * They're separate information streams since 1.7.0
+     * You need to handle both two signals if you need debug-level log
      */
-    void error(const QString &);
-    void info(const QString &);
-    void debug(const QString &);
+    void log(const QString &);//only normal-level log
+    void debug(const QString &);//only verbose log
 
     //connect this signal to get notified when running state is changed
     void runningStateChanged(bool);

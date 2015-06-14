@@ -41,8 +41,7 @@ public:
 
 signals:
     void debug(const QString &);
-    void info(const QString &);
-    void error(const QString &);
+    void log(const QString &);
 
     /*
      * Count only remote socket's traffic

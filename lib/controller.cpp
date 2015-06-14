@@ -52,16 +52,12 @@ Controller::Controller(bool is_local, QObject *parent) :
     connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
     connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection);
 
-    connect(udpRelay, &UdpRelay::error, this, &Controller::error);
-    connect(udpRelay, &UdpRelay::info, this, &Controller::info);
+    connect(udpRelay, &UdpRelay::log, this, &Controller::log);
     connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);
     connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead);
     connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend);
 
     connect(&serverAddress, &Address::lookedUp, this, &Controller::onServerAddressLookedUp);
-
-    connect(this, &Controller::error, this, &Controller::info);//you shouldn't bind any other classes' error with info (and info with debug). we only need to do that once here.
-    connect(this, &Controller::info, this, &Controller::debug);
 }
 
 Controller::Controller(const Profile &_profile, bool is_local, QObject *parent) :
@@ -91,15 +87,15 @@ bool Controller::setup(const Profile &p)
         serverAddress.lookUp();
     }
 
-    emit info("Initialising ciphers...");
+    emit log("Initialising ciphers...");
     if (ep) {
         ep->deleteLater();
     }
     ep = new EncryptorPrivate(profile.method, profile.password, this);
     if (ep->isValid()) {
-        emit info(ep->getInternalMethodName() + " (" + profile.method + ") initialised.");
+        emit log(ep->getInternalMethodName() + " (" + profile.method + ") initialised.");
     } else {
-        emit error("Initialisation failed.");
+        emit log("Initialisation failed.");
         valid = false;
     }
 
@@ -118,7 +114,7 @@ bool Controller::setup(const Profile &p)
 bool Controller::start()
 {
     if (!valid) {
-        emit error("Controller is not valid. Maybe improper setup?");
+        emit log("Controller is not valid. Maybe improper setup?");
         return false;
     }
 
@@ -126,29 +122,29 @@ bool Controller::start()
 
     QString sstr("TCP server listen at port ");
     if (isLocal) {
-        emit info("Running in local mode.");
+        emit log("Running in local mode.");
         sstr.append(QString::number(profile.local_port));
         listen_ret = tcpServer->listen(getLocalAddr(), profile.http_proxy ? 0 : profile.local_port);
         if (profile.http_proxy && listen_ret) {
-            emit info("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
+            emit log("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
             if (httpProxy->httpListen(getLocalAddr(), profile.local_port, tcpServer->serverPort())) {
-                emit info("Running as a HTTP proxy server");
+                emit log("Running as a HTTP proxy server");
             } else {
-                emit error("HTTP proxy server listen failed.");
+                emit log("HTTP proxy server listen failed.");
                 listen_ret = false;
             }
         }
     } else {
-        emit info("Running in server mode.");
+        emit log("Running in server mode.");
         sstr.append(QString::number(profile.server_port));
         listen_ret = tcpServer->listen(getServerAddress().getFirstIP(), profile.server_port);
     }
 
     if (listen_ret) {
-        emit info(sstr);
+        emit log(sstr);
         emit runningStateChanged(true);
     } else {
-        emit error("TCP server listen failed.");
+        emit log("TCP server listen failed.");
     }
 
     return listen_ret;
@@ -189,7 +185,7 @@ QHostAddress Controller::getLocalAddr()
     if (!addr.isNull()) {
         return addr;
     } else {
-        emit error("Can't get address from " + profile.local_address.toLocal8Bit() + ". Using localhost instead.");
+        emit log("Can't get address from " + profile.local_address.toLocal8Bit() + ". Using localhost instead.");
         return QHostAddress::LocalHost;
     }
 }
@@ -201,7 +197,7 @@ int Controller::getTimeout() const
 
 void Controller::onTcpServerError(QAbstractSocket::SocketError err)
 {
-    emit error("TCP server error: " + tcpServer->errorString());
+    emit log("TCP server error: " + tcpServer->errorString());
 
     //can't continue if address is already in use
     if (err == QAbstractSocket::AddressInUseError) {
@@ -213,9 +209,8 @@ void Controller::onNewTCPConnection()
 {
     QTcpSocket *ts = tcpServer->nextPendingConnection();
     TcpRelay *con = new TcpRelay(ts, getTimeout(), serverAddress, ep, isLocal, this);
+    connect (con, &TcpRelay::log, this, &Controller::log);
     connect (con, &TcpRelay::debug, this, &Controller::debug);
-    connect (con, &TcpRelay::info, this, &Controller::info);
-    connect (con, &TcpRelay::error, this, &Controller::error);
     connect (con, &TcpRelay::bytesRead, this, &Controller::onBytesRead);
     connect (con, &TcpRelay::bytesSend, this, &Controller::onBytesSend);
     connectionCollector->add(con);
@@ -242,6 +237,6 @@ void Controller::onBytesSend(const qint64 &s)
 void Controller::onServerAddressLookedUp(const bool success, const QString err)
 {
     if (!success) {
-        emit error("Shadowsocks server DNS lookup failed: " + err);
+        emit log("Shadowsocks server DNS lookup failed: " + err);
     }
 }

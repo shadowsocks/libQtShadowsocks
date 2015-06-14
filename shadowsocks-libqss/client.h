@@ -30,16 +30,15 @@ class Client : public QObject
 {
     Q_OBJECT
 public:
-    explicit Client(bool _debug, QObject *parent = 0);
+    explicit Client(QObject *parent = 0);
     bool readConfig(const QString &);
-    void setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy);
+    void setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy, const bool debug);
     QString getMethod() const;
 
 public slots:
     bool start(bool _server = false);
 
 private:
-    bool debug;
     QSS::Controller *lc;
     QSS::Profile profile;
 

@@ -71,7 +71,7 @@ void TcpRelay::handleStageAddr(QByteArray data)
     if (isLocal) {
         int cmd = static_cast<int>(data.at(1));
         if (cmd == 3) {//CMD_UDP_ASSOCIATE
-            emit info("UDP associate");
+            emit log("UDP associate");
             QByteArray header;
             header.append(char(5));
             header.append(char(0));
@@ -84,7 +84,7 @@ void TcpRelay::handleStageAddr(QByteArray data)
         } else if (cmd == 1) {//CMD_CONNECT
             data = data.mid(3);
         } else {
-            emit error("Unknown command " + QString::number(cmd));
+            emit log("Unknown command " + QString::number(cmd));
             deleteLater();
             return;
         }
@@ -93,14 +93,14 @@ void TcpRelay::handleStageAddr(QByteArray data)
     int header_length = 0;
     Common::parseHeader(data, remoteAddress, header_length);
     if (header_length == 0) {
-        emit error("Can't parse header");
+        emit log("Can't parse header");
         deleteLater();
         return;
     }
 
     QString con_info;
     QDebug(&con_info) << "Connecting" << remoteAddress.getAddress().toLocal8Bit() << "at port" << remoteAddress.getPort() << "from" << local->peerAddress().toString().toLocal8Bit() << "at port" << local->peerPort();
-    emit info(con_info);
+    emit log(con_info);
 
     stage = DNS;
     if (isLocal) {
@@ -121,7 +121,7 @@ void TcpRelay::handleStageAddr(QByteArray data)
 void TcpRelay::onLocalTcpSocketError()
 {
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
-        emit error("Local socket error: " + local->errorString());
+        emit log("Local socket error: " + local->errorString());
     }
     deleteLater();
 }
@@ -136,7 +136,7 @@ void TcpRelay::onDNSResolved(const bool success, const QString errStr)
             remote->connectToHost(remoteAddress.getFirstIP(), remoteAddress.getPort());
         }
     } else {
-        emit error("DNS resolve failed: " + errStr);
+        emit log("DNS resolve failed: " + errStr);
         deleteLater();
     }
 }
@@ -156,7 +156,7 @@ void TcpRelay::onRemoteConnected()
 void TcpRelay::onRemoteTcpSocketError()
 {
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
-        emit error("Remote socket error: " + remote->errorString());
+        emit log("Remote socket error: " + remote->errorString());
     }
     deleteLater();
 }
@@ -166,7 +166,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     QByteArray data = local->readAll();
 
     if (data.isEmpty()) {
-        emit error("Local received empty data.");
+        emit log("Local received empty data.");
         deleteLater();
         return;
     }
@@ -189,7 +189,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         if (data[0] != char(5)) {
             auth.append(char(0));
             auth.append(char(91));
-            emit error("An invalid socket connection was rejected. Please make sure the connection type is SOCKS5.");
+            emit log("An invalid socket connection was rejected. Please make sure the connection type is SOCKS5.");
         } else {
             auth.append(char(5));
             auth.append(char(0));
@@ -210,7 +210,7 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
 {
     QByteArray buf = remote->readAll();
     if (buf.isEmpty()) {
-        emit error("Remote received empty data.");
+        emit log("Remote received empty data.");
         deleteLater();
         return;
     }
@@ -221,6 +221,6 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
 
 void TcpRelay::onTimeout()
 {
-    emit info("TCP connection timeout.");
+    emit log("TCP connection timeout.");
     deleteLater();
 }

@@ -70,10 +70,10 @@ int main(int argc, char *argv[])
     parser.addOption(debug);
     parser.process(a);
 
-    Client c(parser.isSet(debug));
+    Client c;
 
     if (!c.readConfig(parser.value(configFile))) {
-        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http));
+        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http), parser.isSet(debug));
     }
 
     if (parser.isSet(testSpeed)) {
