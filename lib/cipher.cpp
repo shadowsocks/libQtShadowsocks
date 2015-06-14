@@ -42,12 +42,16 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
             chacha = new ChaCha(key, iv, this);
         } else {
 #endif
-        std::string str(method.constData(), method.length());
-        Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(key.constData()), key.size());
-        Botan::InitializationVector _iv(reinterpret_cast<const Botan::byte *>(iv.constData()), iv.size());
-        Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
-        //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
-        pipe = new Botan::Pipe(filter);
+        try {
+            std::string str(method.constData(), method.length());
+            Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(key.constData()), key.size());
+            Botan::InitializationVector _iv(reinterpret_cast<const Botan::byte *>(iv.constData()), iv.size());
+            Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
+            //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
+            pipe = new Botan::Pipe(filter);
+        } catch(Botan::Exception &e) {
+            qWarning("%s\n", e.what());
+        }
 #if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
         }
 #endif
