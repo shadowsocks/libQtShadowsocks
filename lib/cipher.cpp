@@ -122,9 +122,15 @@ bool Cipher::isSupported(const QByteArray &method)
     if (method.contains("RC4")) {
         return true;
     } else {
-        //have_algorithm function take only the **algorithm** (so we need to omit the mode)
-        int length = method.lastIndexOf('/');//note Salsa20 don't have '/'
-        std::string algorithm(method.constData(), length != -1 ? length : method.length());
-        return Botan::have_algorithm(algorithm);
+        std::string str(method.constData(), method.length());
+        Botan::Keyed_Filter *filter;
+        try {
+            filter = Botan::get_cipher(str, Botan::ENCRYPTION);
+        } catch (Botan::Exception &e) {
+            qWarning("%s\n", e.what());
+            return false;
+        }
+        delete filter;
+        return true;
     }
 }
