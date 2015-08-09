@@ -61,11 +61,11 @@ public:
 
 signals:
     /*
-     * They're separate information streams since 1.7.0
-     * You need to handle both two signals if you need debug-level log
+     * WARN: an ABI break here
+     * You'll need to connect both signals if you need full debug-level log
      */
-    void log(const QString &);//only normal-level log
-    void debug(const QString &);//only verbose log
+    void info(const QString &);//only general information
+    void debug(const QString &);//only verbose
 
     //connect this signal to get notified when running state is changed
     void runningStateChanged(bool);

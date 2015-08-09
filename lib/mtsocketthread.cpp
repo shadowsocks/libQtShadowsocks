@@ -42,7 +42,7 @@ void MTSocketThread::run()
 
     TcpRelay con(local, remote, timeout, serverAddress, ep, isLocal);
     connect (&con, &TcpRelay::finished, this, &MTSocketThread::quit);
-    connect (&con, &TcpRelay::log, this, &MTSocketThread::log);
+    connect (&con, &TcpRelay::info, this, &MTSocketThread::info);
     connect (&con, &TcpRelay::debug, this, &MTSocketThread::debug);
     connect (&con, &TcpRelay::bytesRead, this, &MTSocketThread::bytesRead);
     connect (&con, &TcpRelay::bytesSend, this, &MTSocketThread::bytesSend);

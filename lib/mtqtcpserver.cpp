@@ -51,7 +51,7 @@ void MTQTcpServer::incomingConnection(qintptr socketDescriptor)
     childrenThreads.push_back(thread);
     connect (thread, &MTSocketThread::finished, thread, &MTSocketThread::deleteLater);
     connect (thread, &MTSocketThread::error, this, &MTQTcpServer::acceptError);
-    connect (thread, &MTSocketThread::log, this, &MTQTcpServer::log);
+    connect (thread, &MTSocketThread::info, this, &MTQTcpServer::info);
     connect (thread, &MTSocketThread::debug, this, &MTQTcpServer::debug);
     connect (thread, &MTSocketThread::bytesRead, this, &MTQTcpServer::bytesRead);
     connect (thread, &MTSocketThread::bytesSend, this, &MTQTcpServer::bytesSend);

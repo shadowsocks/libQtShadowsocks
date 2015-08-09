@@ -46,12 +46,12 @@ Controller::Controller(bool is_local, QObject *parent) :
     httpProxy = new HttpProxy(this);
 
     connect(tcpServer, &MTQTcpServer::acceptError, this, &Controller::onTcpServerError);
-    connect(tcpServer, &MTQTcpServer::log, this, &Controller::log);
+    connect(tcpServer, &MTQTcpServer::info, this, &Controller::info);
     connect(tcpServer, &MTQTcpServer::debug, this, &Controller::debug);
     connect(tcpServer, &MTQTcpServer::bytesRead, this, &Controller::onBytesRead);
     connect(tcpServer, &MTQTcpServer::bytesSend, this, &Controller::onBytesSend);
 
-    connect(udpRelay, &UdpRelay::log, this, &Controller::log);
+    connect(udpRelay, &UdpRelay::info, this, &Controller::info);
     connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);
     connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead);
     connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend);
@@ -85,15 +85,15 @@ bool Controller::setup(const Profile &p)
         serverAddress.lookUp();
     }
 
-    emit log("Initialising ciphers...");
+    emit info("Initialising ciphers...");
     if (ep) {
         ep->deleteLater();
     }
     ep = new EncryptorPrivate(profile.method, profile.password, this);
     if (ep->isValid()) {
-        emit log(ep->getInternalMethodName() + " (" + profile.method + ") initialised.");
+        emit info(ep->getInternalMethodName() + " (" + profile.method + ") initialised.");
     } else {
-        emit log("Initialisation failed.");
+        emit info("Initialisation failed.");
         valid = false;
     }
 
@@ -113,7 +113,7 @@ bool Controller::setup(const Profile &p)
 bool Controller::start()
 {
     if (!valid) {
-        emit log("Controller is not valid. Maybe improper setup?");
+        emit info("Controller is not valid. Maybe improper setup?");
         return false;
     }
 
@@ -121,29 +121,29 @@ bool Controller::start()
 
     QString sstr("TCP server listen at port ");
     if (isLocal) {
-        emit log("Running in local mode.");
+        emit info("Running in local mode.");
         sstr.append(QString::number(profile.local_port));
         listen_ret = tcpServer->listen(getLocalAddr(), profile.http_proxy ? 0 : profile.local_port);
         if (profile.http_proxy && listen_ret) {
-            emit log("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
+            emit info("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
             if (httpProxy->httpListen(getLocalAddr(), profile.local_port, tcpServer->serverPort())) {
-                emit log("Running as a HTTP proxy server");
+                emit info("Running as a HTTP proxy server");
             } else {
-                emit log("HTTP proxy server listen failed.");
+                emit info("HTTP proxy server listen failed.");
                 listen_ret = false;
             }
         }
     } else {
-        emit log("Running in server mode.");
+        emit info("Running in server mode.");
         sstr.append(QString::number(profile.server_port));
         listen_ret = tcpServer->listen(serverAddress.getFirstIP(), profile.server_port);
     }
 
     if (listen_ret) {
-        emit log(sstr);
+        emit info(sstr);
         emit runningStateChanged(true);
     } else {
-        emit log("TCP server listen failed.");
+        emit info("TCP server listen failed.");
     }
 
     return listen_ret;
@@ -184,7 +184,7 @@ QHostAddress Controller::getLocalAddr()
     if (!addr.isNull()) {
         return addr;
     } else {
-        emit log("Can't get address from " + profile.local_address.toLocal8Bit() + ". Using localhost instead.");
+        emit info("Can't get address from " + profile.local_address.toLocal8Bit() + ". Using localhost instead.");
         return QHostAddress::LocalHost;
     }
 }
@@ -196,7 +196,7 @@ int Controller::getTimeout() const
 
 void Controller::onTcpServerError(QAbstractSocket::SocketError err)
 {
-    emit log("TCP server error: " + tcpServer->errorString());
+    emit info("TCP server error: " + tcpServer->errorString());
 
     //can't continue if address is already in use
     if (err == QAbstractSocket::AddressInUseError) {
@@ -225,6 +225,6 @@ void Controller::onBytesSend(const qint64 &s)
 void Controller::onServerAddressLookedUp(const bool success, const QString err)
 {
     if (!success) {
-        emit log("Shadowsocks server DNS lookup failed: " + err);
+        emit info("Shadowsocks server DNS lookup failed: " + err);
     }
 }

@@ -42,7 +42,7 @@ public:
 
 signals:
     void debug(const QString &);
-    void log(const QString &);
+    void info(const QString &);
 
     /*
      * the same situation here. we only count "listen" socket's read and written bytes

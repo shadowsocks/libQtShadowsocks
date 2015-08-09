@@ -42,7 +42,7 @@ public:
 
 signals:
     void debug(const QString &);
-    void log(const QString &);
+    void info(const QString &);
     void bytesRead(const qint64 &);
     void bytesSend(const qint64 &);
 
