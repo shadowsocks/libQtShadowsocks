@@ -41,8 +41,8 @@ UdpRelay::UdpRelay(const bool &is_local, const Address &serverAddress, QObject *
 }
 
 //static member
-QMap<CacheKey, QUdpSocket *> UdpRelay::cache;
-QMap<qintptr, Address> UdpRelay::clientDescriptorToServerAddr;
+thread_local QMap<CacheKey, QUdpSocket *> UdpRelay::cache;
+thread_local QMap<qintptr, Address> UdpRelay::clientDescriptorToServerAddr;
 
 void UdpRelay::setup(const EncryptorPrivate *ep, const QHostAddress &localAddr, const quint16 &localPort)
 {
