@@ -72,6 +72,7 @@ Controller::~Controller()
 
 bool Controller::setup(const Profile &p)
 {
+    valid = true;
     profile = p;
 
     /*

@@ -29,9 +29,9 @@
 #ifndef CIPHER_H
 #define CIPHER_H
 
+#include <array>
 #include <QObject>
 #include <QMap>
-#include <QVector>
 #include <QCryptographicHash>
 #include <botan/pipe.h>
 #include <botan/version.h>
@@ -60,13 +60,14 @@ public:
 
     QByteArray update(const QByteArray &data);
 
+    typedef std::array<int, 2> kiLenArray;
+
     /*
      * keyIvMap contains required key length and IV length
-     * The QVector contains two integers, the first one is key length,
+     * The kiLenArray contains two integers, the first one is key length,
      * while the second one is IV length.
-     * If there is no such cipher, then the QVector is empty.
      */
-    static const QMap<QByteArray, QVector<int> > keyIvMap;
+    static const QMap<QByteArray, kiLenArray> keyIvMap;
 
     static QByteArray randomIv(int length);
     inline static QByteArray md5Hash(const QByteArray &in)
@@ -81,7 +82,7 @@ private:
     RC4 *rc4;
     ChaCha *chacha;
 
-    static QMap<QByteArray, QVector<int> > generateKeyIvMap();
+    static QMap<QByteArray, kiLenArray> generateKeyIvMap();
 };
 
 }

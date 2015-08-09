@@ -63,11 +63,11 @@ Cipher::~Cipher()
     if (pipe)   delete pipe;
 }
 
-const QMap<QByteArray, QVector<int> > Cipher::keyIvMap = Cipher::generateKeyIvMap();
+const QMap<QByteArray, Cipher::kiLenArray> Cipher::keyIvMap = Cipher::generateKeyIvMap();
 
-QMap<QByteArray, QVector<int> > Cipher::generateKeyIvMap()
+QMap<QByteArray, Cipher::kiLenArray> Cipher::generateKeyIvMap()
 {
-    QMap<QByteArray, QVector<int> >map;
+    QMap<QByteArray, kiLenArray>map;
     map.insert("AES-128/CFB", {16, 16});
     map.insert("AES-192/CFB", {24, 16});
     map.insert("AES-256/CFB", {32, 16});

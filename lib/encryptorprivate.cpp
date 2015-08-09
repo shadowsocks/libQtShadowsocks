@@ -55,8 +55,8 @@ EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject
             method.replace("-C", "/C");//i.e. -CFB to /CFB
         }
 
-        QVector<int> ki = Cipher::keyIvMap.value(method);
-        if (ki.isEmpty() || !Cipher::isSupported(method)) {
+        Cipher::kiLenArray ki = Cipher::keyIvMap.value(method);
+        if (ki[0] == 0 || !Cipher::isSupported(method)) {
             qCritical() << "The method" << m.toLocal8Bit() << "is not supported.";
             valid = false;
         }
