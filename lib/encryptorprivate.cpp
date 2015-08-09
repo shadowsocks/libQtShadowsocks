@@ -22,7 +22,6 @@
 
 #include "encryptorprivate.h"
 #include "cipher.h"
-#include <QDebug>
 
 using namespace QSS;
 
@@ -57,7 +56,7 @@ EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject
 
         Cipher::kiLenArray ki = Cipher::keyIvMap.value(method);
         if (ki[0] == 0 || !Cipher::isSupported(method)) {
-            qCritical() << "The method" << m.toLocal8Bit() << "is not supported.";
+            qCritical("The method %s is not supported.", m.toStdString().data());
             valid = false;
         }
         keyLen = ki[0];
