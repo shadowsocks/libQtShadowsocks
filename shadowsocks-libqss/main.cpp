@@ -20,7 +20,6 @@
 
 #include <QCoreApplication>
 #include <QCommandLineParser>
-#include <QDebug>
 #include <signal.h>
 #include "client.h"
 #include "utils.h"
@@ -78,7 +77,7 @@ int main(int argc, char *argv[])
 
     if (parser.isSet(testSpeed)) {
         if (c.getMethod().isEmpty()) {
-            qDebug() << "Testing all encryption methods...";
+            std::printf("Testing all encryption methods...\n");
             Utils::testSpeed(100);
         } else {
             Utils::testSpeed(c.getMethod(), 100);

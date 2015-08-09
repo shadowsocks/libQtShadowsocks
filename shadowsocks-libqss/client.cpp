@@ -23,7 +23,6 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QDebug>
 #include "client.h"
 
 Client::Client(QObject *parent) :
@@ -31,16 +30,17 @@ Client::Client(QObject *parent) :
     lc(nullptr)
 {}
 
+QTextStream Client::qOut(stdout, QIODevice::WriteOnly);
+
 bool Client::readConfig(const QString &file)
 {
     QFile c(file);
-    c.open(QIODevice::ReadOnly | QIODevice::Text);
-    if (!c.isOpen()) {
-        qDebug() << "config file" << file << "is not open!";
+    if (!c.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        qOut << "can't open config file " << file << endl;
         return false;
     }
     if (!c.isReadable()) {
-        qDebug() << "config file" << file << "is not readable!";
+        qOut << "config file " << file << " is not readable!" << endl;
         return false;
     }
     QByteArray confArray = c.readAll();
@@ -94,14 +94,14 @@ bool Client::cipherTest()
     if(e.selfTest()) {
         return true;
     } else {
-        qCritical() << "Cipher test failed.";
+        qOut << "Cipher test failed" << endl;
         return false;
     }
 }
 
-inline void Client::logHandler(const QString &log)
+void Client::logHandler(const QString &log)
 {
-    qDebug() << log;
+    qOut << log << endl;
 }
 
 QString Client::getMethod() const

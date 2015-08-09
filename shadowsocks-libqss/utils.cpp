@@ -1,6 +1,6 @@
 #include <QtShadowsocks>
 #include <QTime>
-#include <QDebug>
+#include <QTextStream>
 #include "utils.h"
 
 void Utils::testSpeed(const QString &method, quint32 data_size_mb)
@@ -16,9 +16,11 @@ void Utils::testSpeed(const QString &method, quint32 data_size_mb)
         enc.encrypt(test);
     }
 
-    qDebug() << "Encrypt Method      :" << method;
-    qDebug() << "Datagram size       :" << data_size_mb << "MB";
-    qDebug() << "Time used to encrypt:" << startTime.msecsTo(QTime::currentTime()) << "ms" << endl;
+    static QTextStream qOut(stdout, QIODevice::WriteOnly);
+
+    qOut << "Encrypt Method      : " << method << endl;
+    qOut << "Datagram size       : " << data_size_mb << "MB" << endl;
+    qOut << "Time used to encrypt: " << startTime.msecsTo(QTime::currentTime()) << "ms\n" << endl;
 }
 
 void Utils::testSpeed(quint32 data_size_mb)

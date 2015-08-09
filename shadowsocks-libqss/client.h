@@ -24,6 +24,7 @@
 #define CLIENT_H
 
 #include <QObject>
+#include <QTextStream>
 #include <QtShadowsocks>
 
 class Client : public QObject
@@ -41,6 +42,8 @@ public slots:
 private:
     QSS::Controller *lc;
     QSS::Profile profile;
+
+    static QTextStream qOut;
 
     bool cipherTest();
 
