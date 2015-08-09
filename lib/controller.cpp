@@ -23,9 +23,7 @@
 #include <QHostInfo>
 #include <QTcpSocket>
 #include <botan/init.h>
-
 #include "controller.h"
-#include "tcprelay.h"
 #include "encryptor.h"
 
 using namespace QSS;
@@ -42,15 +40,16 @@ Controller::Controller(bool is_local, QObject *parent) :
         qDebug("%s\n", e.what());
     }
 
-    tcpServer = new QTcpServer(this);
+    tcpServer = new MTQTcpServer(isLocal, serverAddress, this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
     udpRelay = new UdpRelay(isLocal, this);
     httpProxy = new HttpProxy(this);
 
-    connectionCollector = new QObjectCleanupHandler;
-
-    connect(tcpServer, &QTcpServer::acceptError, this, &Controller::onTcpServerError);
-    connect(tcpServer, &QTcpServer::newConnection, this, &Controller::onNewTCPConnection);
+    connect(tcpServer, &MTQTcpServer::acceptError, this, &Controller::onTcpServerError);
+    connect(tcpServer, &MTQTcpServer::log, this, &Controller::log);
+    connect(tcpServer, &MTQTcpServer::debug, this, &Controller::debug);
+    connect(tcpServer, &MTQTcpServer::bytesRead, this, &Controller::onBytesRead);
+    connect(tcpServer, &MTQTcpServer::bytesSend, this, &Controller::onBytesSend);
 
     connect(udpRelay, &UdpRelay::log, this, &Controller::log);
     connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);
@@ -68,7 +67,6 @@ Controller::Controller(const Profile &_profile, bool is_local, QObject *parent) 
 
 Controller::~Controller()
 {
-    delete connectionCollector;//we have to delete all connections at first. otherwise, the application will crash.
     Botan::LibraryInitializer::deinitialize();
 }
 
@@ -100,6 +98,7 @@ bool Controller::setup(const Profile &p)
     }
 
     udpRelay->setup(ep, serverAddress, getLocalAddr(), profile.local_port);
+    tcpServer->setup(getTimeout(), ep);
 
     if (httpProxy->isListening()) {
         httpProxy->close();
@@ -137,7 +136,7 @@ bool Controller::start()
     } else {
         emit log("Running in server mode.");
         sstr.append(QString::number(profile.server_port));
-        listen_ret = tcpServer->listen(getServerAddress().getFirstIP(), profile.server_port);
+        listen_ret = tcpServer->listen(serverAddress.getFirstIP(), profile.server_port);
     }
 
     if (listen_ret) {
@@ -154,7 +153,7 @@ void Controller::stop()
 {
     httpProxy->close();
     tcpServer->close();
-    connectionCollector->clear();
+    tcpServer->clear();
     emit runningStateChanged(false);
     emit debug("Stopped.");
 }
@@ -203,17 +202,6 @@ void Controller::onTcpServerError(QAbstractSocket::SocketError err)
     if (err == QAbstractSocket::AddressInUseError) {
         stop();
     }
-}
-
-void Controller::onNewTCPConnection()
-{
-    QTcpSocket *ts = tcpServer->nextPendingConnection();
-    TcpRelay *con = new TcpRelay(ts, getTimeout(), serverAddress, ep, isLocal, this);
-    connect (con, &TcpRelay::log, this, &Controller::log);
-    connect (con, &TcpRelay::debug, this, &Controller::debug);
-    connect (con, &TcpRelay::bytesRead, this, &Controller::onBytesRead);
-    connect (con, &TcpRelay::bytesSend, this, &Controller::onBytesSend);
-    connectionCollector->add(con);
 }
 
 void Controller::onBytesRead(const qint64 &r)

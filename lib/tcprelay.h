@@ -35,7 +35,7 @@ class TcpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpRelay(QTcpSocket *localTcpSocket, int timeout, const Address &server_addr, const EncryptorPrivate *ep, bool is_local = true, QObject *parent = 0);
+    explicit TcpRelay(QTcpSocket &localTcpSocket, QTcpSocket &remoteTcpSocket, int timeout, const Address &server_addr, const EncryptorPrivate *ep, bool is_local = true, QObject *parent = 0);
 
     enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM};//we don't have DESTROYED stage
 
@@ -51,6 +51,8 @@ signals:
     void bytesRead(const qint64 &);
     void bytesSend(const qint64 &);
 
+    void finished();
+
 private:
     static const qint64 RecvSize = 32736;//32KB, same as shadowsocks-python
 
@@ -60,10 +62,10 @@ private:
     QByteArray dataToWrite;
     const bool isLocal;
 
-    QTcpSocket *local;
-    QTcpSocket *remote;
-    QTimer *timer;
-    Encryptor *encryptor;
+    QTcpSocket &local;
+    QTcpSocket &remote;
+    QTimer timer;
+    Encryptor encryptor;
 
     void handleStageAddr(QByteArray);
     bool writeToRemote(const QByteArray &);

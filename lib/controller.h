@@ -28,7 +28,7 @@
 #include <QList>
 #include <QObject>
 #include <QObjectCleanupHandler>
-#include <QTcpServer>
+#include "mtqtcpserver.h"
 #include "encryptorprivate.h"
 #include "export.h"
 #include "httpproxy.h"
@@ -92,14 +92,12 @@ protected://children can access protected members
     bool valid;
     const bool isLocal;//run on local-side (client) or server-side (server)
     EncryptorPrivate *ep;
-    QTcpServer *tcpServer;
+    MTQTcpServer *tcpServer;
     UdpRelay *udpRelay;
-    QObjectCleanupHandler *connectionCollector;
     HttpProxy *httpProxy;
 
 protected slots:
     void onTcpServerError(QAbstractSocket::SocketError err);
-    void onNewTCPConnection();
     void onBytesRead(const qint64 &);
     void onBytesSend(const qint64 &);
     void onServerAddressLookedUp(const bool success, const QString err);
