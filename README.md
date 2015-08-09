@@ -63,6 +63,8 @@ Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to r
 License
 -------
 
+![](http://www.gnu.org/graphics/lgplv3-147x51.png)
+
 Copyright (C) 2014-2015 Symeon Huang
 
 This library is free software: you can redistribute it and/or modify
