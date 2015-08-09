@@ -25,33 +25,32 @@
 
 using namespace QSS;
 
-UdpRelay::UdpRelay(bool is_local, QObject *parent) :
+UdpRelay::UdpRelay(const bool &is_local, const Address &serverAddress, QObject *parent) :
     QObject(parent),
+    serverAddress(serverAddress),
     isLocal(is_local),
     encryptor(nullptr)
 {
-    listen = new QUdpSocket(this);
-    listen->setReadBufferSize(RecvSize);
-    listen->setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    listen.setReadBufferSize(RecvSize);
+    listen.setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
-    connect(listen, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged);
-    connect(listen, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead);
-    connect(listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
-    connect(listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend);
+    connect(&listen, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged);
+    connect(&listen, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead);
+    connect(&listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
+    connect(&listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend);
 }
 
 //static member
 QMap<CacheKey, QUdpSocket *> UdpRelay::cache;
 QMap<qintptr, Address> UdpRelay::clientDescriptorToServerAddr;
 
-void UdpRelay::setup(const EncryptorPrivate *ep, const Address &serverAddress, const QHostAddress &localAddr, const quint16 &localPort)
+void UdpRelay::setup(const EncryptorPrivate *ep, const QHostAddress &localAddr, const quint16 &localPort)
 {
-    listen->close();
+    listen.close();
     if (isLocal) {
-        listen->bind(localAddr, localPort, QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
-        destination = serverAddress;
+        listen.bind(localAddr, localPort, QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
     } else {
-        listen->bind(serverAddress.getFirstIP(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
+        listen.bind(serverAddress.getFirstIP(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
     }
     if (encryptor) {
         encryptor->deleteLater();
@@ -66,7 +65,7 @@ void UdpRelay::onSocketError()
         emit log("Fatal. A false object calling onSocketError.");
         return;
     }
-    if (sock == listen) {
+    if (sock == &listen) {
         emit log("UDP server socket error " + sock->errorString());
     } else {
         emit log("UDP client socket error " + sock->errorString());
@@ -87,16 +86,16 @@ void UdpRelay::onServerUdpSocketReadyRead()
         return;
     }
 
-    if (listen->pendingDatagramSize() > RecvSize) {
+    if (listen.pendingDatagramSize() > RecvSize) {
         emit log("Datagram is too large. discarded.");
         return;
     }
 
     QByteArray data;
-    data.resize(listen->pendingDatagramSize());
+    data.resize(listen.pendingDatagramSize());
     QHostAddress r_addr;
     quint16 r_port;
-    qint64 readSize = listen->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
+    qint64 readSize = listen.readDatagram(data.data(), RecvSize, &r_addr, &r_port);
     emit bytesRead(readSize);
     if (readSize > 0) {
         data.resize(readSize);
@@ -139,7 +138,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     if (isLocal) {
         data = encryptor->encryptAll(data);
-        destAddr = destination;
+        destAddr = serverAddress;
     } else {
         data = data.mid(header_length);
     }
@@ -189,7 +188,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
     Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
     if (clientAddress.getPort() != 0) {
-        listen->writeDatagram(response, clientAddress.getFirstIP(), clientAddress.getPort());
+        listen.writeDatagram(response, clientAddress.getFirstIP(), clientAddress.getPort());
     } else {
         emit debug("Drop a UDP packet from somewhere else we know.");
     }

@@ -54,8 +54,8 @@ private:
     QHostAddress address;
     quint16 port;
     QTime time;
-    QTcpSocket *socket;
-    QTimer *timer;
+    QTcpSocket socket;
+    QTimer timer;
 
 private slots:
     void onTimeout();

@@ -33,38 +33,36 @@ AddressTester::AddressTester(const QHostAddress &_address, const quint16 &_port,
     address(_address),
     port(_port)
 {
-    socket = new QTcpSocket(this);
-    timer = new QTimer(this);
-    timer->setSingleShot(true);
+    timer.setSingleShot(true);
     time = QTime::currentTime();
 
-    connect(timer, &QTimer::timeout, this, &AddressTester::onTimeout);
-    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &AddressTester::onSocketError);
-    connect(socket, &QTcpSocket::connected, this, &AddressTester::onConnected);
+    connect(&timer, &QTimer::timeout, this, &AddressTester::onTimeout);
+    connect(&socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &AddressTester::onSocketError);
+    connect(&socket, &QTcpSocket::connected, this, &AddressTester::onConnected);
 }
 
 void AddressTester::startLagTest(int timeout)
 {
     time = QTime::currentTime();
-    timer->start(timeout);
-    socket->connectToHost(address, port);
+    timer.start(timeout);
+    socket.connectToHost(address, port);
 }
 
 void AddressTester::onTimeout()
 {
-    socket->disconnectFromHost();
+    socket.disconnectFromHost();
     emit lagTestFinished(-1);
 }
 
 void AddressTester::onSocketError()
 {
-    timer->stop();
-    emit testErrorString(socket->errorString());
+    timer.stop();
+    emit testErrorString(socket.errorString());
     emit lagTestFinished(-2);
 }
 
 void AddressTester::onConnected()
 {
-    timer->stop();
+    timer.stop();
     emit lagTestFinished(time.msecsTo(QTime::currentTime()));
 }

@@ -42,7 +42,7 @@ Controller::Controller(bool is_local, QObject *parent) :
 
     tcpServer = new MTQTcpServer(isLocal, serverAddress, this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
-    udpRelay = new UdpRelay(isLocal, this);
+    udpRelay = new UdpRelay(isLocal, serverAddress, this);
     httpProxy = new HttpProxy(this);
 
     connect(tcpServer, &MTQTcpServer::acceptError, this, &Controller::onTcpServerError);
@@ -97,7 +97,7 @@ bool Controller::setup(const Profile &p)
         valid = false;
     }
 
-    udpRelay->setup(ep, serverAddress, getLocalAddr(), profile.local_port);
+    udpRelay->setup(ep, getLocalAddr(), profile.local_port);
     tcpServer->setup(getTimeout(), ep);
 
     if (httpProxy->isListening()) {

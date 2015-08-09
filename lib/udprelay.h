@@ -37,8 +37,8 @@ class UdpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit UdpRelay(bool is_local = true, QObject *parent = 0);
-    void setup(const EncryptorPrivate *ep, const Address &serverAddress, const QHostAddress &localAddr, const quint16 &localPort);
+    explicit UdpRelay(const bool &is_local, const Address &serverAddress, QObject *parent = 0);
+    void setup(const EncryptorPrivate *ep, const QHostAddress &localAddr, const quint16 &localPort);
 
 signals:
     void debug(const QString &);
@@ -53,9 +53,9 @@ signals:
 private:
     static const qint64 RecvSize = 65536;//64KB, same as shadowsocks-python (udprelay)
 
-    Address destination;
-    const bool isLocal;
-    QUdpSocket *listen;
+    const Address &serverAddress;
+    const bool &isLocal;
+    QUdpSocket listen;
     Encryptor *encryptor;
 
     static QMap<CacheKey, QUdpSocket *> cache;
