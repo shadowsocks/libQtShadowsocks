@@ -35,10 +35,18 @@ SocketStream::SocketStream(QAbstractSocket *a, QAbstractSocket *b,  QObject *par
 
 void SocketStream::onSocketAReadyRead()
 {
-    bs->write(as->readAll());
+    if (bs->isWritable()) {
+        bs->write(as->readAll());
+    } else {
+        emit error("The second socket is not writable");
+    }
 }
 
 void SocketStream::onSocketBReadyRead()
 {
-    as->write(bs->readAll());
+    if (as->isWritable()) {
+        as->write(bs->readAll());
+    } else {
+        emit error("The first socket is not writable");
+    }
 }

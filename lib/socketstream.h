@@ -39,6 +39,9 @@ public:
      */
     explicit SocketStream(QAbstractSocket *a, QAbstractSocket *b, QObject *parent = 0);
 
+signals:
+    void error(const QString &);
+
 private:
     QAbstractSocket *as;
     QAbstractSocket *bs;
