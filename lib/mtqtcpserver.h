@@ -56,6 +56,9 @@ private:
     const Address &serverAddress;
     int timeout;
     const EncryptorPrivate *ep;
+
+private slots:
+    void onThreadFinished();
 };
 
 }

@@ -56,11 +56,18 @@ void MTQTcpServer::incomingConnection(qintptr socketDescriptor)
 {
     MTSocketThread *thread = new MTSocketThread(socketDescriptor, timeout, serverAddress, ep, isLocal, this);
     childrenThreads.push_back(thread);
-    connect (thread, &MTSocketThread::finished, thread, &MTSocketThread::deleteLater);
+    connect (thread, &MTSocketThread::finished, this, &MTQTcpServer::onThreadFinished);
     connect (thread, &MTSocketThread::error, this, &MTQTcpServer::acceptError);
     connect (thread, &MTSocketThread::info, this, &MTQTcpServer::info);
     connect (thread, &MTSocketThread::debug, this, &MTQTcpServer::debug);
     connect (thread, &MTSocketThread::bytesRead, this, &MTQTcpServer::bytesRead);
     connect (thread, &MTSocketThread::bytesSend, this, &MTQTcpServer::bytesSend);
     thread->start();
+}
+
+void MTQTcpServer::onThreadFinished()
+{
+    MTSocketThread *thread = qobject_cast<MTSocketThread*>(sender());
+    childrenThreads.removeAll(thread);
+    thread->deleteLater();
 }
