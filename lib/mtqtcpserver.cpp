@@ -30,6 +30,11 @@ MTQTcpServer::MTQTcpServer(const bool &is_local, const Address &serverAddress, Q
     serverAddress(serverAddress)
 {}
 
+MTQTcpServer::~MTQTcpServer()
+{
+    clear();
+}
+
 void MTQTcpServer::setup(const int &time_out, const EncryptorPrivate *_ep)
 {
     timeout = time_out;
@@ -38,8 +43,10 @@ void MTQTcpServer::setup(const int &time_out, const EncryptorPrivate *_ep)
 
 void MTQTcpServer::clear()
 {
-    for (auto &&c : childrenThreads) {
-        c->terminate();
+    for (auto &c : childrenThreads) {
+        if (c->isRunning()) {
+            c->quit();
+        }
         c->deleteLater();
     }
     childrenThreads.clear();

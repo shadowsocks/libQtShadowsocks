@@ -28,7 +28,7 @@ using namespace QSS;
 EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject *parent) :
     QObject (parent)
 {
-    method = m.toUpper().toLocal8Bit();//local8bit or utf-8?
+    method = m.toUpper().toLocal8Bit();
     password = pwd.toLocal8Bit();
     valid = true;
 
@@ -54,7 +54,7 @@ EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject
             method.replace("-C", "/C");//i.e. -CFB to /CFB
         }
 
-        Cipher::kiLenArray ki = Cipher::keyIvMap.value(method);
+        Cipher::CipherKeyIVLength ki = Cipher::keyIvMap.value(method);
         if (ki[0] == 0 || !Cipher::isSupported(method)) {
             qCritical("The method %s is not supported.", m.toStdString().data());
             valid = false;

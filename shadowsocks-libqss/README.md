@@ -34,7 +34,7 @@ If `-T` or `--speed-test` is specified, `shadowsocks-libqss` will do a speed tes
 
 By default, it runs as local client. You have to pass `-S` or `--server-mode` if you want it run in server mode.
 
-If `config.json` is specified, most command-line options will be ignored. There is a `config.json` example for reference.
+If `config.json` is specified, most command-line options will be **ignored**. There is a `config.json` example for reference.
 
 License
 -------

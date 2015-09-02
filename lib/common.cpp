@@ -20,7 +20,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <QDebug>
+#include <QTextStream>
 #include <QHostInfo>
 
 #ifdef Q_OS_WIN32
@@ -35,6 +35,8 @@
 #include "common.h"
 
 using namespace QSS;
+
+QTextStream Common::qOut(stdout, QIODevice::WriteOnly);
 
 const QByteArray Common::version()
 {
@@ -67,7 +69,7 @@ QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
         ss_header += address_bin;
         break;
     default:
-        qWarning() << "Unknown address type. Shouldn't get here.";
+        qOut << "Unknown address type. Shouldn't get here.";
     }
     return ss_header + port_ns;
 }
@@ -99,10 +101,10 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
                 dest.setAddress(QString(host));
                 header_length = 4 + addrlen;
             } else {
-                qDebug() << "Host header is too short";
+                qOut << "Host header is too short";
             }
         } else {
-            qDebug() << "Host header is too short to contain a port";
+            qOut << "Host header is too short to contain a port";
         }
     } else if (addrtype == Address::ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
@@ -112,7 +114,7 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data())));
             header_length = 7;
         } else {
-            qDebug() << "IPv4 header is too short";
+            qOut << "IPv4 header is too short";
         }
     } else if (addrtype == Address::ADDRTYPE_IPV6) {
         if (data.length() >= 19) {
@@ -122,10 +124,10 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data())));
             header_length = 19;
         } else {
-            qDebug() << "IPv6 header is too short";
+            qOut << "IPv6 header is too short";
         }
     } else {
-        qDebug() << "Unsupported addrtype" << addrtype << "maybe wrong password";
+        qOut << "Unsupported addrtype" << addrtype << "maybe wrong password";
     }
 }
 
@@ -135,4 +137,13 @@ int Common::randomNumber(int max, int min)
     std::default_random_engine engine(rd());
     std::uniform_int_distribution<int> dis(min, max - 1);
     return dis(engine);
+}
+
+void Common::exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length)
+{
+    unsigned char *end_ks = ks + length;
+    do {
+        *out = *in ^ *ks;
+        ++out; ++in; ++ks;
+    } while (ks < end_ks);
 }

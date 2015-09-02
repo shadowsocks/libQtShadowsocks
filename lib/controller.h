@@ -27,7 +27,6 @@
 #include <QHostAddress>
 #include <QList>
 #include <QObject>
-#include <QObjectCleanupHandler>
 #include "mtqtcpserver.h"
 #include "encryptorprivate.h"
 #include "export.h"

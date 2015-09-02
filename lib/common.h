@@ -32,25 +32,16 @@ namespace QSS {
 //fist: r; second: d
 typedef QPair<Address, Address> CacheKey;
 
-class QSS_EXPORT Common//provide some common functions
-{
-public:
-    virtual ~Common() = 0;//You should never initialise Common class.
-    static const QByteArray version();
-    static QByteArray packAddress(const Address &addr);
-    static QByteArray packAddress(const QHostAddress &addr, const quint16 &port);//this will never use ADDRTYPE_HOST because addr is an IP address
-    static void parseHeader(const QByteArray &data, Address &addr, int &length);
-    static int randomNumber(int max, int min = 0);//generate a random number which is in the range [min, max)
+namespace Common {
+    QSS_EXPORT const QByteArray version();
+    QSS_EXPORT QByteArray packAddress(const Address &addr);
+    QSS_EXPORT QByteArray packAddress(const QHostAddress &addr, const quint16 &port);//this will never use ADDRTYPE_HOST because addr is an IP address
+    QSS_EXPORT void parseHeader(const QByteArray &data, Address &addr, int &length);
+    QSS_EXPORT int randomNumber(int max, int min = 0);//generate a random number which is in the range [min, max)
+    QSS_EXPORT void exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length);
 
-    inline static void exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length)
-    {
-        unsigned char *end_ks = ks + length;
-        do {
-            *out = *in ^ *ks;
-            ++out; ++in; ++ks;
-        } while (ks < end_ks);
-    }
-};
+    extern QTextStream qOut;
+}
 
 }
 

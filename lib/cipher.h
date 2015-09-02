@@ -60,14 +60,14 @@ public:
 
     QByteArray update(const QByteArray &data);
 
-    typedef std::array<int, 2> kiLenArray;
+    typedef std::array<int, 2> CipherKeyIVLength;
 
     /*
      * keyIvMap contains required key length and IV length
      * The kiLenArray contains two integers, the first one is key length,
      * while the second one is IV length.
      */
-    static const QMap<QByteArray, kiLenArray> keyIvMap;
+    static const QMap<QByteArray, CipherKeyIVLength> keyIvMap;
 
     static QByteArray randomIv(int length);
     inline static QByteArray md5Hash(const QByteArray &in)
@@ -82,7 +82,7 @@ private:
     RC4 *rc4;
     ChaCha *chacha;
 
-    static QMap<QByteArray, kiLenArray> generateKeyIvMap();
+    static QMap<QByteArray, CipherKeyIVLength> generateKeyIvMap();
 };
 
 }

@@ -43,8 +43,6 @@ private:
     QSS::Controller *lc;
     QSS::Profile profile;
 
-    static QTextStream qOut;
-
     bool cipherTest();
 
 private slots:

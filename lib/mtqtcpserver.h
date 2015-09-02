@@ -36,6 +36,7 @@ class MTQTcpServer : public QTcpServer
     Q_OBJECT
 public:
     explicit MTQTcpServer(const bool &is_local, const Address &serverAddress, QObject *parent = nullptr);
+    ~MTQTcpServer();
 
     void setup(const int &time_out, const EncryptorPrivate *_ep);
     void clear();

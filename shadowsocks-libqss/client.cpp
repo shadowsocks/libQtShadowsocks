@@ -30,17 +30,15 @@ Client::Client(QObject *parent) :
     lc(nullptr)
 {}
 
-QTextStream Client::qOut(stdout, QIODevice::WriteOnly);
-
 bool Client::readConfig(const QString &file)
 {
     QFile c(file);
     if (!c.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qOut << "can't open config file " << file << endl;
+        QSS::Common::qOut << "can't open config file " << file << endl;
         return false;
     }
     if (!c.isReadable()) {
-        qOut << "config file " << file << " is not readable!" << endl;
+        QSS::Common::qOut << "config file " << file << " is not readable!" << endl;
         return false;
     }
     QByteArray confArray = c.readAll();
@@ -94,14 +92,14 @@ bool Client::cipherTest()
     if(e.selfTest()) {
         return true;
     } else {
-        qOut << "Cipher test failed" << endl;
+        QSS::Common::qOut << "Cipher test failed" << endl;
         return false;
     }
 }
 
 void Client::logHandler(const QString &log)
 {
-    qOut << log << endl;
+    QSS::Common::qOut << log << endl;
 }
 
 QString Client::getMethod() const

@@ -51,14 +51,14 @@ void AddressTester::startLagTest(int timeout)
 void AddressTester::onTimeout()
 {
     socket.disconnectFromHost();
-    emit lagTestFinished(-1);
+    emit lagTestFinished(LAG_TIMEOUT);
 }
 
 void AddressTester::onSocketError()
 {
     timer.stop();
     emit testErrorString(socket.errorString());
-    emit lagTestFinished(-2);
+    emit lagTestFinished(LAG_ERROR);
 }
 
 void AddressTester::onConnected()

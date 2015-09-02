@@ -39,11 +39,10 @@ class QSS_EXPORT AddressTester : public QObject
 public:
     explicit AddressTester(const QHostAddress &_address, const quint16 &_port, QObject *parent = 0);
 
+    static const int LAG_TIMEOUT = -1;
+    static const int LAG_ERROR = -2;
+
 signals:
-    /*
-     * pass the lag, -1 if timeout, -2 if there is an error
-     * the error can be obtained via testErrorString signal
-     */
     void lagTestFinished(int);
     void testErrorString(const QString &);
 

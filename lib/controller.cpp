@@ -37,7 +37,7 @@ Controller::Controller(bool is_local, QObject *parent) :
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
     } catch (std::exception &e) {
-        qDebug("%s\n", e.what());
+        Common::qOut << e.what() << endl;
     }
 
     tcpServer = new MTQTcpServer(isLocal, serverAddress, this);
