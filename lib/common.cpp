@@ -69,7 +69,7 @@ QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
         ss_header += address_bin;
         break;
     default:
-        qOut << "Unknown address type. Shouldn't get here.";
+        qOut << "Unknown address type. Shouldn't get here." << endl;
     }
     return ss_header + port_ns;
 }
@@ -101,10 +101,10 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
                 dest.setAddress(QString(host));
                 header_length = 4 + addrlen;
             } else {
-                qOut << "Host header is too short";
+                qOut << "Host header is too short" << endl;
             }
         } else {
-            qOut << "Host header is too short to contain a port";
+            qOut << "Host header is too short to contain a port" << endl;
         }
     } else if (addrtype == Address::ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
@@ -114,7 +114,7 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data())));
             header_length = 7;
         } else {
-            qOut << "IPv4 header is too short";
+            qOut << "IPv4 header is too short" << endl;
         }
     } else if (addrtype == Address::ADDRTYPE_IPV6) {
         if (data.length() >= 19) {
@@ -124,10 +124,10 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data())));
             header_length = 19;
         } else {
-            qOut << "IPv6 header is too short";
+            qOut << "IPv6 header is too short" << endl;
         }
     } else {
-        qOut << "Unsupported addrtype" << addrtype << "maybe wrong password";
+        qOut << "Unsupported addrtype " << addrtype << " maybe wrong password" << endl;
     }
 }
 
