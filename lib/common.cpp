@@ -112,7 +112,11 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             inet_ntop(AF_INET, reinterpret_cast<void *>(data.mid(1, 4).data()), d_addr.data(), INET_ADDRSTRLEN);
             dest.setAddress(QString(d_addr));
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data())));
-            header_length = 7;
+            if (dest.isIPValid()) {
+                header_length = 7;
+            } else {
+                qOut << "Malformed IPv4 address" << endl;
+            }
         } else {
             qOut << "IPv4 header is too short" << endl;
         }
@@ -122,7 +126,11 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             inet_ntop(AF_INET6, reinterpret_cast<void *>(data.mid(1, 16).data()), d_addr.data(), INET6_ADDRSTRLEN);
             dest.setAddress(QString(d_addr));
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data())));
-            header_length = 19;
+            if (dest.isIPValid()) {
+                header_length = 19;
+            } else {
+                qOut << "Malformed IPv6 address" << endl;
+            }
         } else {
             qOut << "IPv6 header is too short" << endl;
         }
