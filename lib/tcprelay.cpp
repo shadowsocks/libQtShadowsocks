@@ -95,7 +95,11 @@ void TcpRelay::handleStageAddr(QByteArray data)
             std::random_device rd;
             std::default_random_engine gen(rd());
             std::uniform_int_distribution<> dis(1, 256);
-            local.write(Cipher::randomIv(dis(gen)));//randomIv returns a random byte array
+            //let's be naughty, we may, or may not send it some data
+            int random_threshold = dis(gen);
+            if (dis(gen) > random_threshold) {
+                local.write(Cipher::randomIv(dis(gen)));//randomIv returns a random byte array
+            }
             emit info(local.peerAddress().toString() + " attempted to access this server using a wrong header");
         }
         emit finished();
