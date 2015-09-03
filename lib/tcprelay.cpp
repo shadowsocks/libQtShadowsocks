@@ -91,6 +91,12 @@ void TcpRelay::handleStageAddr(QByteArray data)
     Common::parseHeader(data, remoteAddress, header_length);
     if (header_length == 0) {
         emit info("Can't parse header");
+        if (!isLocal) {//return random data as an anti-attack measure
+            std::random_device rd;
+            std::default_random_engine gen(rd());
+            std::uniform_int_distribution<> dis(1, 256);
+            local.write(Cipher::randomIv(dis(gen)));//randomIv returns a random byte array
+        }
         emit finished();
         return;
     }
