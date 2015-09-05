@@ -26,11 +26,12 @@
 
 using namespace QSS;
 
-TcpRelay::TcpRelay(QTcpSocket &localTcpSocket, QTcpSocket &remoteTcpSocket, int timeout, const Address &server_addr, const EncryptorPrivate *ep, bool is_local, QObject *parent) :
+TcpRelay::TcpRelay(QTcpSocket &localTcpSocket, QTcpSocket &remoteTcpSocket, int timeout, const Address &server_addr, const EncryptorPrivate *ep, const bool &is_local, const bool &autoBan, QObject *parent) :
     QObject(parent),
     stage(INIT),
     serverAddress(server_addr),
     isLocal(is_local),
+    autoBan(autoBan),
     local(localTcpSocket),
     remote(remoteTcpSocket),
     encryptor(ep)
@@ -91,44 +92,7 @@ void TcpRelay::handleStageAddr(QByteArray data)
     Common::parseHeader(data, remoteAddress, header_length);
     if (header_length == 0) {
         emit info("Can't parse header");
-        if (!isLocal) {//return random data as an anti-attack measure
-            QByteArray badIV = encryptor.deCipherIV();
-            QHostAddress badAddr = local.peerAddress();
-            bool banThisIP = false;
-
-            Common::failedIVMutex.lock();
-            if (Common::failedIVVector.contains(badIV)) {
-                banThisIP = true;
-            } else {
-                Common::failedIVVector.append(badIV);
-                Common::failedAddressMutex.lock();
-                if (Common::failedAddressVector.contains(badAddr)) {
-                    banThisIP = true;
-                } else {
-                    Common::failedAddressVector.append(badAddr);
-                }
-                Common::failedAddressMutex.unlock();
-            }
-            Common::failedIVMutex.unlock();
-
-            if (banThisIP) {
-                Common::bannedAddressMutex.lock();
-                if (!Common::bannedAddressVector.contains(badAddr)) {
-                    Common::bannedAddressVector.append(badAddr);
-                    emit info(badAddr.toString() + " is banned for accessing this server using a malformed header");
-                }
-                Common::bannedAddressMutex.unlock();
-            }
-
-            std::random_device rd;
-            std::default_random_engine gen(rd());
-            std::uniform_int_distribution<> dis(1, 256);
-            //let's be naughty, we may, or may not send it some data
-            int random_threshold = dis(gen);
-            if (dis(gen) > random_threshold) {
-                local.write(Cipher::randomIv(dis(gen)));//randomIv returns a random byte array
-            }
-        }
+        handleMalformedHeader();
         emit finished();
         return;
     }
@@ -179,6 +143,50 @@ void TcpRelay::onDNSResolved(const bool success, const QString errStr)
 bool TcpRelay::writeToRemote(const QByteArray &data)
 {
     return remote.write(data) != -1;
+}
+
+void TcpRelay::handleMalformedHeader()
+{
+    if (isLocal || !autoBan) {
+        return;
+    }
+
+    QByteArray badIV = encryptor.deCipherIV();
+    QHostAddress badAddr = local.peerAddress();
+    bool banThisIP = false;
+
+    Common::failedIVMutex.lock();
+    if (Common::failedIVVector.contains(badIV)) {
+        banThisIP = true;
+    } else {
+        Common::failedIVVector.append(badIV);
+        Common::failedAddressMutex.lock();
+        if (Common::failedAddressVector.contains(badAddr)) {
+            banThisIP = true;
+        } else {
+            Common::failedAddressVector.append(badAddr);
+        }
+        Common::failedAddressMutex.unlock();
+    }
+    Common::failedIVMutex.unlock();
+
+    if (banThisIP) {
+        Common::bannedAddressMutex.lock();
+        if (!Common::bannedAddressVector.contains(badAddr)) {
+            Common::bannedAddressVector.append(badAddr);
+            emit info(badAddr.toString() + " is banned for accessing this server using a malformed header");
+        }
+        Common::bannedAddressMutex.unlock();
+    }
+
+    std::random_device rd;
+    std::default_random_engine gen(rd());
+    std::uniform_int_distribution<> dis(1, 256);
+    //let's be naughty, we may, or may not send it some data
+    int random_threshold = dis(gen);
+    if (dis(gen) > random_threshold) {
+        local.write(Cipher::randomIv(dis(gen)));//randomIv returns a random byte array
+    }
 }
 
 void TcpRelay::onRemoteConnected()

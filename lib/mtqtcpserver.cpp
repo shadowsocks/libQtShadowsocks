@@ -24,9 +24,10 @@
 
 using namespace QSS;
 
-MTQTcpServer::MTQTcpServer(const bool &is_local, const Address &serverAddress, QObject *parent) :
+MTQTcpServer::MTQTcpServer(const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent) :
     QTcpServer(parent),
     isLocal(is_local),
+    autoBan(auto_ban),
     serverAddress(serverAddress)
 {}
 
@@ -54,7 +55,7 @@ void MTQTcpServer::clear()
 
 void MTQTcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    MTSocketThread *thread = new MTSocketThread(socketDescriptor, timeout, serverAddress, ep, isLocal, this);
+    MTSocketThread *thread = new MTSocketThread(socketDescriptor, timeout, serverAddress, ep, isLocal, autoBan, this);
     childrenThreads.push_back(thread);
     connect (thread, &MTSocketThread::finished, this, &MTQTcpServer::onThreadFinished);
     connect (thread, &MTSocketThread::error, this, &MTQTcpServer::acceptError);

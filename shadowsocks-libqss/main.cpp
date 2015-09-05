@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
     QCommandLineOption serverMode(QStringList() << "S" << "server-mode", "run as shadowsocks server.");
     QCommandLineOption testSpeed(QStringList() << "T" << "speed-test", "test encrypt/decrypt speed.");
     QCommandLineOption debug(QStringList() << "d" << "debug", "debug-level log.");
+    QCommandLineOption autoBan("autoban", "automatically ban IPs that send malformed header.");
     parser.addOption(configFile);
     parser.addOption(serverAddress);
     parser.addOption(serverPort);
@@ -67,6 +68,7 @@ int main(int argc, char *argv[])
     parser.addOption(serverMode);
     parser.addOption(testSpeed);
     parser.addOption(debug);
+    parser.addOption(autoBan);
     parser.process(a);
 
     Client c;
@@ -74,6 +76,7 @@ int main(int argc, char *argv[])
     if (!c.readConfig(parser.value(configFile))) {
         c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http), parser.isSet(debug));
     }
+    c.setAutoBan(parser.isSet(autoBan));
 
     if (parser.isSet(testSpeed)) {
         if (c.getMethod().isEmpty()) {

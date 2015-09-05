@@ -32,7 +32,7 @@ class MTSocketThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit MTSocketThread(int socketDescriptor, const int &timeout, const Address &server, const EncryptorPrivate* ep, const bool &isLocal, QObject *parent = nullptr);
+    explicit MTSocketThread(int socketDescriptor, const int &timeout, const Address &server, const EncryptorPrivate* ep, const bool &isLocal, const bool &autoBan, QObject *parent = nullptr);
 
     void run() Q_DECL_OVERRIDE;
 
@@ -47,6 +47,7 @@ signals:
 private:
     int socketDescriptor;
     const bool &isLocal;
+    const bool &autoBan;
     const int &timeout;
     const EncryptorPrivate* ep;
     const Address &serverAddress;

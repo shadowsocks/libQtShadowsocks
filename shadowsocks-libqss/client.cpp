@@ -27,7 +27,8 @@
 
 Client::Client(QObject *parent) :
     QObject(parent),
-    lc(nullptr)
+    lc(nullptr),
+    autoBan(false)
 {}
 
 bool Client::readConfig(const QString &file)
@@ -71,12 +72,17 @@ void Client::setup(const QString &remote_addr, const QString &remote_port, const
     profile.debug = debug;
 }
 
+void Client::setAutoBan(bool ban)
+{
+    autoBan = ban;
+}
+
 bool Client::start(bool _server)
 {
     if (lc) {
         lc->deleteLater();
     }
-    lc = new QSS::Controller(!_server, this);
+    lc = new QSS::Controller(!_server, autoBan, this);
     connect (lc, &QSS::Controller::info, this, &Client::logHandler);
     if (profile.debug) {
         connect(lc, &QSS::Controller::debug, this, &Client::logHandler);

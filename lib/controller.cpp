@@ -28,10 +28,11 @@
 
 using namespace QSS;
 
-Controller::Controller(bool is_local, QObject *parent) :
+Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
     QObject(parent),
     valid(true),
     isLocal(is_local),
+    autoBan(auto_ban),
     ep(nullptr)
 {
     try {
@@ -40,7 +41,7 @@ Controller::Controller(bool is_local, QObject *parent) :
         Common::qOut << e.what() << endl;
     }
 
-    tcpServer = new MTQTcpServer(isLocal, serverAddress, this);
+    tcpServer = new MTQTcpServer(isLocal, autoBan, serverAddress, this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
     udpRelay = new UdpRelay(isLocal, serverAddress, this);
     httpProxy = new HttpProxy(this);
@@ -59,8 +60,8 @@ Controller::Controller(bool is_local, QObject *parent) :
     connect(&serverAddress, &Address::lookedUp, this, &Controller::onServerAddressLookedUp);
 }
 
-Controller::Controller(const Profile &_profile, bool is_local, QObject *parent) :
-    Controller(is_local, parent)
+Controller::Controller(const Profile &_profile, bool is_local, bool auto_ban, QObject *parent) :
+    Controller(is_local, auto_ban, parent)
 {
     setup(_profile);
 }

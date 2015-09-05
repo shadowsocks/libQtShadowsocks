@@ -24,10 +24,11 @@
 
 using namespace QSS;
 
-MTSocketThread::MTSocketThread(int socketDescriptor, const int &timeout, const Address &server, const EncryptorPrivate *ep, const bool &isLocal, QObject *parent) :
+MTSocketThread::MTSocketThread(int socketDescriptor, const int &timeout, const Address &server, const EncryptorPrivate *ep, const bool &isLocal, const bool &autoBan, QObject *parent) :
     QThread(parent),
     socketDescriptor(socketDescriptor),
     isLocal(isLocal),
+    autoBan(autoBan),
     timeout(timeout),
     ep(ep),
     serverAddress(server)
@@ -51,7 +52,7 @@ void MTSocketThread::run()
         }
     }
 
-    TcpRelay con(local, remote, timeout, serverAddress, ep, isLocal);
+    TcpRelay con(local, remote, timeout, serverAddress, ep, isLocal, autoBan);
     connect (&con, &TcpRelay::finished, this, &MTSocketThread::quit);
     connect (&con, &TcpRelay::info, this, &MTSocketThread::info);
     connect (&con, &TcpRelay::debug, this, &MTSocketThread::debug);
