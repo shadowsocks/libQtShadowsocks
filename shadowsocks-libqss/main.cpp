@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
     QCommandLineOption configFile("c", "specify config.json file.", "config_file", "config.json");
     QCommandLineOption serverAddress("s", "host name or IP address of your remote server.", "server_address");
     QCommandLineOption serverPort("p", "port number of your remote server.", "server_port");
-    QCommandLineOption localAddress("b", "local address to bind. useless in server mode.", "local_address", "127.0.0.1");
-    QCommandLineOption localPort("l", "port number of your local server. useless in server mode.", "local_port");
+    QCommandLineOption localAddress("b", "local address to bind. ignored in server mode.", "local_address", "127.0.0.1");
+    QCommandLineOption localPort("l", "port number of your local server. ignored in server mode.", "local_port");
     QCommandLineOption password("k", "password of your remote server.", "password");
     QCommandLineOption encryptionMethod("m", "encryption method.", "method");
     QCommandLineOption timeout("t", "socket timeout in seconds.", "timeout");
