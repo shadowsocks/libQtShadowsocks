@@ -59,6 +59,7 @@ public:
     ~Cipher();
 
     QByteArray update(const QByteArray &data);
+    const QByteArray &getIV() const;
 
     typedef std::array<int, 2> CipherKeyIVLength;
 
@@ -81,6 +82,7 @@ private:
     Botan::Pipe *pipe;
     RC4 *rc4;
     ChaCha *chacha;
+    QByteArray iv;
 
     static QMap<QByteArray, CipherKeyIVLength> generateKeyIvMap();
 };

@@ -152,3 +152,12 @@ bool Encryptor::selfTest()
     reset();
     return test == res && test2 == res2 && test3 == res3;
 }
+
+QByteArray Encryptor::deCipherIV() const
+{
+    if (deCipher) {
+        return deCipher->getIV();
+    } else {
+        return QByteArray();
+    }
+}

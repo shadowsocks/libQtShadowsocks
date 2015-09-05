@@ -25,6 +25,8 @@
 
 #include <QByteArray>
 #include <QHostAddress>
+#include <QVector>
+#include <QMutex>
 #include "address.h"
 
 namespace QSS {
@@ -41,6 +43,10 @@ namespace Common {
     QSS_EXPORT void exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length);
 
     extern QTextStream qOut;
+    extern QVector<QByteArray> failedIVVector;
+    extern QVector<QHostAddress> bannedAddressVector;
+    extern QMutex failedIVMutex;
+    extern QMutex bannedAddressMutex;
 }
 
 }

@@ -49,6 +49,7 @@ public:
     QByteArray encryptAll(const QByteArray &);
     void reset();
     bool selfTest();
+    QByteArray deCipherIV() const;
 
 private:
     const EncryptorPrivate *ep;

@@ -32,7 +32,8 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
     QObject(parent),
     pipe(nullptr),
     rc4(nullptr),
-    chacha(nullptr)
+    chacha(nullptr),
+    iv(iv)
 {
     if (method.contains("RC4")) {
         rc4 = new RC4(key, iv, this);
@@ -102,6 +103,11 @@ QByteArray Cipher::update(const QByteArray &data)
     } else {
         throw std::runtime_error("Underlying ciphers are all uninitialised!");
     }
+}
+
+const QByteArray &Cipher::getIV() const
+{
+    return iv;
 }
 
 QByteArray Cipher::randomIv(int length)

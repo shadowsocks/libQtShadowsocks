@@ -20,6 +20,7 @@
 
 #include "mtsocketthread.h"
 #include "tcprelay.h"
+#include "common.h"
 
 using namespace QSS;
 
@@ -38,6 +39,16 @@ void MTSocketThread::run()
     if (!local.setSocketDescriptor(socketDescriptor)) {
         emit error(local.error());
         return;
+    }
+
+    if (!isLocal) {
+        Common::bannedAddressMutex.lock();
+        bool reject = Common::bannedAddressVector.contains(local.peerAddress());
+        Common::bannedAddressMutex.unlock();
+        if (reject) {
+            emit debug("A TCP request from a banned IP was rejected");
+            return;
+        }
     }
 
     TcpRelay con(local, remote, timeout, serverAddress, ep, isLocal);
