@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
     QCommandLineOption password("k", "password of your remote server.", "password");
     QCommandLineOption encryptionMethod("m", "encryption method.", "method");
     QCommandLineOption timeout("t", "socket timeout in seconds.", "timeout");
-    QCommandLineOption http(QStringList() << "H" << "http-proxy", "run as a HTTP proxy server. ignored in server mode.");
+    QCommandLineOption http(QStringList() << "H" << "http-proxy", "run in HTTP(S) proxy mode. ignored in server mode.");
     QCommandLineOption serverMode(QStringList() << "S" << "server-mode", "run as shadowsocks server.");
     QCommandLineOption testSpeed(QStringList() << "T" << "speed-test", "test encrypt/decrypt speed.");
     QCommandLineOption debug(QStringList() << "d" << "debug", "debug-level log.");
