@@ -44,8 +44,10 @@ namespace Common {
 
     extern QTextStream qOut;
     extern QVector<QByteArray> failedIVVector;
+    extern QVector<QHostAddress> failedAddressVector;
     extern QVector<QHostAddress> bannedAddressVector;
     extern QMutex failedIVMutex;
+    extern QMutex failedAddressMutex;
     extern QMutex bannedAddressMutex;
 }
 

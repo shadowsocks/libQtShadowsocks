@@ -94,18 +94,32 @@ void TcpRelay::handleStageAddr(QByteArray data)
         if (!isLocal) {//return random data as an anti-attack measure
             QByteArray badIV = encryptor.deCipherIV();
             QHostAddress badAddr = local.peerAddress();
+            bool banThisIP = false;
+
             Common::failedIVMutex.lock();
             if (Common::failedIVVector.contains(badIV)) {
+                banThisIP = true;
+            } else {
+                Common::failedIVVector.append(badIV);
+                Common::failedAddressMutex.lock();
+                if (Common::failedAddressVector.contains(badAddr)) {
+                    banThisIP = true;
+                } else {
+                    Common::failedAddressVector.append(badAddr);
+                }
+                Common::failedAddressMutex.unlock();
+            }
+            Common::failedIVMutex.unlock();
+
+            if (banThisIP) {
                 Common::bannedAddressMutex.lock();
                 if (!Common::bannedAddressVector.contains(badAddr)) {
                     Common::bannedAddressVector.append(badAddr);
-                    emit info(badAddr.toString() + " is banned for accessing this server using a duplicated IV and a wrong header");
+                    emit info(badAddr.toString() + " is banned for accessing this server using a malformed header");
                 }
                 Common::bannedAddressMutex.unlock();
-            } else {
-                Common::failedIVVector.append(badIV);
             }
-            Common::failedIVMutex.unlock();
+
             std::random_device rd;
             std::default_random_engine gen(rd());
             std::uniform_int_distribution<> dis(1, 256);

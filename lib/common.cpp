@@ -38,8 +38,10 @@ using namespace QSS;
 
 QTextStream Common::qOut(stdout, QIODevice::WriteOnly);
 QVector<QByteArray> Common::failedIVVector;
+QVector<QHostAddress> Common::failedAddressVector;
 QVector<QHostAddress> Common::bannedAddressVector;
 QMutex Common::failedIVMutex;
+QMutex Common::failedAddressMutex;
 QMutex Common::bannedAddressMutex;
 
 const QByteArray Common::version()
