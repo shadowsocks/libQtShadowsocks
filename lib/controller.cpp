@@ -155,21 +155,6 @@ void Controller::stop()
     emit debug("Stopped.");
 }
 
-Address Controller::getServerAddress() const
-{
-    return serverAddress;
-}
-
-QString Controller::getServerString() const
-{
-    return profile.server;
-}
-
-quint16 Controller::getLocalPort() const
-{
-    return profile.local_port;
-}
-
 QHostAddress Controller::getLocalAddr()
 {
     QHostAddress addr(profile.local_address);

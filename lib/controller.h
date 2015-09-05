@@ -51,11 +51,6 @@ public:
      */
     bool setup(const Profile &);
 
-    Address getServerAddress() const;
-    QString getServerString() const;//return the server config from profile
-    quint16 getLocalPort() const;
-    QHostAddress getLocalAddr();
-
 signals:
     /*
      * WARN: an ABI break here
@@ -93,6 +88,8 @@ protected://children can access protected members
     MTQTcpServer *tcpServer;
     UdpRelay *udpRelay;
     HttpProxy *httpProxy;
+
+    QHostAddress getLocalAddr();
 
 protected slots:
     void onTcpServerError(QAbstractSocket::SocketError err);
