@@ -40,7 +40,7 @@ public:
     explicit SocketStream(QAbstractSocket *a, QAbstractSocket *b, QObject *parent = 0);
 
 signals:
-    void error(const QString &);
+    void info(const QString &);
 
 private:
     QAbstractSocket *as;

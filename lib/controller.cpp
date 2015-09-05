@@ -56,6 +56,8 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
     connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead);
     connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend);
 
+    connect(httpProxy, &HttpProxy::info, this, &Controller::info);
+
     connect(&serverAddress, &Address::lookedUp, this, &Controller::onServerAddressLookedUp);
 }
 

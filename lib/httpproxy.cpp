@@ -33,9 +33,6 @@ HttpProxy::HttpProxy(QObject *parent) : QTcpServer(parent)
     this->setMaxPendingConnections(FD_SETSIZE);
 }
 
-HttpProxy::~HttpProxy()
-{}
-
 bool HttpProxy::httpListen(const QHostAddress &http_addr, quint16 http_port, quint16 socks_port)
 {
     upstreamProxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, "127.0.0.1", socks_port);
@@ -53,9 +50,11 @@ void HttpProxy::incomingConnection(qintptr socketDescriptor)
 
 void HttpProxy::onSocketError(QAbstractSocket::SocketError err)
 {
-    QString errStr("HTTP socket error: ");
-    QDebug(&errStr) << err;
-    emit error(errStr);
+    if (err != QAbstractSocket::RemoteHostClosedError) {
+        QString errStr("HTTP socket error: ");
+        QDebug(&errStr) << err;
+        emit info(errStr);
+    }
     sender()->deleteLater();
 }
 
@@ -81,7 +80,7 @@ void HttpProxy::onSocketReadyRead()
     if (method != "CONNECT") {
         QUrl url = QUrl::fromEncoded(address);
         if (!url.isValid()) {
-            emit error("Invalid URL: " + url.toString());
+            emit info("Invalid URL: " + url.toString());
             socket->disconnectFromHost();
             return;
         }
@@ -140,7 +139,7 @@ void HttpProxy::onProxySocketConnectedHttps()
     /* once it's connected, we use a light-weight SocketStream class to do the job */
     SocketStream *stream = new SocketStream(socket, proxySocket, this);
     connect(socket, &QTcpSocket::disconnected, stream, &SocketStream::deleteLater);
-    connect(stream, &SocketStream::error, this, &HttpProxy::error);
+    connect(stream, &SocketStream::info, this, &HttpProxy::info);
     static const QByteArray httpsHeader = "HTTP/1.0 200 Connection established\r\n\r\n";
     socket->write(httpsHeader);
 }

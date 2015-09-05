@@ -38,7 +38,7 @@ void SocketStream::onSocketAReadyRead()
     if (bs->isWritable()) {
         bs->write(as->readAll());
     } else {
-        emit error("The second socket is not writable");
+        emit info("The second socket is not writable");
     }
 }
 
@@ -47,6 +47,6 @@ void SocketStream::onSocketBReadyRead()
     if (as->isWritable()) {
         as->write(bs->readAll());
     } else {
-        emit error("The first socket is not writable");
+        emit info("The first socket is not writable");
     }
 }
