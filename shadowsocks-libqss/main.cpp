@@ -55,7 +55,7 @@ int main(int argc, char *argv[])
     QCommandLineOption serverMode(QStringList() << "S" << "server-mode", "run as shadowsocks server.");
     QCommandLineOption testSpeed(QStringList() << "T" << "speed-test", "test encrypt/decrypt speed.");
     QCommandLineOption debug(QStringList() << "d" << "debug", "debug-level log.");
-    QCommandLineOption autoBan("autoban", "automatically ban IPs that send malformed header.");
+    QCommandLineOption autoBan("autoban", "automatically ban IPs that send malformed header. ignored in local mode.");
     parser.addOption(configFile);
     parser.addOption(serverAddress);
     parser.addOption(serverPort);

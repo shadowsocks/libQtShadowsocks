@@ -1,4 +1,4 @@
-Client
+Shadowsocks-libQSS
 ------
 
 `shadowsocks-libqss` is a CLI client utilising `libQtShadowsocks`.
@@ -11,7 +11,7 @@ Usage
 -----
 
 ```
-Usage: shadowsocks-libqss [options]
+Usage: ./shadowsocks-libqss [options]
 
 Options:
   -h, --help           Displays this help.
@@ -19,15 +19,17 @@ Options:
   -c <config_file>     specify config.json file.
   -s <server_address>  host name or IP address of your remote server.
   -p <server_port>     port number of your remote server.
-  -b <local_address>   local address to bind. useless in server mode.
-  -l <local_port>      port number of your local server. useless in server mode.
+  -b <local_address>   local address to bind. ignored in server mode.
+  -l <local_port>      port number of your local server. ignored in server
+                       mode.
   -k <password>        password of your remote server.
   -m <method>          encryption method.
   -t <timeout>         socket timeout in seconds.
-  -H, --http-proxy     run as a HTTP proxy server. ignored in server mode.
+  -H, --http-proxy     run in HTTP(S) proxy mode. ignored in server mode.
   -S, --server-mode    run as shadowsocks server.
   -T, --speed-test     test encrypt/decrypt speed.
   -d, --debug          debug-level log.
+  --autoban            automatically ban IPs that send malformed header. ignored in local mode.
 ```
 
 If `-T` or `--speed-test` is specified, `shadowsocks-libqss` will do a speed test and print out the time used for specified encryption method. If no method is set, it'll test all encryption methods and print the results. _Note: `shadowsocks-libqss` will exit after the speed test._
