@@ -51,12 +51,10 @@ public:
      */
     bool setup(const Profile &);
 
-    const EncryptorPrivate* getEncryptorPrivate() const;
     Address getServerAddress() const;
     QString getServerString() const;//return the server config from profile
     quint16 getLocalPort() const;
     QHostAddress getLocalAddr();
-    int getTimeout() const;//return timeout interval (millisecond)
 
 signals:
     /*
@@ -91,7 +89,7 @@ protected://children can access protected members
     bool valid;
     const bool isLocal;//run on local-side (client) or server-side (server)
     const bool autoBan;//auto ban IPs that use malformed header data as our anti-probe measure (only used when it's a server)
-    EncryptorPrivate *ep;
+    EncryptorPrivate ep;
     MTQTcpServer *tcpServer;
     UdpRelay *udpRelay;
     HttpProxy *httpProxy;

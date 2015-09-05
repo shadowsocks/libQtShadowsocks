@@ -25,12 +25,13 @@
 
 using namespace QSS;
 
-UdpRelay::UdpRelay(const bool &is_local, const Address &serverAddress, QObject *parent) :
+UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Address &serverAddress, QObject *parent) :
     QObject(parent),
     serverAddress(serverAddress),
-    isLocal(is_local),
-    encryptor(nullptr)
+    isLocal(is_local)
 {
+    encryptor = new Encryptor(ep, this);
+
     listen.setReadBufferSize(RecvSize);
     listen.setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
@@ -44,7 +45,7 @@ UdpRelay::UdpRelay(const bool &is_local, const Address &serverAddress, QObject *
 thread_local QMap<CacheKey, QUdpSocket *> UdpRelay::cache;
 thread_local QMap<qintptr, Address> UdpRelay::clientDescriptorToServerAddr;
 
-void UdpRelay::setup(const EncryptorPrivate *ep, const QHostAddress &localAddr, const quint16 &localPort)
+void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
 {
     listen.close();
     if (isLocal) {
@@ -52,10 +53,7 @@ void UdpRelay::setup(const EncryptorPrivate *ep, const QHostAddress &localAddr, 
     } else {
         listen.bind(serverAddress.getFirstIP(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
     }
-    if (encryptor) {
-        encryptor->deleteLater();
-    }
-    encryptor = new Encryptor(ep, this);
+    encryptor->reset();
 }
 
 void UdpRelay::onSocketError()
@@ -81,11 +79,6 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
-    if (!encryptor) {
-        emit info("Fatal. Encryptor in UdpRelay is NULL!");
-        return;
-    }
-
     if (listen.pendingDatagramSize() > RecvSize) {
         emit info("Datagram is too large. discarded.");
         return;
@@ -148,11 +141,6 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
 void UdpRelay::onClientUdpSocketReadyRead()
 {
-    if (!encryptor) {
-        emit info("Fatal. Encryptor in UdpRelay is NULL!");
-        return;
-    }
-
     QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
     if (!sock) {
         emit info("Fatal. A false object calling onClientUdpSocketReadyRead.");

@@ -26,22 +26,18 @@
 
 using namespace QSS;
 
-MTQTcpServer::MTQTcpServer(const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent) :
+MTQTcpServer::MTQTcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent) :
     QTcpServer(parent),
     isLocal(is_local),
     autoBan(auto_ban),
-    serverAddress(serverAddress)
+    serverAddress(serverAddress),
+    timeout(timeout),
+    ep(ep)
 {}
 
 MTQTcpServer::~MTQTcpServer()
 {
     socketsCleaner.clear();
-}
-
-void MTQTcpServer::setup(const int &time_out, const EncryptorPrivate *_ep)
-{
-    timeout = time_out;
-    ep = _ep;
 }
 
 void MTQTcpServer::clear()
@@ -51,7 +47,8 @@ void MTQTcpServer::clear()
 
 void MTQTcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    TcpRelay *con = new TcpRelay(socketDescriptor, timeout, serverAddress, ep, isLocal, autoBan);
+    //timeout * 1000: convert sec to msec
+    TcpRelay *con = new TcpRelay(socketDescriptor, timeout * 1000, serverAddress, ep, isLocal, autoBan);
     QThread *thread = new QThread(this);
     connect(con, &TcpRelay::info, this, &MTQTcpServer::info);
     connect(con, &TcpRelay::debug, this, &MTQTcpServer::debug);

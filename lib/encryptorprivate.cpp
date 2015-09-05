@@ -65,6 +65,11 @@ EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject
     }
 }
 
+EncryptorPrivate::EncryptorPrivate(QObject *parent) :
+    QObject(parent),
+    valid(false)
+{}
+
 bool EncryptorPrivate::isValid() const
 {
     return valid;
@@ -154,4 +159,18 @@ void EncryptorPrivate::evpBytesToKey()
     }
 
     key = ms.mid(0, keyLen);
+}
+
+EncryptorPrivate &EncryptorPrivate::operator=(const EncryptorPrivate &o)
+{
+    keyLen = o.keyLen;
+    ivLen = o.ivLen;
+    type = o.type;
+    encTable = o.encTable;
+    decTable = o.decTable;
+    method = o.method;
+    password = o.password;
+    key = o.key;
+    valid = o.valid;
+    return *this;
 }

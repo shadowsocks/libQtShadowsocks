@@ -41,7 +41,7 @@ class QSS_EXPORT Encryptor : public QObject
 {
     Q_OBJECT
 public:
-    explicit Encryptor(const EncryptorPrivate *_ep, QObject *parent = 0);
+    explicit Encryptor(const EncryptorPrivate &ep, QObject *parent = 0);
 
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
@@ -52,7 +52,7 @@ public:
     QByteArray deCipherIV() const;
 
 private:
-    const EncryptorPrivate *ep;
+    const EncryptorPrivate &ep;
 
 protected:
     Cipher *enCipher;

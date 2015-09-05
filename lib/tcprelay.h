@@ -35,7 +35,7 @@ class TcpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpRelay(qintptr descriptor, int timeout, const Address &server_addr, const EncryptorPrivate *ep, const bool &is_local, const bool &autoBan, QObject *parent = 0);
+    explicit TcpRelay(qintptr descriptor, int timeout, const Address &server_addr, const EncryptorPrivate &ep, const bool &is_local, const bool &autoBan, QObject *parent = 0);
 
     enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM};//we don't have DESTROYED stage
 

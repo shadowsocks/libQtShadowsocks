@@ -34,10 +34,9 @@ class MTQTcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit MTQTcpServer(const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent = nullptr);
+    explicit MTQTcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent = nullptr);
     ~MTQTcpServer();
 
-    void setup(const int &time_out, const EncryptorPrivate *_ep);
     void clear();
 
 signals:
@@ -54,8 +53,8 @@ private:
     const bool &isLocal;
     const bool &autoBan;
     const Address &serverAddress;
-    int timeout;
-    const EncryptorPrivate *ep;
+    const int &timeout;
+    const EncryptorPrivate &ep;
 };
 
 }

@@ -40,9 +40,10 @@ public:
      * Initialise an EncryptorPrivate instance that is needed by Encryptor
      * Multiple encryptors can share one EncryptorPrivate so long as they're using same
      * encryption method and password.
-     * If the initialisation doesn't succeed, the isValid() function will return false
+     * If the initialisation doesn't succeed, isValid() function will return false
      */
-    explicit EncryptorPrivate (const QString &method, const QString &password, QObject *parent = 0);
+    explicit EncryptorPrivate(const QString &method, const QString &password, QObject *parent = 0);
+    explicit EncryptorPrivate(QObject *parent = 0);//construct an invalid/null instance
 
     bool isValid() const;
 
@@ -51,6 +52,8 @@ public:
      * may be helpful for developers to diagnose the problem (if there is a problem).
      */
     QString getInternalMethodName() const;
+
+    EncryptorPrivate& operator= (const EncryptorPrivate &o);
 
 private:
     int keyLen;

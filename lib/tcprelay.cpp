@@ -26,7 +26,7 @@
 
 using namespace QSS;
 
-TcpRelay::TcpRelay(qintptr descriptor, int timeout, const Address &server_addr, const EncryptorPrivate *ep, const bool &is_local, const bool &autoBan, QObject *parent) :
+TcpRelay::TcpRelay(qintptr descriptor, int timeout, const Address &server_addr, const EncryptorPrivate &ep, const bool &is_local, const bool &autoBan, QObject *parent) :
     QObject(parent),
     stage(INIT),
     serverAddress(server_addr),

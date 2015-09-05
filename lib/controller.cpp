@@ -32,8 +32,7 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
     QObject(parent),
     valid(true),
     isLocal(is_local),
-    autoBan(auto_ban),
-    ep(nullptr)
+    autoBan(auto_ban)
 {
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
@@ -41,9 +40,9 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
         Common::qOut << e.what() << endl;
     }
 
-    tcpServer = new MTQTcpServer(isLocal, autoBan, serverAddress, this);
+    tcpServer = new MTQTcpServer(ep, profile.timeout, isLocal, autoBan, serverAddress, this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
-    udpRelay = new UdpRelay(isLocal, serverAddress, this);
+    udpRelay = new UdpRelay(ep, isLocal, serverAddress, this);
     httpProxy = new HttpProxy(this);
 
     connect(tcpServer, &MTQTcpServer::acceptError, this, &Controller::onTcpServerError);
@@ -88,19 +87,15 @@ bool Controller::setup(const Profile &p)
     }
 
     emit info("Initialising ciphers...");
-    if (ep) {
-        ep->deleteLater();
-    }
-    ep = new EncryptorPrivate(profile.method, profile.password, this);
-    if (ep->isValid()) {
-        emit info(ep->getInternalMethodName() + " (" + profile.method + ") initialised.");
+    ep = EncryptorPrivate(profile.method, profile.password);
+    if (ep.isValid()) {
+        emit info(ep.getInternalMethodName() + " (" + profile.method + ") initialised.");
     } else {
         emit info("Initialisation failed.");
         valid = false;
     }
 
-    udpRelay->setup(ep, getLocalAddr(), profile.local_port);
-    tcpServer->setup(getTimeout(), ep);
+    udpRelay->setup(getLocalAddr(), profile.local_port);
 
     if (httpProxy->isListening()) {
         httpProxy->close();
@@ -160,11 +155,6 @@ void Controller::stop()
     emit debug("Stopped.");
 }
 
-const EncryptorPrivate* Controller::getEncryptorPrivate() const
-{
-    return ep;
-}
-
 Address Controller::getServerAddress() const
 {
     return serverAddress;
@@ -189,11 +179,6 @@ QHostAddress Controller::getLocalAddr()
         emit info("Can't get address from " + profile.local_address.toLocal8Bit() + ". Using localhost instead.");
         return QHostAddress::LocalHost;
     }
-}
-
-int Controller::getTimeout() const
-{
-    return profile.timeout * 1000;
 }
 
 void Controller::onTcpServerError(QAbstractSocket::SocketError err)

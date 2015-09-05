@@ -37,8 +37,8 @@ class UdpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit UdpRelay(const bool &is_local, const Address &serverAddress, QObject *parent = 0);
-    void setup(const EncryptorPrivate *ep, const QHostAddress &localAddr, const quint16 &localPort);
+    explicit UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Address &serverAddress, QObject *parent = 0);
+    void setup(const QHostAddress &localAddr, const quint16 &localPort);
 
 signals:
     void debug(const QString &);
