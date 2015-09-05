@@ -77,6 +77,7 @@ int main(int argc, char *argv[])
         c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http), parser.isSet(debug));
     }
     c.setAutoBan(parser.isSet(autoBan));
+    c.setDebug(parser.isSet(debug));
 
     if (parser.isSet(testSpeed)) {
         if (c.getMethod().isEmpty()) {

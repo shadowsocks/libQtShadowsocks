@@ -77,6 +77,11 @@ void Client::setAutoBan(bool ban)
     autoBan = ban;
 }
 
+void Client::setDebug(bool debug)
+{
+    profile.debug = debug;
+}
+
 bool Client::start(bool _server)
 {
     if (lc) {

@@ -21,6 +21,8 @@
  */
 
 #include "mtqtcpserver.h"
+#include "tcprelay.h"
+#include <QThread>
 
 using namespace QSS;
 
@@ -33,7 +35,7 @@ MTQTcpServer::MTQTcpServer(const bool &is_local, const bool &auto_ban, const Add
 
 MTQTcpServer::~MTQTcpServer()
 {
-    clear();
+    socketsCleaner.clear();
 }
 
 void MTQTcpServer::setup(const int &time_out, const EncryptorPrivate *_ep)
@@ -44,31 +46,19 @@ void MTQTcpServer::setup(const int &time_out, const EncryptorPrivate *_ep)
 
 void MTQTcpServer::clear()
 {
-    for (auto &c : childrenThreads) {
-        if (c->isRunning()) {
-            c->quit();
-        }
-        c->deleteLater();
-    }
-    childrenThreads.clear();
+    socketsCleaner.clear();
 }
 
 void MTQTcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    MTSocketThread *thread = new MTSocketThread(socketDescriptor, timeout, serverAddress, ep, isLocal, autoBan, this);
-    childrenThreads.push_back(thread);
-    connect (thread, &MTSocketThread::finished, this, &MTQTcpServer::onThreadFinished);
-    connect (thread, &MTSocketThread::error, this, &MTQTcpServer::acceptError);
-    connect (thread, &MTSocketThread::info, this, &MTQTcpServer::info);
-    connect (thread, &MTSocketThread::debug, this, &MTQTcpServer::debug);
-    connect (thread, &MTSocketThread::bytesRead, this, &MTQTcpServer::bytesRead);
-    connect (thread, &MTSocketThread::bytesSend, this, &MTQTcpServer::bytesSend);
+    TcpRelay *con = new TcpRelay(socketDescriptor, timeout, serverAddress, ep, isLocal, autoBan);
+    QThread *thread = new QThread(this);
+    connect(con, &TcpRelay::info, this, &MTQTcpServer::info);
+    connect(con, &TcpRelay::debug, this, &MTQTcpServer::debug);
+    connect(con, &TcpRelay::bytesRead, this, &MTQTcpServer::bytesRead);
+    connect(con, &TcpRelay::bytesSend, this, &MTQTcpServer::bytesSend);
+    connect(con, &TcpRelay::finished, thread, &QThread::quit);
+    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    con->moveToThread(thread);
     thread->start();
-}
-
-void MTQTcpServer::onThreadFinished()
-{
-    MTSocketThread *thread = qobject_cast<MTSocketThread*>(sender());
-    childrenThreads.removeAll(thread);
-    thread->deleteLater();
 }

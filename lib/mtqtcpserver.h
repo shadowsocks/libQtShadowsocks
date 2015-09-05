@@ -24,10 +24,9 @@
 #define MTQTCPSERVER_H
 
 #include <QTcpServer>
-#include <QList>
+#include <QObjectCleanupHandler>
 #include "address.h"
 #include "encryptorprivate.h"
-#include "mtsocketthread.h"
 
 namespace QSS {
 
@@ -51,15 +50,12 @@ protected:
     void incomingConnection(qintptr handler) Q_DECL_OVERRIDE;
 
 private:
-    QList<MTSocketThread*> childrenThreads;
+    QObjectCleanupHandler socketsCleaner;
     const bool &isLocal;
     const bool &autoBan;
     const Address &serverAddress;
     int timeout;
     const EncryptorPrivate *ep;
-
-private slots:
-    void onThreadFinished();
 };
 
 }

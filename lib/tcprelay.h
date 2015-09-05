@@ -35,7 +35,7 @@ class TcpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpRelay(QTcpSocket &localTcpSocket, QTcpSocket &remoteTcpSocket, int timeout, const Address &server_addr, const EncryptorPrivate *ep, const bool &is_local, const bool &autoBan, QObject *parent = 0);
+    explicit TcpRelay(qintptr descriptor, int timeout, const Address &server_addr, const EncryptorPrivate *ep, const bool &is_local, const bool &autoBan, QObject *parent = 0);
 
     enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM};//we don't have DESTROYED stage
 
@@ -63,10 +63,10 @@ private:
     const bool &isLocal;
     const bool &autoBan;
 
-    QTcpSocket &local;
-    QTcpSocket &remote;
-    QTimer timer;
-    Encryptor encryptor;
+    QTcpSocket *local;
+    QTcpSocket *remote;
+    QTimer *timer;
+    Encryptor *encryptor;
 
     void handleStageAddr(QByteArray);
     bool writeToRemote(const QByteArray &);
