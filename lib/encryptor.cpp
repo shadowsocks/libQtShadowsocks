@@ -45,6 +45,8 @@ void Encryptor::reset()
 
 QByteArray Encryptor::encrypt(const QByteArray &in)
 {
+    Q_ASSERT(ep.isValid());
+
     QByteArray out, iv;
     const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
@@ -71,6 +73,8 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
 
 QByteArray Encryptor::decrypt(const QByteArray &in)
 {
+    Q_ASSERT(ep.isValid());
+
     QByteArray out;
     const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
@@ -96,6 +100,8 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
 
 QByteArray Encryptor::encryptAll(const QByteArray &in)
 {
+    Q_ASSERT(ep.isValid());
+
     QByteArray out, iv;
     const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
@@ -121,6 +127,8 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
 
 QByteArray Encryptor::decryptAll(const QByteArray &in)
 {
+    Q_ASSERT(ep.isValid());
+
     QByteArray out;
     const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
