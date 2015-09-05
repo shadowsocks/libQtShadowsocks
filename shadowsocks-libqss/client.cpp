@@ -82,6 +82,11 @@ void Client::setDebug(bool debug)
     profile.debug = debug;
 }
 
+void Client::setHttpMode(bool http)
+{
+    profile.http_proxy = http;
+}
+
 bool Client::start(bool _server)
 {
     if (lc) {

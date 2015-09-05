@@ -78,6 +78,9 @@ int main(int argc, char *argv[])
     }
     c.setAutoBan(parser.isSet(autoBan));
     c.setDebug(parser.isSet(debug));
+    if (parser.isSet(http)) {//command-line option has a higher priority to make H, S, T consistent
+        c.setHttpMode(true);
+    }
 
     if (parser.isSet(testSpeed)) {
         if (c.getMethod().isEmpty()) {
