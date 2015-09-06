@@ -22,6 +22,7 @@
 
 #include "mtqtcpserver.h"
 #include "tcprelay.h"
+#include "common.h"
 #include <QThread>
 
 using namespace QSS;
@@ -47,8 +48,21 @@ void MTQTcpServer::clear()
 
 void MTQTcpServer::incomingConnection(qintptr socketDescriptor)
 {
+    QTcpSocket *localSocket = new QTcpSocket;
+    localSocket->setSocketDescriptor(socketDescriptor);
+
+    if (!isLocal && autoBan) {
+        Common::bannedAddressMutex.lock();
+        bool banned = Common::bannedAddressVector.contains(localSocket->peerAddress());
+        Common::bannedAddressMutex.unlock();
+        if (banned) {
+            localSocket->deleteLater();
+            return;
+        }
+    }
+
     //timeout * 1000: convert sec to msec
-    TcpRelay *con = new TcpRelay(socketDescriptor, timeout * 1000, serverAddress, ep, isLocal, autoBan);
+    TcpRelay *con = new TcpRelay(localSocket, timeout * 1000, serverAddress, ep, isLocal, autoBan);
     QThread *thread = new QThread(this);
     connect(con, &TcpRelay::info, this, &MTQTcpServer::info);
     connect(con, &TcpRelay::debug, this, &MTQTcpServer::debug);

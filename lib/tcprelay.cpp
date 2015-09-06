@@ -26,12 +26,13 @@
 
 using namespace QSS;
 
-TcpRelay::TcpRelay(qintptr descriptor, int timeout, const Address &server_addr, const EncryptorPrivate &ep, const bool &is_local, const bool &autoBan, QObject *parent) :
+TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_addr, const EncryptorPrivate &ep, const bool &is_local, const bool &autoBan, QObject *parent) :
     QObject(parent),
     stage(INIT),
     serverAddress(server_addr),
     isLocal(is_local),
-    autoBan(autoBan)
+    autoBan(autoBan),
+    local(localSocket)
 {
     encryptor = new Encryptor(ep, this);
 
@@ -42,8 +43,7 @@ TcpRelay::TcpRelay(qintptr descriptor, int timeout, const Address &server_addr, 
     timer->setInterval(timeout);
     connect(timer, &QTimer::timeout, this, &TcpRelay::onTimeout);
 
-    local = new QTcpSocket(this);
-    local->setSocketDescriptor(descriptor);
+    local->setParent(this);
     connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &TcpRelay::onLocalTcpSocketError);
     connect(local, &QTcpSocket::disconnected, this, &TcpRelay::finished);
     connect(local, &QTcpSocket::readyRead, this, &TcpRelay::onLocalTcpSocketReadyRead);
