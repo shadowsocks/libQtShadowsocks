@@ -93,7 +93,7 @@ void TcpRelay::handleStageAddr(QByteArray data)
     int header_length = 0;
     Common::parseHeader(data, remoteAddress, header_length);
     if (header_length == 0) {
-        emit info("Can't parse header");
+        emit info("Can't parse header. Wrong encryption method or password?");
         handleMalformedHeader();
         emit finished();
         return;

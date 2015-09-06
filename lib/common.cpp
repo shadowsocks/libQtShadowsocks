@@ -36,7 +36,7 @@
 
 using namespace QSS;
 
-QTextStream Common::qOut(stdout, QIODevice::WriteOnly);
+QTextStream Common::qOut(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
 QVector<QByteArray> Common::failedIVVector;
 QVector<QHostAddress> Common::failedAddressVector;
 QVector<QHostAddress> Common::bannedAddressVector;
@@ -74,8 +74,6 @@ QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
         inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(address_bin.data()));
         ss_header += address_bin;
         break;
-    default:
-        qOut << "Unknown address type. Shouldn't get here." << endl;
     }
     return ss_header + port_ns;
 }
@@ -106,11 +104,7 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
                 dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(2 + addrlen, 2).data())));
                 dest.setAddress(QString(host));
                 header_length = 4 + addrlen;
-            } else {
-                qOut << "Host header is too short" << endl;
             }
-        } else {
-            qOut << "Host header is too short to contain a port" << endl;
         }
     } else if (addrtype == Address::ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
@@ -120,11 +114,7 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(5, 2).data())));
             if (dest.isIPValid()) {
                 header_length = 7;
-            } else {
-                qOut << "Malformed IPv4 address" << endl;
             }
-        } else {
-            qOut << "IPv4 header is too short" << endl;
         }
     } else if (addrtype == Address::ADDRTYPE_IPV6) {
         if (data.length() >= 19) {
@@ -134,14 +124,8 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             dest.setPort(ntohs(*reinterpret_cast<quint16 *>(data.mid(17, 2).data())));
             if (dest.isIPValid()) {
                 header_length = 19;
-            } else {
-                qOut << "Malformed IPv6 address" << endl;
             }
-        } else {
-            qOut << "IPv6 header is too short" << endl;
         }
-    } else {
-        qOut << "Unsupported addrtype " << addrtype << " maybe wrong password" << endl;
     }
 }
 
