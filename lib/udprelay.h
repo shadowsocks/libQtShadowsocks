@@ -33,7 +33,7 @@
 
 namespace QSS {
 
-class UdpRelay : public QObject
+class QSS_EXPORT UdpRelay : public QObject
 {
     Q_OBJECT
 public:

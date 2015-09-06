@@ -1,5 +1,5 @@
 /*
- * mtqtcpserver.h - Multi-threaded QTcpServer
+ * tcpserver.h - Multi-threaded Shadowsocks TCP Server
  *
  * Copyright (C) 2015 Symeon Huang <hzwhuang@gmail.com>
  *
@@ -20,22 +20,23 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef MTQTCPSERVER_H
-#define MTQTCPSERVER_H
+#ifndef TCPSERVER_H
+#define TCPSERVER_H
 
 #include <QTcpServer>
 #include <QObjectCleanupHandler>
 #include "address.h"
 #include "encryptorprivate.h"
+#include "export.h"
 
 namespace QSS {
 
-class MTQTcpServer : public QTcpServer
+class QSS_EXPORT TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit MTQTcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent = nullptr);
-    ~MTQTcpServer();
+    explicit TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent = nullptr);
+    ~TcpServer();
 
     void clear();
 
@@ -59,4 +60,4 @@ private:
 
 }
 
-#endif // MTQTCPSERVER_H
+#endif // TCPSERVER_H

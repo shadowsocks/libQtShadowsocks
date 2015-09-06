@@ -37,6 +37,7 @@
 #include <botan/version.h>
 #include "rc4.h"
 #include "chacha.h"
+#include "export.h"
 
 namespace QSS {
 
@@ -50,7 +51,7 @@ typedef Botan::secure_vector<Botan::byte> SecureByteArray;
 #define DataOfSecureByteArray(sba) sba.data()
 #endif
 
-class Cipher : public QObject
+class QSS_EXPORT Cipher : public QObject
 {
     Q_OBJECT
 public:

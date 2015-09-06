@@ -40,16 +40,16 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
         Common::qOut << e.what() << endl;
     }
 
-    tcpServer = new MTQTcpServer(ep, profile.timeout, isLocal, autoBan, serverAddress, this);
+    tcpServer = new TcpServer(ep, profile.timeout, isLocal, autoBan, serverAddress, this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
     udpRelay = new UdpRelay(ep, isLocal, serverAddress, this);
     httpProxy = new HttpProxy(this);
 
-    connect(tcpServer, &MTQTcpServer::acceptError, this, &Controller::onTcpServerError);
-    connect(tcpServer, &MTQTcpServer::info, this, &Controller::info);
-    connect(tcpServer, &MTQTcpServer::debug, this, &Controller::debug);
-    connect(tcpServer, &MTQTcpServer::bytesRead, this, &Controller::onBytesRead);
-    connect(tcpServer, &MTQTcpServer::bytesSend, this, &Controller::onBytesSend);
+    connect(tcpServer, &TcpServer::acceptError, this, &Controller::onTcpServerError);
+    connect(tcpServer, &TcpServer::info, this, &Controller::info);
+    connect(tcpServer, &TcpServer::debug, this, &Controller::debug);
+    connect(tcpServer, &TcpServer::bytesRead, this, &Controller::onBytesRead);
+    connect(tcpServer, &TcpServer::bytesSend, this, &Controller::onBytesSend);
 
     connect(udpRelay, &UdpRelay::info, this, &Controller::info);
     connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);

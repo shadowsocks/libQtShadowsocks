@@ -16,7 +16,7 @@ SOURCES  += \
             udprelay.cpp \
             httpproxy.cpp \
             socketstream.cpp \
-            mtqtcpserver.cpp
+            tcpserver.cpp
 
 
 HEADERS  += \
@@ -36,4 +36,4 @@ HEADERS  += \
             udprelay.h \
             httpproxy.h \
             socketstream.h \
-            mtqtcpserver.h
+            tcpserver.h

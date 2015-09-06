@@ -31,7 +31,7 @@
 
 namespace QSS {
 
-class TcpRelay : public QObject
+class QSS_EXPORT TcpRelay : public QObject
 {
     Q_OBJECT
 public:

@@ -27,7 +27,7 @@
 #include <QHostAddress>
 #include <QList>
 #include <QObject>
-#include "mtqtcpserver.h"
+#include "tcpserver.h"
 #include "encryptorprivate.h"
 #include "export.h"
 #include "httpproxy.h"
@@ -85,7 +85,7 @@ protected://children can access protected members
     const bool isLocal;//run on local-side (client) or server-side (server)
     const bool autoBan;//auto ban IPs that use malformed header data as our anti-probe measure (only used when it's a server)
     EncryptorPrivate ep;
-    MTQTcpServer *tcpServer;
+    TcpServer *tcpServer;
     UdpRelay *udpRelay;
     HttpProxy *httpProxy;
 
