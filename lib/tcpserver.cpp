@@ -70,6 +70,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
     connect(con, &TcpRelay::finished, thread, &QThread::quit);
     connect(thread, &QThread::finished, thread, &QThread::deleteLater);
+    connect(thread, &QThread::finished, con, &TcpServer::deleteLater);
     con->moveToThread(thread);
     thread->start();
 }
