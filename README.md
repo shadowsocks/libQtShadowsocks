@@ -19,8 +19,6 @@ Current Status
 
 - Microsoft Windows (Vista or above)
 - GNU/Linux
-- \*BSD (untested)
-- Mac OS X (untested)
 
 ###Supported Methods###
 
@@ -42,23 +40,6 @@ Current Status
 - SALSA20
 - SEED-CFB
 - SERPENT-CFB
-
-RoadMap
--------
-
-Below features will possibly be implemented in future versions.
-
-- ~~Traffic statistics (v1.2)~~
-- ~~Server ping (v1.2)~~
-- ~~ChaCha cipher (use bundled ChaCha for botan < 1.11)~~
-- ~~Multiple servers balance (v1.4)~~
-- ~~Asynchronous DNS query (v1.6)~~
-- ~~HTTP proxy(v1.7)~~
-- Test compatibility on BSD platforms (v1.8)
-- Multiple profiles balance (v1.8)
-- QML module (v1.10)
-
-Please open an [issue](https://github.com/librehat/libQtShadowsocks/issues) to request a new feature.
 
 License
 -------
