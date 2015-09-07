@@ -95,15 +95,15 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     Address remoteAddr(r_addr, r_port);
     QString dbg;
-    QDebug(&dbg) << "[UDP] Received a packet from" << remoteAddr;
+    QDebug(&dbg) << "[UDP] Server received a packet from" << remoteAddr;
     emit debug(dbg);
 
     if (isLocal) {
-        if (static_cast<int> (data[2]) != 0) {
+        if (static_cast<int>(data[2]) != 0) {
             emit info("[UDP] Drop a message since frag is not 0");
             return;
         }
-        data.remove(0, 2);
+        data.remove(0, 3);
     } else {
         data = encryptor->decryptAll(data);
     }
@@ -160,6 +160,11 @@ void UdpRelay::onClientUdpSocketReadyRead()
     quint16 r_port;
     sock->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
 
+    Address serverAddr(r_addr, r_port);
+    QString dbg;
+    QDebug(&dbg) << "[UDP] Client received a packet from" << serverAddr;
+    emit debug(dbg);
+
     QByteArray response;
     if (isLocal) {
         data = encryptor->decryptAll(data);
@@ -171,7 +176,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
             emit info("[UDP] Can't parse header. Wrong encryption method or password?");
             return;
         }
-        response = QByteArray(3, char(0)) + data;
+        response = QByteArray(3, static_cast<char>(0)) + data;
     } else {
         data.prepend(Common::packAddress(r_addr, r_port));
         response = encryptor->encryptAll(data);

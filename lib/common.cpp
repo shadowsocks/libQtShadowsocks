@@ -80,15 +80,20 @@ QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
 
 QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
 {
-    QByteArray type;
+    QByteArray type_bin, address_bin;
+    QByteArray address_str = addr.toString().toLocal8Bit();
     quint16 port_net = htons(port);
     QByteArray port_ns = QByteArray::fromRawData(reinterpret_cast<char *>(&port_net), 2);
-    if (addr.protocol() == QAbstractSocket::IPv6Protocol) {
-        type.append(static_cast<char>(Address::ADDRTYPE_IPV6));
+    if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
+        type_bin.append(static_cast<char>(Address::ADDRTYPE_IPV4));
+        address_bin.resize(INET_ADDRSTRLEN);
+        inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(address_bin.data()));
     } else {
-        type.append(static_cast<char>(Address::ADDRTYPE_IPV4));
+        type_bin.append(static_cast<char>(Address::ADDRTYPE_IPV6));
+        address_bin.resize(INET6_ADDRSTRLEN);
+        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(address_bin.data()));
     }
-    return type + addr.toString().toLocal8Bit() + port_ns;
+    return type_bin + address_bin + port_ns;
 }
 
 void Common::parseHeader(const QByteArray &data, Address &dest, int &header_length)
