@@ -93,11 +93,6 @@ void UdpRelay::onServerUdpSocketReadyRead()
     qint64 readSize = listen.readDatagram(data.data(), RecvSize, &r_addr, &r_port);
     emit bytesRead(readSize);
 
-    Address remoteAddr(r_addr, r_port);
-    QString dbg;
-    QDebug(&dbg) << "[UDP] Server received a packet from" << remoteAddr;
-    emit debug(dbg);
-
     if (isLocal) {
         if (static_cast<int>(data[2]) != 0) {
             emit info("[UDP] Drop a message since frag is not 0");
@@ -108,7 +103,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data = encryptor->decryptAll(data);
     }
 
-    Address destAddr;
+    Address destAddr, remoteAddr(r_addr, r_port);
     int header_length = 0;
     Common::parseHeader(data, destAddr, header_length);
     if (header_length == 0) {
@@ -118,6 +113,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     CacheKey key(remoteAddr, destAddr);
     QUdpSocket *client = cache.value(key, nullptr);
+    QString dbg;
     if (!client) {
         client = new QUdpSocket(this);
         client->setReadBufferSize(RecvSize);
@@ -126,10 +122,11 @@ void UdpRelay::onServerUdpSocketReadyRead()
         clientAddrMap.insert(client, key.first);
         connect(client, &QUdpSocket::readyRead, this, &UdpRelay::onClientUdpSocketReadyRead);
         connect(client, &QUdpSocket::disconnected, this, &UdpRelay::onClientDisconnected);
-        QString str;
-        QDebug(&str) << "[UDP] cache miss:" << key.first << "<->" << key.second;
-        emit debug(str);
+        QDebug(&dbg) << "[UDP] cache miss:" << key.first << "<->" << key.second;
+    } else {
+        QDebug(&dbg) << "[UDP] cache hit:" << key.first << "<->" << key.second;
     }
+    emit debug(dbg);
 
     if (isLocal) {
         data = encryptor->encryptAll(data);
@@ -160,11 +157,6 @@ void UdpRelay::onClientUdpSocketReadyRead()
     quint16 r_port;
     sock->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
 
-    Address serverAddr(r_addr, r_port);
-    QString dbg;
-    QDebug(&dbg) << "[UDP] Client received a packet from" << serverAddr;
-    emit debug(dbg);
-
     QByteArray response;
     if (isLocal) {
         data = encryptor->decryptAll(data);
@@ -185,9 +177,6 @@ void UdpRelay::onClientUdpSocketReadyRead()
     Address clientAddress = clientAddrMap.value(sock);
     if (clientAddress.getPort() != 0) {
         listen.writeDatagram(response, clientAddress.getFirstIP(), clientAddress.getPort());
-        QString dbg;
-        QDebug(&dbg) << "[UDP] Sent a packet to" << clientAddress;
-        emit debug(dbg);
     } else {
         emit debug("[UDP] Drop a packet from somewhere else we know.");
     }
