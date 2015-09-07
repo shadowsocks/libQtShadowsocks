@@ -41,10 +41,6 @@ UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Addre
     connect(&listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend);
 }
 
-//static member
-thread_local QMap<CacheKey, QUdpSocket *> UdpRelay::cache;
-thread_local QMap<qintptr, Address> UdpRelay::clientDescriptorToServerAddr;
-
 void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
 {
     listen.close();
@@ -54,6 +50,12 @@ void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
         listen.bind(serverAddress.getFirstIP(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
     }
     encryptor->reset();
+    QList<QUdpSocket*> cachedSockets = cache.values();
+    for (QUdpSocket* sock : cachedSockets) {
+        sock->deleteLater();
+    }
+    cache.clear();
+    clientDescriptorToServerAddr.clear();
 }
 
 void UdpRelay::onSocketError()
