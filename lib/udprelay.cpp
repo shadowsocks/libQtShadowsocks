@@ -55,7 +55,6 @@ void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
         sock->deleteLater();
     }
     cache.clear();
-    clientAddrMap.clear();
 }
 
 void UdpRelay::onSocketError()
@@ -103,7 +102,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data = encryptor->decryptAll(data);
     }
 
-    Address destAddr, remoteAddr(r_addr, r_port);
+    Address destAddr, remoteAddr(r_addr, r_port);//remote == client
     int header_length = 0;
     Common::parseHeader(data, destAddr, header_length);
     if (header_length == 0) {
@@ -111,20 +110,18 @@ void UdpRelay::onServerUdpSocketReadyRead()
         return;
     }
 
-    CacheKey key(remoteAddr, destAddr);
-    QUdpSocket *client = cache.value(key, nullptr);
+    QUdpSocket *client = cache.value(remoteAddr, nullptr);
     QString dbg;
     if (!client) {
         client = new QUdpSocket(this);
         client->setReadBufferSize(RecvSize);
         client->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-        cache.insert(key, client);
-        clientAddrMap.insert(client, key.first);
+        cache.insert(remoteAddr, client);
         connect(client, &QUdpSocket::readyRead, this, &UdpRelay::onClientUdpSocketReadyRead);
         connect(client, &QUdpSocket::disconnected, this, &UdpRelay::onClientDisconnected);
-        QDebug(&dbg) << "[UDP] cache miss:" << key.first << "<->" << key.second;
+        QDebug(&dbg) << "[UDP] cache miss:" << destAddr << "<->" << remoteAddr;
     } else {
-        QDebug(&dbg) << "[UDP] cache hit:" << key.first << "<->" << key.second;
+        QDebug(&dbg) << "[UDP] cache hit:" << destAddr << "<->" << remoteAddr;
     }
     emit debug(dbg);
 
@@ -174,7 +171,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
         response = encryptor->encryptAll(data);
     }
 
-    Address clientAddress = clientAddrMap.value(sock);
+    Address clientAddress = cache.key(sock);
     if (clientAddress.getPort() != 0) {
         listen.writeDatagram(response, clientAddress.getFirstIP(), clientAddress.getPort());
     } else {
@@ -190,7 +187,6 @@ void UdpRelay::onClientDisconnected()
         return;
     }
     cache.remove(cache.key(client));
-    clientAddrMap.remove(client);
     client->deleteLater();
     emit debug("[UDP] A client connection is disconnected and destroyed.");
 }
