@@ -28,7 +28,7 @@ Options:
   -H, --http-proxy     run in HTTP(S) proxy mode. ignored in server mode.
   -S, --server-mode    run as shadowsocks server.
   -T, --speed-test     test encrypt/decrypt speed.
-  -d, --debug          debug-level log.
+  -D, --debug          debug-level log.
   --autoban            automatically ban IPs that send malformed header. ignored in local mode.
 ```
 
