@@ -123,6 +123,8 @@ void TcpRelay::onLocalTcpSocketError()
 {
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit info("Local socket error: " + local->errorString());
+    } else {
+        emit debug("Local socket debug: " + local->errorString());
     }
     emit finished();
 }
@@ -202,6 +204,8 @@ void TcpRelay::onRemoteTcpSocketError()
 {
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
         emit info("Remote socket error: " + remote->errorString());
+    } else {
+        emit debug("Remote socket debug: " + remote->errorString());
     }
     emit finished();
 }
