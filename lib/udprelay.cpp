@@ -55,7 +55,7 @@ void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
         sock->deleteLater();
     }
     cache.clear();
-    clientDescriptorToServerAddr.clear();
+    clientAddrMap.clear();
 }
 
 void UdpRelay::onSocketError()
@@ -66,9 +66,9 @@ void UdpRelay::onSocketError()
         return;
     }
     if (sock == &listen) {
-        emit info("UDP server socket error " + sock->errorString());
+        emit info("[UDP] server socket error " + sock->errorString());
     } else {
-        emit info("UDP client socket error " + sock->errorString());
+        emit info("[UDP] client socket error " + sock->errorString());
     }
 }
 
@@ -82,7 +82,7 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 void UdpRelay::onServerUdpSocketReadyRead()
 {
     if (listen.pendingDatagramSize() > RecvSize) {
-        emit info("Datagram is too large. discarded.");
+        emit info("[UDP] Datagram is too large. discarded.");
         return;
     }
 
@@ -96,13 +96,14 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data.resize(readSize);
     }
 
-    QString dbg("Received UDP packet from ");
-    QDebug(&dbg) << r_addr << r_port;
+    Address remoteAddr(r_addr, r_port);
+    QString dbg;
+    QDebug(&dbg) << "[UDP] Received a packet from" << remoteAddr;
     emit debug(dbg);
 
     if (isLocal) {
         if (static_cast<int> (data[2]) != 0) {
-            emit info("Drop a message since frag is not 0");
+            emit info("[UDP] Drop a message since frag is not 0");
             return;
         }
         data.remove(0, 2);
@@ -114,21 +115,23 @@ void UdpRelay::onServerUdpSocketReadyRead()
     int header_length = 0;
     Common::parseHeader(data, destAddr, header_length);
     if (header_length == 0) {
-        emit info("Can't parse UDP packet header.");
+        emit info("[UDP] Can't parse header. Wrong encryption method or password?");
         return;
     }
 
-    CacheKey key(Address(r_addr, r_port), destAddr);
+    CacheKey key(remoteAddr, destAddr);
     QUdpSocket *client = cache.value(key, nullptr);
     if (!client) {
         client = new QUdpSocket(this);
         client->setReadBufferSize(RecvSize);
         client->setSocketOption(QAbstractSocket::LowDelayOption, 1);
         cache.insert(key, client);
-        clientDescriptorToServerAddr.insert(client->socketDescriptor(), key.first);
+        clientAddrMap.insert(client, key.first);
         connect(client, &QUdpSocket::readyRead, this, &UdpRelay::onClientUdpSocketReadyRead);
         connect(client, &QUdpSocket::disconnected, this, &UdpRelay::onClientDisconnected);
-        emit debug("A new UDP client is connected.");
+        QString str;
+        QDebug(&str) << "[UDP] cache miss:" << key.first << "<->" << key.second;
+        emit debug(str);
     }
 
     if (isLocal) {
@@ -150,7 +153,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
     }
 
     if (sock->pendingDatagramSize() > RecvSize) {
-        emit info("Datagram is too large. Discarded.");
+        emit info("[UDP] Datagram is too large. Discarded.");
         return;
     }
 
@@ -168,6 +171,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
         Common::parseHeader(data, destAddr, header_length);
         if (header_length == 0) {
+            emit info("[UDP] Can't parse header. Wrong encryption method or password?");
             return;
         }
         response = QByteArray(3, char(0)) + data;
@@ -176,11 +180,14 @@ void UdpRelay::onClientUdpSocketReadyRead()
         response = encryptor->encryptAll(data);
     }
 
-    Address clientAddress = clientDescriptorToServerAddr.value(sock->socketDescriptor());
+    Address clientAddress = clientAddrMap.value(sock);
     if (clientAddress.getPort() != 0) {
         listen.writeDatagram(response, clientAddress.getFirstIP(), clientAddress.getPort());
+        QString dbg;
+        QDebug(&dbg) << "[UDP] Sent a packet to" << clientAddress;
+        emit debug(dbg);
     } else {
-        emit debug("Drop a UDP packet from somewhere else we know.");
+        emit debug("[UDP] Drop a packet from somewhere else we know.");
     }
 }
 
@@ -192,7 +199,7 @@ void UdpRelay::onClientDisconnected()
         return;
     }
     cache.remove(cache.key(client));
-    clientDescriptorToServerAddr.remove(client->socketDescriptor());
+    clientAddrMap.remove(client);
     client->deleteLater();
-    emit debug("A UDP client connection is disconnected and destroyed.");
+    emit debug("[UDP] A client connection is disconnected and destroyed.");
 }

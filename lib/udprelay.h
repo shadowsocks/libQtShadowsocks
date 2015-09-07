@@ -58,8 +58,8 @@ private:
     QUdpSocket listen;
     Encryptor *encryptor;
 
-    QMap<CacheKey, QUdpSocket *> cache;
-    QMap<qintptr, Address> clientDescriptorToServerAddr;
+    QMap<CacheKey, QUdpSocket*> cache;
+    QMap<QUdpSocket*, Address> clientAddrMap;
 
 private slots:
     void onSocketError();

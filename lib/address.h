@@ -90,6 +90,18 @@ public:
         return this->data == o.data;
     }
 
+    friend QDataStream& operator<< (QDataStream &os, const Address &addr)
+    {
+        os << QString("%1:%2").arg(addr.ipAddrList.first().toString()).arg(addr.data.second);
+        return os;
+    }
+
+    friend QDebug& operator<< (QDebug &os, const Address &addr)
+    {
+        os << QString("%1:%2").arg(addr.ipAddrList.first().toString()).arg(addr.data.second);
+        return os;
+    }
+
 signals:
     void lookedUp(const bool success, const QString errStr);
 
