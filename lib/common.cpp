@@ -52,7 +52,9 @@ const QByteArray Common::version()
 
 QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
 {
-    QByteArray ss_header, address_str = addr.getAddress().toLocal8Bit();
+    QByteArray ss_header, port_ns, address_str = addr.getAddress().toLocal8Bit();
+    port_ns.resize(2);
+    qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(port_ns.data()));
 
     int type = addr.addressType();
     ss_header.append(static_cast<char>(type));
@@ -62,18 +64,16 @@ QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
         ss_header += address_str;
         break;
     case Address::ADDRTYPE_IPV4:
-        ss_header.resize(7);//addr_len + 1 + 2
+        ss_header.resize(5);
         inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
-        qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(ss_header.data() + 5));
         break;
     case Address::ADDRTYPE_IPV6:
-        ss_header.resize(19);
+        ss_header.resize(17);
         inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
-        qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(ss_header.data() + 17));
         break;
     }
 
-    return ss_header;
+    return ss_header + port_ns;
 }
 
 QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
