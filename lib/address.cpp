@@ -119,6 +119,11 @@ int Address::addressType() const
     }
 }
 
+QString Address::toString() const
+{
+    return QString("%1:%2").arg(ipAddrList.first().toString()).arg(QString::number(data.second));
+}
+
 Address &Address::operator= (const Address &o)
 {
     this->data = o.data;

@@ -80,6 +80,8 @@ public:
 
     int addressType() const;
 
+    QString toString() const;
+
     Address& operator= (const Address &o);
 
     inline bool operator< (const Address &o) const {
@@ -92,13 +94,13 @@ public:
 
     friend QDataStream& operator<< (QDataStream &os, const Address &addr)
     {
-        os << QString("%1:%2").arg(addr.ipAddrList.first().toString()).arg(addr.data.second);
+        os << addr.toString();
         return os;
     }
 
     friend QDebug& operator<< (QDebug &os, const Address &addr)
     {
-        os << QString("%1:%2").arg(addr.ipAddrList.first().toString()).arg(addr.data.second);
+        os << addr.toString();
         return os;
     }
 

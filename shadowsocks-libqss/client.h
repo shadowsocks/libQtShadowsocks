@@ -48,6 +48,7 @@ private:
     bool autoBan;
 
     bool cipherTest();
+    bool headerTest();
 
 private slots:
     void logHandler(const QString &);
