@@ -23,15 +23,6 @@
 #include <QTextStream>
 #include <QHostInfo>
 #include <QtEndian>
-
-#ifdef Q_OS_WIN32
-#include <winsock2.h>
-#include <windows.h>
-#include <Ws2tcpip.h>
-#else
-#include <arpa/inet.h>
-#endif
-
 #include <random>
 #include "common.h"
 
@@ -52,46 +43,46 @@ const QByteArray Common::version()
 
 QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
 {
-    QByteArray ss_header, port_ns, address_str = addr.getAddress().toLocal8Bit();
+    QByteArray type_bin, addr_bin, port_ns;
     port_ns.resize(2);
     qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(port_ns.data()));
 
     int type = addr.addressType();
-    ss_header.append(static_cast<char>(type));
-    switch (type) {
-    case Address::ADDRTYPE_HOST://should we care if it exceeds 255?
-        ss_header.append(static_cast<char>(address_str.length()));
-        ss_header += address_str;
-        break;
-    case Address::ADDRTYPE_IPV4:
-        ss_header.resize(5);
-        inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
-        break;
-    case Address::ADDRTYPE_IPV6:
-        ss_header.resize(17);
-        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
-        break;
+    type_bin.append(static_cast<char>(type));
+    if (type == Address::ADDRTYPE_HOST) {//should we care if it exceeds 255?
+        QByteArray address_str = addr.getAddress().toLocal8Bit();
+        addr_bin.append(static_cast<char>(address_str.length()));
+        addr_bin += address_str;
+    } else {
+        bool ipv4;
+        quint32 ipv4_addr = qToBigEndian(addr.getFirstIP().toIPv4Address(&ipv4));
+        if (ipv4) {
+            addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
+        } else {
+            Q_IPV6ADDR ipv6_addr = addr.getFirstIP().toIPv6Address();//Q_IPV6ADDR is a 16-unsigned-char struct (big endian)
+            addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
+        }
     }
 
-    return ss_header + port_ns;
+    return type_bin + addr_bin + port_ns;
 }
 
 QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
 {
-    QByteArray ss_header, address_str = addr.toString().toLocal8Bit();
-
-    if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
-        ss_header.resize(7);
-        ss_header[0] = static_cast<char>(Address::ADDRTYPE_IPV4);
-        inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
-        qToBigEndian(port, reinterpret_cast<uchar*>(ss_header.data() + 5));
+    QByteArray type_bin, addr_bin, port_ns;
+    bool ipv4;
+    quint32 ipv4_addr = qToBigEndian(addr.toIPv4Address(&ipv4));
+    port_ns.resize(2);
+    qToBigEndian(port, reinterpret_cast<uchar*>(port_ns.data()));
+    if (ipv4) {
+        type_bin.append(static_cast<char>(Address::ADDRTYPE_IPV4));
+        addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
     } else {
-        ss_header.resize(19);
-        ss_header[0] = static_cast<char>(Address::ADDRTYPE_IPV6);
-        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
-        qToBigEndian(port, reinterpret_cast<uchar*>(ss_header.data() + 17));
+        type_bin.append(static_cast<char>(Address::ADDRTYPE_IPV6));
+        Q_IPV6ADDR ipv6_addr = addr.toIPv6Address();
+        addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
     }
-    return ss_header;
+    return type_bin + addr_bin + port_ns;
 }
 
 void Common::parseHeader(const QByteArray &data, Address &dest, int &header_length)
@@ -103,32 +94,29 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
         if (data.length() > 2) {
             int addrlen = static_cast<int>(data[1]);
             if (data.size() >= 2 + addrlen) {
-                QByteArray host = data.mid(2, addrlen);
-                dest.setPort(qFromBigEndian(*reinterpret_cast<quint16 *>(data.mid(2 + addrlen, 2).data())));
-                dest.setAddress(QString(host));
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>(data.data() + 2 + addrlen)));
+                dest.setAddress(QString(data.mid(2, addrlen)));
                 header_length = 4 + addrlen;
             }
         }
     } else if (addrtype == Address::ADDRTYPE_IPV4) {
         if (data.length() >= 7) {
-            QByteArray d_addr;
-            d_addr.resize(INET_ADDRSTRLEN);
-            inet_ntop(AF_INET, reinterpret_cast<void *>(data.mid(1, 4).data()), d_addr.data(), INET_ADDRSTRLEN);
-            dest.setAddress(QString(d_addr));
-            dest.setPort(qFromBigEndian(*reinterpret_cast<quint16 *>(data.mid(5, 2).data())));
-            if (dest.isIPValid()) {
+            QHostAddress addr(qFromBigEndian(*reinterpret_cast<const quint32 *>(data.data() + 1)));
+            if (!addr.isNull()) {
                 header_length = 7;
+                dest.setIPAddress(addr);
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>(data.data() + 5)));
             }
         }
     } else if (addrtype == Address::ADDRTYPE_IPV6) {
         if (data.length() >= 19) {
-            QByteArray d_addr;
-            d_addr.resize(INET_ADDRSTRLEN);
-            inet_ntop(AF_INET6, reinterpret_cast<void *>(data.mid(1, 16).data()), d_addr.data(), INET6_ADDRSTRLEN);
-            dest.setAddress(QString(d_addr));
-            dest.setPort(qFromBigEndian(*reinterpret_cast<quint16 *>(data.mid(17, 2).data())));
-            if (dest.isIPValid()) {
+            Q_IPV6ADDR ipv6_addr;
+            memcpy(ipv6_addr.c, data.data() + 1, 16);
+            QHostAddress addr(ipv6_addr);
+            if (!addr.isNull()) {
                 header_length = 19;
+                dest.setIPAddress(addr);
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>(data.data() + 17)));
             }
         }
     }
