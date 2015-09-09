@@ -52,50 +52,46 @@ const QByteArray Common::version()
 
 QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
 {
-    QByteArray ss_header;
-    ss_header.reserve(256);
-    QByteArray address_str = addr.getAddress().toLocal8Bit();
-    quint16 port_net = qToBigEndian(addr.getPort());
-    QByteArray port_ns(reinterpret_cast<const char *>(&port_net), 2);
+    QByteArray ss_header, address_str = addr.getAddress().toLocal8Bit();
 
     int type = addr.addressType();
+    ss_header.append(static_cast<char>(type));
     switch (type) {
     case Address::ADDRTYPE_HOST://should we care if it exceeds 255?
         ss_header.append(static_cast<char>(address_str.length()));
         ss_header += address_str;
         break;
     case Address::ADDRTYPE_IPV4:
-        ss_header.resize(INET_ADDRSTRLEN);
-        inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(ss_header.data()));
+        ss_header.resize(7);//addr_len + 1 + 2
+        inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
+        qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(ss_header.data() + 5));
         break;
     case Address::ADDRTYPE_IPV6:
-        ss_header.resize(INET6_ADDRSTRLEN);
-        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(ss_header.data()));
+        ss_header.resize(19);
+        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
+        qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(ss_header.data() + 17));
         break;
     }
-    ss_header.prepend(static_cast<char>(type));
 
-    return ss_header + port_ns;
+    return ss_header;
 }
 
 QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
 {
-    QByteArray ss_header;
-    ss_header.reserve(INET6_ADDRSTRLEN + 1);
-    QByteArray address_str = addr.toString().toLocal8Bit();
-    quint16 port_net = qToBigEndian(port);
-    QByteArray port_ns(reinterpret_cast<const char *>(&port_net), 2);
+    QByteArray ss_header, address_str = addr.toString().toLocal8Bit();
 
     if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
-        ss_header.resize(INET_ADDRSTRLEN);
-        inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(ss_header.data()));
-        ss_header.prepend(static_cast<char>(Address::ADDRTYPE_IPV4));
+        ss_header.resize(7);
+        ss_header[0] = static_cast<char>(Address::ADDRTYPE_IPV4);
+        inet_pton(AF_INET, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
+        qToBigEndian(port, reinterpret_cast<uchar*>(ss_header.data() + 5));
     } else {
-        ss_header.resize(INET6_ADDRSTRLEN);
-        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(ss_header.data()));
-        ss_header.prepend(static_cast<char>(Address::ADDRTYPE_IPV6));
+        ss_header.resize(19);
+        ss_header[0] = static_cast<char>(Address::ADDRTYPE_IPV6);
+        inet_pton(AF_INET6, address_str.constData(), reinterpret_cast<void *>(ss_header.data() + 1));
+        qToBigEndian(port, reinterpret_cast<uchar*>(ss_header.data() + 17));
     }
-    return ss_header + port_ns;
+    return ss_header;
 }
 
 void Common::parseHeader(const QByteArray &data, Address &dest, int &header_length)

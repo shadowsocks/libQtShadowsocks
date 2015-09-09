@@ -89,13 +89,15 @@ void Client::setHttpMode(bool http)
 
 bool Client::start(bool _server)
 {
-    if (!cipherTest()) {
-        QSS::Common::qOut << "Cipher test failed" << endl;
-        return false;
-    }
-    if (!headerTest()) {
-        QSS::Common::qOut << "Header test failed" << endl;
-        return false;
+    if (profile.debug) {
+        if (!cipherTest()) {
+            QSS::Common::qOut << "Cipher test failed" << endl;
+            return false;
+        }
+        if (!headerTest()) {
+            QSS::Common::qOut << "Header test failed" << endl;
+            return false;
+        }
     }
 
     if (lc) {
@@ -121,16 +123,14 @@ bool Client::headerTest()
 {
     int length;
     QHostAddress test_addr("1.2.3.4");
-    quint16 test_port = 80;
+    quint16 test_port = 56;
     QSS::Address test_res, test(test_addr, test_port);
     QByteArray packed = QSS::Common::packAddress(test);
     QSS::Common::parseHeader(packed, test_res, length);
     bool success = (test == test_res);
-    QSS::Common::qOut << test_res.toString() << endl;
     packed = QSS::Common::packAddress(test_addr, test_port);
     QSS::Common::parseHeader(packed, test_res, length);
     success &= ((test_res.getFirstIP() == test_addr) && (test_res.getPort() == test_port));
-    QSS::Common::qOut << test_res.toString() << endl;
     return success;
 }
 
