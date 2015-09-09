@@ -69,6 +69,7 @@ public:
      * Note this function will emit lookedUp signal immediately if there is already a valid IP
      */
     void lookUp();
+    void blockingLookUp();
 
     void setAddress(const QString &);
     void setIPAddress(const QHostAddress &);

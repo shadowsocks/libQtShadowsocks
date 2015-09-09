@@ -85,6 +85,16 @@ void Address::lookUp()
     }
 }
 
+void Address::blockingLookUp()
+{
+    if (isIPValid()) {
+        return;
+    }
+
+    QHostInfo result = QHostInfo::fromName(data.first);
+    ipAddrList = result.addresses();
+}
+
 void Address::setAddress(const QString &a)
 {
     data.first = a;
@@ -121,7 +131,7 @@ int Address::addressType() const
 
 QString Address::toString() const
 {
-    return QString("%1:%2").arg(ipAddrList.first().toString()).arg(QString::number(data.second));
+    return QString("%1:%2").arg(data.first).arg(QString::number(data.second));
 }
 
 Address &Address::operator= (const Address &o)

@@ -132,6 +132,9 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data = data.mid(header_length);
     }
 
+    if (!destAddr.isIPValid()) {//TODO async dns
+        destAddr.blockingLookUp();
+    }
     client->writeDatagram(data, destAddr.getFirstIP(), destAddr.getPort());
 }
 
