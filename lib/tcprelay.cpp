@@ -71,13 +71,11 @@ void TcpRelay::handleStageAddr(QByteArray data)
     if (isLocal) {
         int cmd = static_cast<int>(data.at(1));
         if (cmd == 3) {//CMD_UDP_ASSOCIATE
-            emit info("UDP associate");
-            QByteArray header;
-            header.append(char(5));
-            header.append(char(0));
-            header.append(char(0));
-            QHostAddress addr = local->peerAddress();
-            quint16 port = local->peerPort();
+            emit debug("UDP associate");
+            static const char header_data [] = { 5, 0, 0 };
+            static const QByteArray header(header_data, 3);
+            QHostAddress addr = local->localAddress();
+            quint16 port = local->localPort();
             local->write(header + Common::packAddress(addr, port));
             stage = UDP_ASSOC;
             return;
@@ -133,11 +131,8 @@ void TcpRelay::onDNSResolved(const bool success, const QString errStr)
 {
     if (success) {
         stage = CONNECTING;
-        if (isLocal) {
-            remote->connectToHost(serverAddress.getFirstIP(), serverAddress.getPort());
-        } else {
-            remote->connectToHost(remoteAddress.getFirstIP(), remoteAddress.getPort());
-        }
+        Address *addr = qobject_cast<Address*>(sender());
+        remote->connectToHost(addr->getFirstIP(), addr->getPort());
     } else {
         emit info("DNS resolve failed: " + errStr);
         emit finished();
@@ -234,16 +229,16 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         }
         writeToRemote(data);
     } else if (isLocal && stage == INIT) {
-        QByteArray auth;
+        static const char reject_data [] = { 0, 91 };
+        static const char accept_data [] = { 5, 0 };
+        static const QByteArray reject(reject_data, 2);
+        static const QByteArray accept(accept_data, 2);
         if (data[0] != char(5)) {
-            auth.append(char(0));
-            auth.append(char(91));
             emit info("An invalid socket connection was rejected. Please make sure the connection type is SOCKS5.");
+            local->write(reject);
         } else {
-            auth.append(char(5));
-            auth.append(char(0));
+            local->write(accept);
         }
-        local->write(auth);
         stage = ADDR;
     } else if (stage == CONNECTING || stage == DNS) {//take DNS into account, otherwise some data will get lost
         if (isLocal) {
