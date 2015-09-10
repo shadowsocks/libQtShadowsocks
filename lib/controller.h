@@ -40,7 +40,7 @@ class QSS_EXPORT Controller : public QObject
 {
     Q_OBJECT
 public:
-    explicit Controller(bool is_local, bool auto_ban, QObject *parent = 0);
+    explicit Controller(bool is_local, bool auto_ban = false, QObject *parent = 0);
     explicit Controller(const Profile & _profile, bool is_local, bool auto_ban, QObject *parent = 0);//overloaded function to construct a Controller with given profile
     ~Controller();
 
