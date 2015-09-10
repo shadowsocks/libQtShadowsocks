@@ -53,15 +53,12 @@ QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
         QByteArray address_str = addr.getAddress().toLocal8Bit();
         addr_bin.append(static_cast<char>(address_str.length()));
         addr_bin += address_str;
+    } else if (type == Address::ADDRTYPE_IPV4) {
+        quint32 ipv4_addr = qToBigEndian(addr.getFirstIP().toIPv4Address());
+        addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
     } else {
-        bool ipv4;
-        quint32 ipv4_addr = qToBigEndian(addr.getFirstIP().toIPv4Address(&ipv4));
-        if (ipv4) {
-            addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
-        } else {
-            Q_IPV6ADDR ipv6_addr = addr.getFirstIP().toIPv6Address();//Q_IPV6ADDR is a 16-unsigned-char struct (big endian)
-            addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
-        }
+        Q_IPV6ADDR ipv6_addr = addr.getFirstIP().toIPv6Address();//Q_IPV6ADDR is a 16-unsigned-char struct (big endian)
+        addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
     }
 
     return type_bin + addr_bin + port_ns;
@@ -70,11 +67,10 @@ QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
 QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
 {
     QByteArray type_bin, addr_bin, port_ns;
-    bool ipv4;
-    quint32 ipv4_addr = qToBigEndian(addr.toIPv4Address(&ipv4));
     port_ns.resize(2);
     qToBigEndian(port, reinterpret_cast<uchar*>(port_ns.data()));
-    if (ipv4) {
+    if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
+        quint32 ipv4_addr = qToBigEndian(addr.toIPv4Address());
         type_bin.append(static_cast<char>(Address::ADDRTYPE_IPV4));
         addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
     } else {
