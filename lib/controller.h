@@ -20,8 +20,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#ifndef BASECONTROLLER_H
-#define BASECONTROLLER_H
+#ifndef CONTROLLER_H
+#define CONTROLLER_H
 
 #include <QByteArray>
 #include <QHostAddress>
@@ -99,4 +99,4 @@ protected slots:
 };
 
 }
-#endif // BASECONTROLLER_H
+#endif // CONTROLLER_H
