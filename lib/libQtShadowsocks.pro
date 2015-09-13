@@ -26,7 +26,6 @@ DEFINES  += QSS_VERSION=\\\"$$VERSION\\\"
 
 win32: {
     DEFINES    += "FD_SETSIZE=1024"#increase the maximum pending tcp sockets. this value is 64 on Windows by default
-    DEFINES    += "_WIN32_WINNT=0x0600"#drop support for Windows XP
     DEFINES    += QSS_STATIC
 }
 

@@ -17,7 +17,7 @@ Current Status
 
 ###Supported Platforms###
 
-- Microsoft Windows (Vista or above)
+- Microsoft Windows (XP or above)
 - GNU/Linux
 
 ###Supported Methods###
