@@ -20,7 +20,6 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <QDebug>
 #include "tcprelay.h"
 #include "common.h"
 
@@ -97,9 +96,7 @@ void TcpRelay::handleStageAddr(QByteArray data)
         return;
     }
 
-    QString con_info;
-    QDebug(&con_info) << "Connecting" << remoteAddress.getAddress().toLocal8Bit() << "at port" << remoteAddress.getPort() << "from" << local->peerAddress().toString().toLocal8Bit() << "at port" << local->peerPort();
-    emit info(con_info);
+    emit info(QString("Connecting %1:%2 from %3:%4").arg(remoteAddress.getAddress()).arg(remoteAddress.getPort()).arg(local->peerAddress().toString()).arg(local->peerPort()));
 
     stage = DNS;
     if (isLocal) {
