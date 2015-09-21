@@ -1,3 +1,12 @@
+libqtshadowsocks (1.7.0-1) stable; urgency=medium
+
+  * support HTTP proxy mode (in local)
+  * tcp server is now multi-threaded
+  * 256-bit serpent encryption method is added
+  * fix a lot of UDP bugs
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Mon, 21 Sep 2015 13:53:00 +0100
+
 libqtshadowsocks (1.6.1-1) stable; urgency=medium
 
   * fix crashes when TABLE is used
