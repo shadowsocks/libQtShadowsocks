@@ -66,8 +66,7 @@ public:
 
     /*
      * keyIvMap contains required key length and IV length
-     * The kiLenArray contains two integers, the first one is key length,
-     * while the second one is IV length.
+     * The CipherKeyIVLength contains two integers, key length and IV length
      */
     static const QMap<QByteArray, CipherKeyIVLength> keyIvMap;
 
