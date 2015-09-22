@@ -68,7 +68,7 @@ const QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::keyIvMap = Cipher::gen
 
 QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::generateKeyIvMap()
 {
-    QMap<QByteArray, CipherKeyIVLength>map;
+    QMap<QByteArray, CipherKeyIVLength> map;
     map.insert("AES-128/CFB", {16, 16});
     map.insert("AES-192/CFB", {24, 16});
     map.insert("AES-256/CFB", {32, 16});
