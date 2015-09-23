@@ -287,7 +287,9 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
         }
     } else {
         if (compression) {
+            qWarning("uncompressed: %d", buf.size());
             buf = Common::lz4Compress(buf);
+            qWarning("compressed: %d", buf.size());
         }
         buf = encryptor->encrypt(buf);
     }
