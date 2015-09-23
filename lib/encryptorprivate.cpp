@@ -49,7 +49,7 @@ EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject
             method = "Serpent/CFB";
         } else {
             if (method.contains("CAMELLIA")) {
-                    method.replace("CAMELLIA", "Camellia");
+                method.replace("CAMELLIA", "Camellia");
             }
             method.replace("-C", "/C");//i.e. -CFB to /CFB
         }
