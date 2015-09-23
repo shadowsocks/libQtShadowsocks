@@ -53,7 +53,7 @@ isEmpty(BOTAN_VER) {
 # Because of this is a sub-project, we use compiled objects from lib directly
 unix: {
     CONFIG      += link_pkgconfig
-    PKGCONFIG   += botan-$$BOTAN_VER
+    PKGCONFIG   += botan-$$BOTAN_VER liblz4
 
     target.path  = $$INSTALL_PREFIX/bin
     INSTALLS    += target

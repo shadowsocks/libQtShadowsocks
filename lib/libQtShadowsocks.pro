@@ -55,5 +55,5 @@ unix: {
     QMAKE_PKGCONFIG_VERSION = $$VERSION
     QMAKE_PKGCONFIG_DESTDIR = pkgconfig
 
-    PKGCONFIG  += botan-$$BOTAN_VER
+    PKGCONFIG  += botan-$$BOTAN_VER liblz4
 }

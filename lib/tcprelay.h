@@ -62,11 +62,15 @@ private:
     QByteArray dataToWrite;
     const bool &isLocal;
     const bool &autoBan;
+    bool compression;
 
     QTcpSocket *local;
     QTcpSocket *remote;
     QTimer *timer;
     Encryptor *encryptor;
+
+    QByteArray localIncomplete;
+    QByteArray remoteIncomplete;
 
     void handleStageAddr(QByteArray);
     bool writeToRemote(const QByteArray &);

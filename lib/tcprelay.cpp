@@ -31,6 +31,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_a
     serverAddress(server_addr),
     isLocal(is_local),
     autoBan(autoBan),
+    compression(true),//TESTING
     local(localSocket)
 {
     encryptor = new Encryptor(ep, this);
@@ -88,7 +89,7 @@ void TcpRelay::handleStageAddr(QByteArray data)
     }
 
     int header_length = 0;
-    Common::parseHeader(data, remoteAddress, header_length);
+    Common::parseHeader(data, remoteAddress, header_length, compression);
     if (header_length == 0) {
         emit info("Can't parse header. Wrong encryption method or password?");
         handleMalformedHeader();
@@ -104,6 +105,12 @@ void TcpRelay::handleStageAddr(QByteArray data)
         static const QByteArray response(res, 10);
         local->write(response);
 
+        if (compression) {
+            data = Common::lz4Compress(data);
+            if (data.isEmpty()) {
+                emit info("Data is empty after compression");
+            }
+        }
         dataToWrite.append(encryptor->encrypt(data));
         serverAddress.lookUp();
     } else {
@@ -218,10 +225,22 @@ void TcpRelay::onLocalTcpSocketReadyRead()
             emit debug("Data is empty after decryption.");
             return;
         }
+        if (compression) {
+            data.prepend(localIncomplete);
+            localIncomplete.clear();
+            data = Common::lz4Decompress(data, localIncomplete);
+        }
+        if (data.isEmpty()) {
+            emit info("Data is empty after decompression.");
+            return;
+        }
     }
 
     if (stage == STREAM) {
         if (isLocal) {
+            if (compression) {
+                data = Common::lz4Compress(data);
+            }
             data = encryptor->encrypt(data);
         }
         writeToRemote(data);
@@ -239,6 +258,9 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         stage = ADDR;
     } else if (stage == CONNECTING || stage == DNS) {//take DNS into account, otherwise some data will get lost
         if (isLocal) {
+            if (compression) {
+                data = Common::lz4Compress(data);
+            }
             data = encryptor->encrypt(data);
         }
         dataToWrite.append(data);
@@ -256,7 +278,19 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
         return;
     }
     emit bytesRead(buf.size());
-    buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
+    if (isLocal) {
+        buf = encryptor->decrypt(buf);
+        if (compression) {
+            buf.prepend(remoteIncomplete);
+            remoteIncomplete.clear();
+            buf = Common::lz4Decompress(buf, remoteIncomplete);
+        }
+    } else {
+        if (compression) {
+            buf = Common::lz4Compress(buf);
+        }
+        buf = encryptor->encrypt(buf);
+    }
     local->write(buf);
 }
 

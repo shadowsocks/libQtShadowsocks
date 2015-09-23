@@ -25,6 +25,7 @@
 #include <QtEndian>
 #include <random>
 #include "common.h"
+#include "lz4.h"
 
 using namespace QSS;
 
@@ -35,6 +36,7 @@ QVector<QHostAddress> Common::bannedAddressVector;
 QMutex Common::failedIVMutex;
 QMutex Common::failedAddressMutex;
 QMutex Common::bannedAddressMutex;
+const char Common::compressionFlag = 0b01000000;
 
 const QByteArray Common::version()
 {
@@ -115,7 +117,17 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
                 dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>(data.data() + 17)));
             }
         }
+    } else {
+        qWarning("Unknown ATYP %d", addrtype);
     }
+}
+
+void Common::parseHeader(QByteArray &data, Address &dest, int &header_length, bool &compression)
+{
+    char atyp = data[0];
+    compression |= (atyp & compressionFlag);
+    data[0] = (static_cast<char>(atyp << 4) >> 4);
+    parseHeader(data, dest, header_length);
 }
 
 int Common::randomNumber(int max, int min)
@@ -133,4 +145,56 @@ void Common::exclusive_or(unsigned char *ks, const unsigned char *in, unsigned c
         *out = *in ^ *ks;
         ++out; ++in; ++ks;
     } while (ks < end_ks);
+}
+
+QByteArray Common::lz4Compress(const QByteArray &src)
+{
+    QByteArray dest;
+    dest.resize(LZ4_compressBound(src.size()));
+    int real_size = LZ4_compress_default(src.constData(), dest.data(), src.size(), dest.size());
+    if (real_size == 0) {
+        return QByteArray();
+    } else {
+        dest.resize(real_size);
+        QByteArray sizeInfo(8, 0);//full dest size | decompressed size
+        qToBigEndian(dest.size() + 8, reinterpret_cast<uchar*>(sizeInfo.data()));
+        qToBigEndian(src.size(), reinterpret_cast<uchar*>(sizeInfo.data() + 4));
+        dest.prepend(sizeInfo);
+        return dest;
+        /*
+         * structure of compressed shadowsocks data
+         * +------------+-------------+----------------+
+         * | CHUNK SIZE | SOURCE SIZE | LZ4 COMPRESSED |
+         * +------------+-------------+----------------+
+         * |     4      |      4      |     Variable   |
+         * +------------+-------------+----------------+
+         */
+    }
+}
+
+QByteArray Common::lz4Decompress(const QByteArray &src, QByteArray &incompleteChunk)
+{
+    QByteArray out;
+    const char *srcPtr;
+    int chunk_size, source_size;
+    for (int pos = 0; pos < src.size(); pos += chunk_size) {
+        srcPtr = src.constData() + pos;
+        chunk_size = qFromBigEndian(*reinterpret_cast<const int*>(srcPtr));
+        source_size = qFromBigEndian(*reinterpret_cast<const int*>(srcPtr + 4));
+
+        if (chunk_size > src.size() - pos) {
+            incompleteChunk = src.mid(pos);
+            break;
+        }
+
+        QByteArray dest;
+        dest.resize(source_size);
+        int real_size = LZ4_decompress_safe(srcPtr + 8, dest.data(), chunk_size - 8, source_size);
+        if (real_size <= 0) {
+            return QByteArray();
+        }
+        dest.resize(real_size);
+        out.append(dest);
+    }
+    return out;
 }

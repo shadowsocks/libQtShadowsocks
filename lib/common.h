@@ -39,8 +39,11 @@ namespace Common {
     QSS_EXPORT QByteArray packAddress(const Address &addr);
     QSS_EXPORT QByteArray packAddress(const QHostAddress &addr, const quint16 &port);//this will never use ADDRTYPE_HOST because addr is an IP address
     QSS_EXPORT void parseHeader(const QByteArray &data, Address &addr, int &length);
+    QSS_EXPORT void parseHeader(QByteArray &data, Address &addr, int &length, bool &compression);
     QSS_EXPORT int randomNumber(int max, int min = 0);//generate a random number which is in the range [min, max)
     QSS_EXPORT void exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length);
+    QSS_EXPORT QByteArray lz4Compress(const QByteArray &);
+    QSS_EXPORT QByteArray lz4Decompress(const QByteArray &, QByteArray &incompleteChunk);
 
     extern QTextStream qOut;
     extern QVector<QByteArray> failedIVVector;
@@ -49,6 +52,7 @@ namespace Common {
     extern QMutex failedIVMutex;
     extern QMutex failedAddressMutex;
     extern QMutex bannedAddressMutex;
+    extern const char compressionFlag;
 }
 
 }
