@@ -54,7 +54,7 @@ signals:
     void finished();
 
 private:
-    static const qint64 RecvSize = 32736;//32KB, same as shadowsocks-python
+    static const qint64 RecvSize = 65536;
 
     STAGE stage;
     Address remoteAddress;
