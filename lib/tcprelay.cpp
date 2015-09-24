@@ -65,7 +65,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_a
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
 
-void TcpRelay::handleStageAddr(QByteArray data)
+void TcpRelay::handleStageAddr(QByteArray &data)
 {
     if (isLocal) {
         int cmd = static_cast<int>(data.at(1));
