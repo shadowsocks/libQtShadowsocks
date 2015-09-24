@@ -37,7 +37,7 @@ class QSS_EXPORT UdpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Address &serverAddress, QObject *parent = 0);
+    explicit UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const bool &auth, const Address &serverAddress, QObject *parent = 0);
     void setup(const QHostAddress &localAddr, const quint16 &localPort);
 
 signals:
@@ -55,6 +55,7 @@ private:
 
     const Address &serverAddress;
     const bool &isLocal;
+    const bool &auth;
     QUdpSocket listen;
     Encryptor *encryptor;
 

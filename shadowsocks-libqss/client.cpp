@@ -59,7 +59,7 @@ bool Client::readConfig(const QString &file)
     return true;
 }
 
-void Client::setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy, const bool debug)
+void Client::setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy, const bool debug, const bool auth)
 {
     profile.server = remote_addr;
     profile.server_port = remote_port.toInt();
@@ -70,6 +70,7 @@ void Client::setup(const QString &remote_addr, const QString &remote_port, const
     profile.timeout = timeout.toInt();
     profile.http_proxy = http_proxy;
     profile.debug = debug;
+    profile.auth = auth;
 }
 
 void Client::setAutoBan(bool ban)
@@ -85,6 +86,11 @@ void Client::setDebug(bool debug)
 void Client::setHttpMode(bool http)
 {
     profile.http_proxy = http;
+}
+
+void Client::setAuth(bool auth)
+{
+    profile.auth = auth;
 }
 
 bool Client::start(bool _server)

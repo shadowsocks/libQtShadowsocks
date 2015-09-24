@@ -40,9 +40,9 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
         Common::qOut << e.what() << endl;
     }
 
-    tcpServer = new TcpServer(ep, profile.timeout, isLocal, autoBan, serverAddress, this);
+    tcpServer = new TcpServer(ep, profile.timeout, isLocal, autoBan, profile.auth, serverAddress, this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
-    udpRelay = new UdpRelay(ep, isLocal, serverAddress, this);
+    udpRelay = new UdpRelay(ep, isLocal, profile.auth, serverAddress, this);
     httpProxy = new HttpProxy(this);
 
     connect(tcpServer, &TcpServer::acceptError, this, &Controller::onTcpServerError);
@@ -141,6 +141,9 @@ bool Controller::start()
     if (listen_ret) {
         emit info(sstr);
         emit runningStateChanged(true);
+        if (profile.auth) {
+            emit info("One-time message authentication is enabled");
+        }
     } else {
         emit info("TCP server listen failed.");
     }

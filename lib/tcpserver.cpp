@@ -27,10 +27,11 @@
 
 using namespace QSS;
 
-TcpServer::TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent) :
+TcpServer::TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const bool &auth, const Address &serverAddress, QObject *parent) :
     QTcpServer(parent),
     isLocal(is_local),
     autoBan(auto_ban),
+    auth(auth),
     serverAddress(serverAddress),
     timeout(timeout),
     ep(ep)
@@ -62,7 +63,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     }
 
     //timeout * 1000: convert sec to msec
-    TcpRelay *con = new TcpRelay(localSocket, timeout * 1000, serverAddress, ep, isLocal, autoBan);
+    TcpRelay *con = new TcpRelay(localSocket, timeout * 1000, serverAddress, ep, isLocal, autoBan, auth);
     QThread *thread = new QThread(this);
     connect(con, &TcpRelay::info, this, &TcpServer::info);
     connect(con, &TcpRelay::debug, this, &TcpServer::debug);

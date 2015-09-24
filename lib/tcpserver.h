@@ -35,7 +35,7 @@ class QSS_EXPORT TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const Address &serverAddress, QObject *parent = nullptr);
+    explicit TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const bool &auth, const Address &serverAddress, QObject *parent = nullptr);
     ~TcpServer();
 
     void clear();
@@ -53,6 +53,7 @@ private:
     QObjectCleanupHandler socketsCleaner;
     const bool &isLocal;
     const bool &autoBan;
+    const bool &auth;
     const Address &serverAddress;
     const int &timeout;
     const EncryptorPrivate &ep;

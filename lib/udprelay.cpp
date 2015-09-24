@@ -25,10 +25,11 @@
 
 using namespace QSS;
 
-UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Address &serverAddress, QObject *parent) :
+UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const bool &auth, const Address &serverAddress, QObject *parent) :
     QObject(parent),
     serverAddress(serverAddress),
-    isLocal(is_local)
+    isLocal(is_local),
+    auth(auth)
 {
     encryptor = new Encryptor(ep, this);
 

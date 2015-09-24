@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
     QCommandLineOption serverMode(QStringList() << "S" << "server-mode", "run as shadowsocks server.");
     QCommandLineOption testSpeed(QStringList() << "T" << "speed-test", "test encrypt/decrypt speed.");
     QCommandLineOption debug(QStringList() << "D" << "debug", "debug-level log.");
+    QCommandLineOption auth(QStringList() << "A" << "auth", "enable one-time message authentication.");
     QCommandLineOption autoBan("autoban", "automatically ban IPs that send malformed header. ignored in local mode.");
     parser.addOption(configFile);
     parser.addOption(serverAddress);
@@ -68,18 +69,22 @@ int main(int argc, char *argv[])
     parser.addOption(serverMode);
     parser.addOption(testSpeed);
     parser.addOption(debug);
+    parser.addOption(auth);
     parser.addOption(autoBan);
     parser.process(a);
 
     Client c;
 
     if (!c.readConfig(parser.value(configFile))) {
-        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http), parser.isSet(debug));
+        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http), parser.isSet(debug), parser.isSet(auth));
     }
     c.setAutoBan(parser.isSet(autoBan));
     c.setDebug(parser.isSet(debug));
     if (parser.isSet(http)) {//command-line option has a higher priority to make H, S, T consistent
         c.setHttpMode(true);
+    }
+    if (parser.isSet(auth)) {
+        c.setAuth(true);
     }
 
     if (parser.isSet(testSpeed)) {
