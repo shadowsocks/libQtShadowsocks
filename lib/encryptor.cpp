@@ -180,6 +180,13 @@ void Encryptor::addOneTimeAuth(QByteArray &headerData) const
     headerData.append(authCode);
 }
 
+void Encryptor::addOneTimeAuth(QByteArray &data, const int &headerLen) const
+{
+    QByteArray key = enCipherIV + ep.key;
+    QByteArray authCode = Cipher::hmacSha1(key, data.left(headerLen));
+    data.insert(headerLen, authCode);
+}
+
 void Encryptor::addChunkAuth(QByteArray &data)
 {
     QByteArray key = enCipherIV + static_cast<char>(chunkId);

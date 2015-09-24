@@ -52,6 +52,7 @@ public:
     QByteArray deCipherIV() const;
 
     void addOneTimeAuth(QByteArray &headerData) const;
+    void addOneTimeAuth(QByteArray &data, const int &headerLen) const;
     void addChunkAuth(QByteArray &data);
 
     bool verifyOneTimeAuth(const QByteArray &data, const int &headerLen) const;

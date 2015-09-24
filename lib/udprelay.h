@@ -55,7 +55,7 @@ private:
 
     const Address &serverAddress;
     const bool &isLocal;
-    const bool &auth;
+    bool auth;
     QUdpSocket listen;
     Encryptor *encryptor;
 

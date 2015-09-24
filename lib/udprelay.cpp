@@ -105,8 +105,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     Address destAddr, remoteAddr(r_addr, r_port);//remote == client
     int header_length = 0;
-    bool _auth;
-    Common::parseHeader(data, destAddr, header_length, _auth);
+    Common::parseHeader(data, destAddr, header_length, auth);
     if (header_length == 0) {
         emit info("[UDP] Can't parse header. Wrong encryption method or password?");
         return;
@@ -128,9 +127,20 @@ void UdpRelay::onServerUdpSocketReadyRead()
     emit debug(dbg);
 
     if (isLocal) {
+        if (auth) {
+            encryptor->addOneTimeAuth(data, header_length);
+        }
         data = encryptor->encryptAll(data);
         destAddr = serverAddress;
     } else {
+        if (auth) {
+            if (!encryptor->verifyOneTimeAuth(data, header_length)) {
+                emit info("One-time message authentication failed.");
+                //TODO record bad IP
+                return;
+            }
+            header_length += Cipher::AUTH_LEN;
+        }
         data = data.mid(header_length);
     }
 
