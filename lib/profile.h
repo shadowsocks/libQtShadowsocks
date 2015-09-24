@@ -45,9 +45,10 @@ struct Profile {
      */
     bool http_proxy;
     bool debug;//turn on debug output or not
+    bool auth;
 
     Profile() : local_address("127.0.0.1"), server_port(8388), local_port(1080),
-                timeout(600), http_proxy(false), debug(false) {}
+                timeout(600), http_proxy(false), debug(false), auth(false) {}
 };
 
 }

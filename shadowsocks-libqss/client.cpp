@@ -59,7 +59,7 @@ bool Client::readConfig(const QString &file)
     return true;
 }
 
-void Client::setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy)
+void Client::setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy, const bool debug, const bool auth)
 {
     profile.server = remote_addr;
     profile.server_port = remote_port.toInt();
@@ -69,6 +69,8 @@ void Client::setup(const QString &remote_addr, const QString &remote_port, const
     profile.method = method;
     profile.timeout = timeout.toInt();
     profile.http_proxy = http_proxy;
+    profile.debug = debug;
+    profile.auth = auth;
 }
 
 void Client::setAutoBan(bool ban)
@@ -86,9 +88,9 @@ void Client::setHttpMode(bool http)
     profile.http_proxy = http;
 }
 
-void Client::setAuth(bool _auth)
+void Client::setAuth(bool auth)
 {
-    auth = _auth;
+    profile.auth = auth;
 }
 
 bool Client::start(bool _server)
@@ -107,7 +109,7 @@ bool Client::start(bool _server)
     if (lc) {
         lc->deleteLater();
     }
-    lc = new QSS::Controller(!_server, autoBan, auth, this);
+    lc = new QSS::Controller(!_server, autoBan, this);
     connect (lc, &QSS::Controller::info, this, &Client::logHandler);
     if (profile.debug) {
         connect(lc, &QSS::Controller::debug, this, &Client::logHandler);

@@ -28,12 +28,11 @@
 
 using namespace QSS;
 
-Controller::Controller(bool is_local, bool auto_ban, bool auth, QObject *parent) :
+Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
     QObject(parent),
     valid(true),
     isLocal(is_local),
-    autoBan(auto_ban),
-    msgAuth(auth)
+    autoBan(auto_ban)
 {
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
@@ -41,9 +40,9 @@ Controller::Controller(bool is_local, bool auto_ban, bool auth, QObject *parent)
         Common::qOut << e.what() << endl;
     }
 
-    tcpServer = new TcpServer(ep, profile.timeout, isLocal, autoBan, msgAuth, serverAddress, this);
+    tcpServer = new TcpServer(ep, profile.timeout, isLocal, autoBan, profile.auth, serverAddress, this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
-    udpRelay = new UdpRelay(ep, isLocal, msgAuth, serverAddress, this);
+    udpRelay = new UdpRelay(ep, isLocal, profile.auth, serverAddress, this);
     httpProxy = new HttpProxy(this);
 
     connect(tcpServer, &TcpServer::acceptError, this, &Controller::onTcpServerError);
@@ -62,8 +61,8 @@ Controller::Controller(bool is_local, bool auto_ban, bool auth, QObject *parent)
     connect(&serverAddress, &Address::lookedUp, this, &Controller::onServerAddressLookedUp);
 }
 
-Controller::Controller(const Profile &_profile, bool is_local, bool auto_ban, bool auth, QObject *parent) :
-    Controller(is_local, auto_ban, auth, parent)
+Controller::Controller(const Profile &_profile, bool is_local, bool auto_ban, QObject *parent) :
+    Controller(is_local, auto_ban, parent)
 {
     setup(_profile);
 }
@@ -142,7 +141,7 @@ bool Controller::start()
     if (listen_ret) {
         emit info(sstr);
         emit runningStateChanged(true);
-        if (msgAuth) {
+        if (profile.auth) {
             emit info("One-time message authentication is enabled");
         }
     } else {
