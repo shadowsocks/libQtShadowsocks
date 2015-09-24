@@ -189,8 +189,10 @@ void Encryptor::addOneTimeAuth(QByteArray &data, const int &headerLen) const
 
 void Encryptor::addChunkAuth(QByteArray &data)
 {
-    QByteArray key = enCipherIV + static_cast<char>(chunkId);
+    QByteArray counter(4, 0);
+    qToBigEndian(chunkId, reinterpret_cast<uchar*>(counter.data()));
     chunkId++;
+    QByteArray key = enCipherIV + counter;
     QByteArray authCode = Cipher::hmacSha1(key, data);
     quint16 len = static_cast<quint16>(data.length());
     QByteArray len_c(2, 0);
@@ -219,8 +221,10 @@ bool Encryptor::verifyExtractChunkAuth(QByteArray &data)
             break;
         }
 
-        QByteArray key = deCipherIV() + static_cast<char>(chunkId);
+        QByteArray counter(4, 0);
+        qToBigEndian(chunkId, reinterpret_cast<uchar*>(counter.data()));
         chunkId++;
+        QByteArray key = deCipherIV() + counter;
         QByteArray chunk = data.mid(pos + 2 + Cipher::AUTH_LEN, len);
         verified &= (Cipher::hmacSha1(key, chunk) == data.mid(pos + 2, Cipher::AUTH_LEN));
         if (verified) {

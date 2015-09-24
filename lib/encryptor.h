@@ -67,7 +67,7 @@ private:
     const EncryptorPrivate &ep;
     QByteArray enCipherIV;
     QByteArray incompleteChunk;//incomplete data chunk from verifyExtractChunkAuth function
-    int chunkId;
+    quint32 chunkId;
 
 protected:
     Cipher *enCipher;
