@@ -32,7 +32,6 @@
 #include <array>
 #include <QObject>
 #include <QMap>
-#include <QCryptographicHash>
 #include <botan/pipe.h>
 #include <botan/version.h>
 #include "rc4.h"
@@ -71,11 +70,8 @@ public:
     static const QMap<QByteArray, CipherKeyIVLength> keyIvMap;
 
     static QByteArray randomIv(int length);
-    inline static QByteArray md5Hash(const QByteArray &in)
-    {
-        return QCryptographicHash::hash(in, QCryptographicHash::Md5);
-    }
-
+    static QByteArray hmacSha1(const QByteArray &key, const QByteArray &msg);
+    static QByteArray md5Hash(const QByteArray &in);
     static bool isSupported(const QByteArray &method);
 
 private:

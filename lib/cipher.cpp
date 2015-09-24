@@ -20,11 +20,13 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include "cipher.h"
 #include <botan/auto_rng.h>
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
 #include <stdexcept>
-#include "cipher.h"
+#include <QCryptographicHash>
+#include <QMessageAuthenticationCode>
 
 using namespace QSS;
 
@@ -121,6 +123,16 @@ QByteArray Cipher::randomIv(int length)
     out.resize(length);
     rng.randomize(reinterpret_cast<Botan::byte *>(out.data()), length);
     return out;
+}
+
+QByteArray Cipher::hmacSha1(const QByteArray &key, const QByteArray &msg)
+{
+    return QMessageAuthenticationCode::hash(msg, key, QCryptographicHash::Sha1).left(10);
+}
+
+QByteArray Cipher::md5Hash(const QByteArray &in)
+{
+    return QCryptographicHash::hash(in, QCryptographicHash::Md5);
 }
 
 bool Cipher::isSupported(const QByteArray &method)
