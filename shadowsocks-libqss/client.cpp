@@ -128,17 +128,18 @@ bool Client::cipherTest()
 bool Client::headerTest()
 {
     int length;
+    bool unused_auth;
     QHostAddress test_addr("1.2.3.4"), test_addr_v6("2001:0db8:85a3:0000:0000:8a2e:1010:2020");
     quint16 test_port = 56;
     QSS::Address test_res, test_v6(test_addr_v6, test_port);
     QByteArray packed = QSS::Common::packAddress(test_v6);
-    QSS::Common::parseHeader(packed, test_res, length);
+    QSS::Common::parseHeader(packed, test_res, length, unused_auth);
     bool success = (test_v6 == test_res);
     if (!success) {
         QSS::Common::qOut << test_v6.toString() << " --> " << test_res.toString() << endl;
     }
     packed = QSS::Common::packAddress(test_addr, test_port);
-    QSS::Common::parseHeader(packed, test_res, length);
+    QSS::Common::parseHeader(packed, test_res, length, unused_auth);
     bool success2 = ((test_res.getFirstIP() == test_addr) && (test_res.getPort() == test_port));
     if (!success2) {
         QSS::Common::qOut << test_addr.toString().toLocal8Bit() << ":" << test_port << " --> " << test_res.toString() << endl;

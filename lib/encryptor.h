@@ -51,8 +51,22 @@ public:
     bool selfTest();
     QByteArray deCipherIV() const;
 
+    void addOneTimeAuth(QByteArray &headerData) const;
+    void addChunkAuth(QByteArray &data);
+
+    bool verifyOneTimeAuth(const QByteArray &data, const int &headerLen) const;
+
+    /*
+     * data will be overwritten by extracted data which can be sent to downstream
+     * @return the hash verification result
+     */
+    bool verifyExtractChunkAuth(QByteArray &data);
+
 private:
     const EncryptorPrivate &ep;
+    QByteArray enCipherIV;
+    QByteArray incompleteChunk;//incomplete data chunk from verifyExtractChunkAuth function
+    int chunkId;
 
 protected:
     Cipher *enCipher;

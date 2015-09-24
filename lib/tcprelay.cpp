@@ -76,7 +76,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
             static const QByteArray header(header_data, 3);
             QHostAddress addr = local->localAddress();
             quint16 port = local->localPort();
-            local->write(header + Common::packAddress(addr, port));
+            local->write(header + Common::packAddress(addr, port, auth));
             stage = UDP_ASSOC;
             return;
         } else if (cmd == 1) {//CMD_CONNECT
@@ -89,7 +89,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
     }
 
     int header_length = 0;
-    Common::parseHeader(data, remoteAddress, header_length);
+    Common::parseHeader(data, remoteAddress, header_length, auth);
     if (header_length == 0) {
         emit info("Can't parse header. Wrong encryption method or password?");
         handleMalformedHeader();
@@ -105,11 +105,42 @@ void TcpRelay::handleStageAddr(QByteArray &data)
         static const QByteArray response(res, 10);
         local->write(response);
 
+        if (auth) {
+            if (data.length() > header_length) {
+                QByteArray header = data.left(header_length);
+                QByteArray chunk = data.mid(header_length);
+                encryptor->addOneTimeAuth(header);
+                encryptor->addChunkAuth(chunk);
+                data = header + chunk;
+            } else {
+                encryptor->addOneTimeAuth(data);
+            }
+        }
         dataToWrite.append(encryptor->encrypt(data));
         serverAddress.lookUp();
     } else {
+        if (auth) {
+            if (!encryptor->verifyOneTimeAuth(data, header_length)) {
+                emit info("One-time message authentication failed.");
+                handleBadIP();
+                emit finished();
+                return;
+            } else {
+                header_length += Cipher::AUTH_LEN;
+            }
+        }
+
         if (data.length() > header_length) {
-            dataToWrite.append(data.mid(header_length));
+            data.remove(0, header_length);
+            if (auth) {
+                if (!encryptor->verifyExtractChunkAuth(data)) {
+                    emit info("Data chunk hash authentication failed.");
+                    handleBadIP();
+                    emit finished();
+                    return;
+                }
+            }
+            dataToWrite.append(data);
         }
         remoteAddress.lookUp();
     }
@@ -186,6 +217,27 @@ void TcpRelay::handleMalformedHeader()
     }
 }
 
+void TcpRelay::handleBadIP()
+{
+    if (isLocal || !autoBan) {
+        return;
+    }
+
+    QHostAddress badAddr = local->peerAddress();
+    Common::failedAddressMutex.lock();
+    if (Common::failedAddressVector.contains(badAddr)) {
+        Common::bannedAddressMutex.lock();
+        if (!Common::bannedAddressVector.contains(badAddr)) {
+            Common::bannedAddressVector.append(badAddr);
+            emit info(badAddr.toString() + " is banned for authentication failure");
+        }
+        Common::bannedAddressMutex.unlock();
+    } else {
+        Common::failedAddressVector.append(badAddr);
+    }
+    Common::failedAddressMutex.unlock();
+}
+
 void TcpRelay::onRemoteConnected()
 {
     stage = STREAM;
@@ -223,7 +275,17 @@ void TcpRelay::onLocalTcpSocketReadyRead()
 
     if (stage == STREAM) {
         if (isLocal) {
+            if (auth) {
+                encryptor->addChunkAuth(data);
+            }
             data = encryptor->encrypt(data);
+        } else if (auth) {
+            if (!encryptor->verifyExtractChunkAuth(data)) {
+                emit info("Data chunk hash authentication failed.");
+                handleBadIP();
+                emit finished();
+                return;
+            }
         }
         writeToRemote(data);
     } else if (isLocal && stage == INIT) {
@@ -240,7 +302,17 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         stage = ADDR;
     } else if (stage == CONNECTING || stage == DNS) {//take DNS into account, otherwise some data will get lost
         if (isLocal) {
+            if (auth) {
+                encryptor->addChunkAuth(data);
+            }
             data = encryptor->encrypt(data);
+        } else if (auth) {
+            if (!encryptor->verifyExtractChunkAuth(data)) {
+                emit info("Data chunk hash authentication failed.");
+                handleBadIP();
+                emit finished();
+                return;
+            }
         }
         dataToWrite.append(data);
     } else if ((isLocal && stage == ADDR) || (!isLocal && stage == INIT)) {

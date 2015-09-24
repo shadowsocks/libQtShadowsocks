@@ -142,7 +142,7 @@ bool Controller::start()
         emit info(sstr);
         emit runningStateChanged(true);
         if (profile.auth) {
-            emit info("One-time message authentication is enabled");
+            emit info("One-time message authentication is enabled.");
         }
     } else {
         emit info("TCP server listen failed.");

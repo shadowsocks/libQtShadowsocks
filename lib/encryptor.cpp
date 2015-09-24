@@ -21,15 +21,19 @@
  */
 
 #include "encryptor.h"
+#include <QtEndian>
 
 using namespace QSS;
 
 Encryptor::Encryptor(const EncryptorPrivate &ep, QObject *parent) :
     QObject(parent),
     ep(ep),
+    chunkId(0),
     enCipher(nullptr),
     deCipher(nullptr)
-{}
+{
+    enCipherIV = Cipher::randomIv(ep.ivLen);
+}
 
 void Encryptor::reset()
 {
@@ -47,7 +51,7 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
 {
     Q_ASSERT(ep.isValid());
 
-    QByteArray out, iv;
+    QByteArray out;
     const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
 
     switch (ep.type) {
@@ -59,9 +63,8 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
         break;
     case CIPHER:
         if (!enCipher) {
-            iv = Cipher::randomIv(ep.ivLen);
-            enCipher = new Cipher(ep.method, ep.key, iv, true, this);
-            out = iv + enCipher->update(in);
+            enCipher = new Cipher(ep.method, ep.key, enCipherIV, true, this);
+            out = enCipherIV + enCipher->update(in);
         } else {
             out = enCipher->update(in);
         }
@@ -168,4 +171,58 @@ QByteArray Encryptor::deCipherIV() const
     } else {
         return QByteArray();
     }
+}
+
+void Encryptor::addOneTimeAuth(QByteArray &headerData) const
+{
+    QByteArray key = enCipherIV + ep.key;
+    QByteArray authCode = Cipher::hmacSha1(key, headerData);
+    headerData.append(authCode);
+}
+
+void Encryptor::addChunkAuth(QByteArray &data)
+{
+    QByteArray key = enCipherIV + static_cast<char>(chunkId);
+    chunkId++;
+    QByteArray authCode = Cipher::hmacSha1(key, data);
+    quint16 len = static_cast<quint16>(data.length());
+    QByteArray len_c(2, 0);
+    qToBigEndian(len, reinterpret_cast<uchar*>(len_c.data()));
+    data.prepend(authCode);
+    data.prepend(len_c);
+}
+
+bool Encryptor::verifyOneTimeAuth(const QByteArray &data, const int &headerLen) const
+{
+    QByteArray key = deCipherIV() + ep.key;
+    return Cipher::hmacSha1(key, data.left(headerLen)) == data.mid(headerLen, Cipher::AUTH_LEN);
+}
+
+bool Encryptor::verifyExtractChunkAuth(QByteArray &data)
+{
+    QByteArray result;
+    bool verified = true;
+    data.prepend(incompleteChunk);
+    incompleteChunk.clear();
+    for (int pos = 0; pos < data.size(); ) {
+        char *dataPtr = data.data() + pos;
+        quint16 len = qFromBigEndian(*reinterpret_cast<quint16*>(dataPtr));
+        if (data.size() - pos - 2 - Cipher::AUTH_LEN < len) {
+            incompleteChunk = QByteArray(dataPtr, data.size() - pos);
+            break;
+        }
+
+        QByteArray key = deCipherIV() + static_cast<char>(chunkId);
+        chunkId++;
+        QByteArray chunk = data.mid(pos + 2 + Cipher::AUTH_LEN, len);
+        verified &= (Cipher::hmacSha1(key, chunk) == data.mid(pos + 2, Cipher::AUTH_LEN));
+        if (verified) {
+            result.append(chunk);
+            pos += (2 + Cipher::AUTH_LEN + len);
+        } else {
+            break;
+        }
+    }
+    data = result;
+    return verified;
 }

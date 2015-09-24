@@ -68,6 +68,7 @@ public:
      * The CipherKeyIVLength contains two integers, key length and IV length
      */
     static const QMap<QByteArray, CipherKeyIVLength> keyIvMap;
+    static const int AUTH_LEN;
 
     static QByteArray randomIv(int length);
     static QByteArray hmacSha1(const QByteArray &key, const QByteArray &msg);

@@ -62,7 +62,7 @@ private:
     QByteArray dataToWrite;
     const bool &isLocal;
     const bool &autoBan;
-    const bool &auth;
+    bool auth;
 
     QTcpSocket *local;
     QTcpSocket *remote;
@@ -72,6 +72,7 @@ private:
     void handleStageAddr(QByteArray&);
     bool writeToRemote(const QByteArray &);
     void handleMalformedHeader();
+    void handleBadIP();
 
 private slots:
     void onDNSResolved(const bool success, const QString errStr);

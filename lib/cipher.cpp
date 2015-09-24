@@ -67,6 +67,7 @@ Cipher::~Cipher()
 }
 
 const QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::keyIvMap = Cipher::generateKeyIvMap();
+const int Cipher::AUTH_LEN = 10;
 
 QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::generateKeyIvMap()
 {
@@ -127,7 +128,7 @@ QByteArray Cipher::randomIv(int length)
 
 QByteArray Cipher::hmacSha1(const QByteArray &key, const QByteArray &msg)
 {
-    return QMessageAuthenticationCode::hash(msg, key, QCryptographicHash::Sha1).left(10);
+    return QMessageAuthenticationCode::hash(msg, key, QCryptographicHash::Sha1).left(AUTH_LEN);
 }
 
 QByteArray Cipher::md5Hash(const QByteArray &in)

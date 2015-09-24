@@ -35,20 +35,21 @@ QVector<QHostAddress> Common::bannedAddressVector;
 QMutex Common::failedIVMutex;
 QMutex Common::failedAddressMutex;
 QMutex Common::bannedAddressMutex;
+const quint8 Common::ADDRESS_MASK = 0b00001111;//0xf
+const quint8 Common::ONETIMEAUTH_FLAG = 0b00010000;//0x10
 
 const QByteArray Common::version()
 {
     return QSS_VERSION;
 }
 
-QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
+QByteArray Common::packAddress(const Address &addr, bool auth)//pack a shadowsocks header
 {
-    QByteArray type_bin, addr_bin, port_ns;
+    QByteArray addr_bin, port_ns;
     port_ns.resize(2);
     qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(port_ns.data()));
 
     int type = addr.addressType();
-    type_bin.append(static_cast<char>(type));
     if (type == Address::ADDRTYPE_HOST) {//should we care if it exceeds 255?
         QByteArray address_str = addr.getAddress().toLocal8Bit();
         addr_bin.append(static_cast<char>(address_str.length()));
@@ -61,29 +62,40 @@ QByteArray Common::packAddress(const Address &addr)//pack a shadowsocks header
         addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
     }
 
-    return type_bin + addr_bin + port_ns;
+    char type_c = static_cast<char>(type);
+    if (auth) {
+        type_c |= ONETIMEAUTH_FLAG;
+    }
+
+    return type_c + addr_bin + port_ns;
 }
 
-QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port)
+QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port, bool auth)
 {
-    QByteArray type_bin, addr_bin, port_ns;
+    QByteArray addr_bin, port_ns;
+    char type_c;
     port_ns.resize(2);
     qToBigEndian(port, reinterpret_cast<uchar*>(port_ns.data()));
     if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
         quint32 ipv4_addr = qToBigEndian(addr.toIPv4Address());
-        type_bin.append(static_cast<char>(Address::ADDRTYPE_IPV4));
+        type_c = static_cast<char>(Address::ADDRTYPE_IPV4);
         addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
     } else {
-        type_bin.append(static_cast<char>(Address::ADDRTYPE_IPV6));
+        type_c = static_cast<char>(Address::ADDRTYPE_IPV6);
         Q_IPV6ADDR ipv6_addr = addr.toIPv6Address();
         addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
     }
-    return type_bin + addr_bin + port_ns;
+    if (auth) {
+        type_c |= ONETIMEAUTH_FLAG;
+    }
+    return type_c + addr_bin + port_ns;
 }
 
-void Common::parseHeader(const QByteArray &data, Address &dest, int &header_length)
+void Common::parseHeader(const QByteArray &data, Address &dest, int &header_length, bool &authFlag)
 {
-    int addrtype = static_cast<int>(data[0]);
+    char atyp = data[0];
+    authFlag |= (atyp & ONETIMEAUTH_FLAG);
+    int addrtype = static_cast<int>(atyp & ADDRESS_MASK);
     header_length = 0;
 
     if (addrtype == Address::ADDRTYPE_HOST) {
