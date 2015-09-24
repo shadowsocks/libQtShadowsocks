@@ -40,8 +40,8 @@ class QSS_EXPORT Controller : public QObject
 {
     Q_OBJECT
 public:
-    explicit Controller(bool is_local, bool auto_ban = false, QObject *parent = 0);
-    explicit Controller(const Profile & _profile, bool is_local, bool auto_ban, QObject *parent = 0);//overloaded function to construct a Controller with given profile
+    explicit Controller(bool is_local, bool auto_ban = false, bool auth = false, QObject *parent = 0);
+    explicit Controller(const Profile & _profile, bool is_local, bool auto_ban, bool auth, QObject *parent = 0);//overloaded function to construct a Controller with given profile
     ~Controller();
 
     /*
@@ -84,6 +84,7 @@ protected://children can access protected members
     bool valid;
     const bool isLocal;//run on local-side (client) or server-side (server)
     const bool autoBan;//auto ban IPs that use malformed header data as our anti-probe measure (only used when it's a server)
+    const bool msgAuth;
     EncryptorPrivate ep;
     TcpServer *tcpServer;
     UdpRelay *udpRelay;

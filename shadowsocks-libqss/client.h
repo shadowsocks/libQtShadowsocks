@@ -33,7 +33,7 @@ class Client : public QObject
 public:
     explicit Client(QObject *parent = 0);
     bool readConfig(const QString &);
-    void setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy, const bool debug, const bool auth);
+    void setup(const QString &remote_addr, const QString &remote_port, const QString &local_addr, const QString &local_port, const QString &password, const QString &method, const QString &timeout, const bool http_proxy);
     void setAutoBan(bool ban);
     void setDebug(bool debug);
     void setHttpMode(bool http);
@@ -47,6 +47,7 @@ private:
     QSS::Controller *lc;
     QSS::Profile profile;
     bool autoBan;
+    bool auth;
 
     bool cipherTest();
     bool headerTest();

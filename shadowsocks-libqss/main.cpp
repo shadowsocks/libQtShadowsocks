@@ -76,15 +76,13 @@ int main(int argc, char *argv[])
     Client c;
 
     if (!c.readConfig(parser.value(configFile))) {
-        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http), parser.isSet(debug), parser.isSet(auth));
+        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http));
     }
+    c.setAuth(parser.isSet(auth));
     c.setAutoBan(parser.isSet(autoBan));
     c.setDebug(parser.isSet(debug));
     if (parser.isSet(http)) {//command-line option has a higher priority to make H, S, T consistent
         c.setHttpMode(true);
-    }
-    if (parser.isSet(auth)) {
-        c.setAuth(true);
     }
 
     if (parser.isSet(testSpeed)) {
