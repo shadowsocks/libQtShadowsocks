@@ -106,6 +106,8 @@ void TcpRelay::handleStageAddr(QByteArray &data)
         local->write(response);
 
         if (auth) {
+            char atyp = data[0];
+            data[0] = (atyp | Common::ONETIMEAUTH_FLAG);
             if (data.length() > header_length) {
                 QByteArray header = data.left(header_length);
                 QByteArray chunk = data.mid(header_length);
