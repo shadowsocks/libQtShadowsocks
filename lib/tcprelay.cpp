@@ -76,7 +76,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
             static const QByteArray header(header_data, 3);
             QHostAddress addr = local->localAddress();
             quint16 port = local->localPort();
-            local->write(header + Common::packAddress(addr, port, auth));
+            local->write(header + Common::packAddress(addr, port));
             stage = UDP_ASSOC;
             return;
         } else if (cmd == 1) {//CMD_CONNECT

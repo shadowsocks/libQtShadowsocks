@@ -25,11 +25,10 @@
 
 using namespace QSS;
 
-UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const bool &auth, const Address &serverAddress, QObject *parent) :
+UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Address &serverAddress, QObject *parent) :
     QObject(parent),
     serverAddress(serverAddress),
-    isLocal(is_local),
-    auth(auth)
+    isLocal(is_local)
 {
     encryptor = new Encryptor(ep, this);
 
@@ -42,7 +41,7 @@ UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const bool 
     connect(&listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend);
 }
 
-void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
+void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort, bool _auth)
 {
     listen.close();
     if (isLocal) {
@@ -56,6 +55,7 @@ void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
         sock->deleteLater();
     }
     cache.clear();
+    auth = _auth;
 }
 
 void UdpRelay::onSocketError()
@@ -183,7 +183,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
         }
         response = QByteArray(3, static_cast<char>(0)) + data;
     } else {
-        data.prepend(Common::packAddress(r_addr, r_port, auth));
+        data.prepend(Common::packAddress(r_addr, r_port));
         response = encryptor->encryptAll(data);
     }
 
