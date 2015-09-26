@@ -37,7 +37,7 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
     } catch (std::exception &e) {
-        Common::qOut << e.what() << endl;
+        qCritical("%s", e.what());
     }
 
     tcpServer = new TcpServer(ep, profile.timeout, isLocal, autoBan, profile.auth, serverAddress, this);
