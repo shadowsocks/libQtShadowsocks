@@ -30,8 +30,6 @@
 
 namespace QSS {
 
-enum TYPE {TABLE, CIPHER};//CIPHER means we need to use Cipher class to do encryption/decryption
-
 class QSS_EXPORT EncryptorPrivate : public QObject
 {
     Q_OBJECT
@@ -58,18 +56,12 @@ public:
 private:
     int keyLen;
     int ivLen;
-    TYPE type;
-    QVector<quint8> encTable;
-    QVector<quint8> decTable;
     QByteArray method;
     QByteArray password;
     QByteArray key;
     bool valid;
 
-    void tableInit();
     void evpBytesToKey();
-    static int randomCompare(const quint8 &, const quint8 &, const quint32 &, const quint64 &);
-    static QVector<quint8> mergeSort(const QVector<quint8> &, quint32, quint64);
 
     friend class Encryptor;
 };

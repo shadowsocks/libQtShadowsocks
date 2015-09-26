@@ -84,7 +84,6 @@ QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::generateKeyIvMap()
     map.insert("DES/CFB", {8, 8});
     map.insert("IDEA/CFB", {16, 8});
     map.insert("RC2/CFB", {16, 8});
-    map.insert("RC4", {16, 0});
     map.insert("RC4-MD5", {16, 16});
     map.insert("Salsa20", {32, 8});
     map.insert("SEED/CFB", {16, 16});

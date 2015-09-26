@@ -52,25 +52,12 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
     Q_ASSERT(ep.isValid());
 
     QByteArray out;
-    const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
-
-    switch (ep.type) {
-    case TABLE:
-        out.resize(in.size());
-        for (int i = 0; i < in.size(); ++i) {
-            out[i] = ep.encTable[inp[i]];
-        }
-        break;
-    case CIPHER:
-        if (!enCipher) {
-            enCipher = new Cipher(ep.method, ep.key, enCipherIV, true, this);
-            out = enCipherIV + enCipher->update(in);
-        } else {
-            out = enCipher->update(in);
-        }
-        break;
+    if (!enCipher) {
+        enCipher = new Cipher(ep.method, ep.key, enCipherIV, true, this);
+        out = enCipherIV + enCipher->update(in);
+    } else {
+        out = enCipher->update(in);
     }
-
     return out;
 }
 
@@ -79,25 +66,12 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
     Q_ASSERT(ep.isValid());
 
     QByteArray out;
-    const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
-
-    switch (ep.type) {
-    case TABLE:
-        out.resize(in.size());
-        for (int i = 0; i < in.size(); ++i) {
-            out[i] = ep.decTable[inp[i]];
-        }
-        break;
-    case CIPHER:
-        if (!deCipher) {
-            deCipher = new Cipher(ep.method, ep.key, in.mid(0, ep.ivLen), false, this);
-            out = deCipher->update(in.mid(ep.ivLen));
-        } else {
-            out = deCipher->update(in);
-        }
-        break;
+    if (!deCipher) {
+        deCipher = new Cipher(ep.method, ep.key, in.mid(0, ep.ivLen), false, this);
+        out = deCipher->update(in.mid(ep.ivLen));
+    } else {
+        out = deCipher->update(in);
     }
-
     return out;
 }
 
@@ -105,53 +79,23 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
 {
     Q_ASSERT(ep.isValid());
 
-    QByteArray out, iv;
-    const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
-
-    switch (ep.type) {
-    case TABLE:
-        out.resize(in.size());
-        for (int i = 0; i < in.size(); ++i) {
-            out[i] = ep.encTable[inp[i]];
-        }
-        break;
-    case CIPHER:
-        if (enCipher) {
-            enCipher->deleteLater();
-        }
-        iv = Cipher::randomIv(ep.ivLen);
-        enCipher = new Cipher(ep.method, ep.key, iv, true, this);
-        out = iv + enCipher->update(in);
-        break;
+    if (enCipher) {
+        enCipher->deleteLater();
     }
-
-    return out;
+    QByteArray iv = Cipher::randomIv(ep.ivLen);
+    enCipher = new Cipher(ep.method, ep.key, iv, true, this);
+    return iv + enCipher->update(in);
 }
 
 QByteArray Encryptor::decryptAll(const QByteArray &in)
 {
     Q_ASSERT(ep.isValid());
 
-    QByteArray out;
-    const quint8* inp = reinterpret_cast<const quint8 *>(in.constData());
-
-    switch (ep.type) {
-    case TABLE:
-        out.resize(in.size());
-        for (int i = 0; i < in.size(); ++i) {
-            out[i] = ep.decTable[inp[i]];
-        }
-        break;
-    case CIPHER:
-        if (deCipher) {
-            deCipher->deleteLater();
-        }
-        deCipher = new Cipher(ep.method, ep.key, in.mid(0, ep.ivLen), false, this);
-        out = deCipher->update(in.mid(ep.ivLen));
-        break;
+    if (deCipher) {
+        deCipher->deleteLater();
     }
-
-    return out;
+    deCipher = new Cipher(ep.method, ep.key, in.mid(0, ep.ivLen), false, this);
+    return deCipher->update(in.mid(ep.ivLen));
 }
 
 bool Encryptor::selfTest()
