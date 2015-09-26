@@ -21,14 +21,17 @@
  */
 
 #include "udprelay.h"
+#include "common.h"
 #include <QDebug>
 
 using namespace QSS;
 
-UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Address &serverAddress, QObject *parent) :
+UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const bool &auto_ban, const bool &auth, const Address &serverAddress, QObject *parent) :
     QObject(parent),
     serverAddress(serverAddress),
-    isLocal(is_local)
+    isLocal(is_local),
+    autoBan(auto_ban),
+    auth(auth)
 {
     encryptor = new Encryptor(ep, this);
 
@@ -41,7 +44,7 @@ UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Addre
     connect(&listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend);
 }
 
-void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort, bool _auth)
+void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
 {
     listen.close();
     if (isLocal) {
@@ -55,7 +58,6 @@ void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort, bo
         sock->deleteLater();
     }
     cache.clear();
-    auth = _auth;
 }
 
 void UdpRelay::onSocketError()
@@ -100,14 +102,22 @@ void UdpRelay::onServerUdpSocketReadyRead()
         }
         data.remove(0, 3);
     } else {
+        if (autoBan && Common::isAddressBanned(r_addr)) {
+            emit debug(QString("[UDP] A banned IP %1 attempted to access this server").arg(r_addr.toString()));
+            return;
+        }
         data = encryptor->decryptAll(data);
     }
 
     Address destAddr, remoteAddr(r_addr, r_port);//remote == client
     int header_length = 0;
-    Common::parseHeader(data, destAddr, header_length, auth);
+    bool at_auth = false;
+    Common::parseHeader(data, destAddr, header_length, at_auth);
     if (header_length == 0) {
         emit info("[UDP] Can't parse header. Wrong encryption method or password?");
+        if (!isLocal && autoBan) {
+            Common::banAddress(r_addr);
+        }
         return;
     }
 
@@ -127,16 +137,18 @@ void UdpRelay::onServerUdpSocketReadyRead()
     emit debug(dbg);
 
     if (isLocal) {
-        if (auth) {
+        if (auth || at_auth) {
             encryptor->addOneTimeAuth(data, header_length);
         }
         data = encryptor->encryptAll(data);
         destAddr = serverAddress;
     } else {
-        if (auth) {
+        if (auth || at_auth) {
             if (!encryptor->verifyOneTimeAuth(data, header_length)) {
-                emit info("One-time message authentication failed.");
-                //TODO record bad IP
+                emit info("[UDP] One-time message authentication failed.");
+                if (autoBan) {
+                    Common::banAddress(r_addr);
+                }
                 return;
             }
             header_length += Cipher::AUTH_LEN;

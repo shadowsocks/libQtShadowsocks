@@ -52,15 +52,10 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     QTcpSocket *localSocket = new QTcpSocket;
     localSocket->setSocketDescriptor(socketDescriptor);
 
-    if (!isLocal && autoBan) {
-        Common::bannedAddressMutex.lock();
-        bool banned = Common::bannedAddressVector.contains(localSocket->peerAddress());
-        Common::bannedAddressMutex.unlock();
-        if (banned) {
-            emit debug(QString("A banned IP %1 attempted to access this server").arg(localSocket->peerAddress().toString()));
-            localSocket->deleteLater();
-            return;
-        }
+    if (!isLocal && autoBan && Common::isAddressBanned(localSocket->peerAddress())) {
+        emit debug(QString("A banned IP %1 attempted to access this server").arg(localSocket->peerAddress().toString()));
+        localSocket->deleteLater();
+        return;
     }
 
     //timeout * 1000: convert sec to msec

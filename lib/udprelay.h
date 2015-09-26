@@ -29,7 +29,6 @@
 #include <QMap>
 #include "address.h"
 #include "encryptor.h"
-#include "common.h"
 
 namespace QSS {
 
@@ -37,8 +36,8 @@ class QSS_EXPORT UdpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const Address &serverAddress, QObject *parent = 0);
-    void setup(const QHostAddress &localAddr, const quint16 &localPort, bool _auth);
+    explicit UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const bool &auto_ban, const bool &auth, const Address &serverAddress, QObject *parent = 0);
+    void setup(const QHostAddress &localAddr, const quint16 &localPort);
 
 signals:
     void debug(const QString &);
@@ -55,7 +54,8 @@ private:
 
     const Address &serverAddress;
     const bool &isLocal;
-    bool auth;
+    const bool &autoBan;
+    const bool &auth;
     QUdpSocket listen;
     Encryptor *encryptor;
 

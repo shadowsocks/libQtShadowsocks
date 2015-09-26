@@ -42,6 +42,7 @@ namespace Common {
     QSS_EXPORT int randomNumber(int max, int min = 0);//generate a random number which is in the range [min, max)
     QSS_EXPORT void exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length);
     QSS_EXPORT void banAddress(const QHostAddress &addr);
+    QSS_EXPORT bool isAddressBanned(const QHostAddress &addr);
 
     extern QTextStream qOut;
     extern QVector<QHostAddress> bannedAddressVector;

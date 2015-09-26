@@ -42,7 +42,7 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
 
     tcpServer = new TcpServer(ep, profile.timeout, isLocal, autoBan, profile.auth, serverAddress, this);
     tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
-    udpRelay = new UdpRelay(ep, isLocal, serverAddress, this);
+    udpRelay = new UdpRelay(ep, isLocal, autoBan, profile.auth, serverAddress, this);
     httpProxy = new HttpProxy(this);
 
     connect(tcpServer, &TcpServer::acceptError, this, &Controller::onTcpServerError);
@@ -97,7 +97,7 @@ bool Controller::setup(const Profile &p)
         valid = false;
     }
 
-    udpRelay->setup(getLocalAddr(), profile.local_port, profile.auth);
+    udpRelay->setup(getLocalAddr(), profile.local_port);
 
     if (httpProxy->isListening()) {
         httpProxy->close();

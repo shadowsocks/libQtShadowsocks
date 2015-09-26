@@ -149,3 +149,11 @@ void Common::banAddress(const QHostAddress &addr)
     bannedAddressVector.append(addr);
     bannedAddressMutex.unlock();
 }
+
+bool Common::isAddressBanned(const QHostAddress &addr)
+{
+    bannedAddressMutex.lock();
+    bool banned = bannedAddressVector.contains(addr);
+    bannedAddressMutex.unlock();
+    return banned;
+}
