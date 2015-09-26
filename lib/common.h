@@ -41,13 +41,10 @@ namespace Common {
     QSS_EXPORT void parseHeader(const QByteArray &data, Address &addr, int &length, bool &authFlag);
     QSS_EXPORT int randomNumber(int max, int min = 0);//generate a random number which is in the range [min, max)
     QSS_EXPORT void exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length);
+    QSS_EXPORT void banAddress(const QHostAddress &addr);
 
     extern QTextStream qOut;
-    extern QVector<QByteArray> failedIVVector;
-    extern QVector<QHostAddress> failedAddressVector;
     extern QVector<QHostAddress> bannedAddressVector;
-    extern QMutex failedIVMutex;
-    extern QMutex failedAddressMutex;
     extern QMutex bannedAddressMutex;
 
     extern const quint8 ADDRESS_MASK;

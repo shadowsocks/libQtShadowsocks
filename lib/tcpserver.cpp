@@ -57,6 +57,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
         bool banned = Common::bannedAddressVector.contains(localSocket->peerAddress());
         Common::bannedAddressMutex.unlock();
         if (banned) {
+            emit debug(QString("A banned IP %1 attempted to access this server").arg(localSocket->peerAddress().toString()));
             localSocket->deleteLater();
             return;
         }

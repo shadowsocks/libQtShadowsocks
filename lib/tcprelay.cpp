@@ -92,7 +92,9 @@ void TcpRelay::handleStageAddr(QByteArray &data)
     Common::parseHeader(data, remoteAddress, header_length, auth);
     if (header_length == 0) {
         emit info("Can't parse header. Wrong encryption method or password?");
-        handleMalformedHeader();
+        if (!isLocal && autoBan) {
+            Common::banAddress(local->peerAddress());
+        }
         emit finished();
         return;
     }
@@ -124,7 +126,9 @@ void TcpRelay::handleStageAddr(QByteArray &data)
         if (auth) {
             if (!encryptor->verifyOneTimeAuth(data, header_length)) {
                 emit info("One-time message authentication failed.");
-                handleBadIP();
+                if (autoBan) {
+                    Common::banAddress(local->peerAddress());
+                }
                 emit finished();
                 return;
             } else {
@@ -137,7 +141,9 @@ void TcpRelay::handleStageAddr(QByteArray &data)
             if (auth) {
                 if (!encryptor->verifyExtractChunkAuth(data)) {
                     emit info("Data chunk hash authentication failed.");
-                    handleBadIP();
+                    if (autoBan) {
+                        Common::banAddress(local->peerAddress());
+                    }
                     emit finished();
                     return;
                 }
@@ -173,71 +179,6 @@ void TcpRelay::onDNSResolved(const bool success, const QString errStr)
 bool TcpRelay::writeToRemote(const QByteArray &data)
 {
     return remote->write(data) != -1;
-}
-
-void TcpRelay::handleMalformedHeader()
-{
-    if (isLocal || !autoBan) {
-        return;
-    }
-
-    QByteArray badIV = encryptor->deCipherIV();
-    QHostAddress badAddr = local->peerAddress();
-    bool banThisIP = false;
-
-    Common::failedIVMutex.lock();
-    if (Common::failedIVVector.contains(badIV)) {
-        banThisIP = true;
-    } else {
-        Common::failedIVVector.append(badIV);
-        Common::failedAddressMutex.lock();
-        if (Common::failedAddressVector.contains(badAddr)) {
-            banThisIP = true;
-        } else {
-            Common::failedAddressVector.append(badAddr);
-        }
-        Common::failedAddressMutex.unlock();
-    }
-    Common::failedIVMutex.unlock();
-
-    if (banThisIP) {
-        Common::bannedAddressMutex.lock();
-        if (!Common::bannedAddressVector.contains(badAddr)) {
-            Common::bannedAddressVector.append(badAddr);
-            emit info(badAddr.toString() + " is banned for accessing this server using a malformed header");
-        }
-        Common::bannedAddressMutex.unlock();
-    }
-
-    std::random_device rd;
-    std::default_random_engine gen(rd());
-    std::uniform_int_distribution<> dis(1, 256);
-    //let's be naughty, we may, or may not send it some data
-    int random_threshold = dis(gen);
-    if (dis(gen) > random_threshold) {
-        local->write(Cipher::randomIv(dis(gen)));//randomIv returns a random byte array
-    }
-}
-
-void TcpRelay::handleBadIP()
-{
-    if (isLocal || !autoBan) {
-        return;
-    }
-
-    QHostAddress badAddr = local->peerAddress();
-    Common::failedAddressMutex.lock();
-    if (Common::failedAddressVector.contains(badAddr)) {
-        Common::bannedAddressMutex.lock();
-        if (!Common::bannedAddressVector.contains(badAddr)) {
-            Common::bannedAddressVector.append(badAddr);
-            emit info(badAddr.toString() + " is banned for authentication failure");
-        }
-        Common::bannedAddressMutex.unlock();
-    } else {
-        Common::failedAddressVector.append(badAddr);
-    }
-    Common::failedAddressMutex.unlock();
 }
 
 void TcpRelay::onRemoteConnected()
@@ -284,7 +225,9 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         } else if (auth) {
             if (!encryptor->verifyExtractChunkAuth(data)) {
                 emit info("Data chunk hash authentication failed.");
-                handleBadIP();
+                if (autoBan) {
+                    Common::banAddress(local->peerAddress());
+                }
                 emit finished();
                 return;
             }
@@ -311,7 +254,9 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         } else if (auth) {
             if (!encryptor->verifyExtractChunkAuth(data)) {
                 emit info("Data chunk hash authentication failed.");
-                handleBadIP();
+                if (autoBan) {
+                    Common::banAddress(local->peerAddress());
+                }
                 emit finished();
                 return;
             }

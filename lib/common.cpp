@@ -29,11 +29,7 @@
 using namespace QSS;
 
 QTextStream Common::qOut(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
-QVector<QByteArray> Common::failedIVVector;
-QVector<QHostAddress> Common::failedAddressVector;
 QVector<QHostAddress> Common::bannedAddressVector;
-QMutex Common::failedIVMutex;
-QMutex Common::failedAddressMutex;
 QMutex Common::bannedAddressMutex;
 const quint8 Common::ADDRESS_MASK = 0b00001111;//0xf
 const quint8 Common::ONETIMEAUTH_FLAG = 0b00010000;//0x10
@@ -145,4 +141,11 @@ void Common::exclusive_or(unsigned char *ks, const unsigned char *in, unsigned c
         *out = *in ^ *ks;
         ++out; ++in; ++ks;
     } while (ks < end_ks);
+}
+
+void Common::banAddress(const QHostAddress &addr)
+{
+    bannedAddressMutex.lock();
+    bannedAddressVector.append(addr);
+    bannedAddressMutex.unlock();
 }
