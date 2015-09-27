@@ -184,7 +184,9 @@ bool TcpRelay::writeToRemote(const QByteArray &data)
 void TcpRelay::onRemoteConnected()
 {
     stage = STREAM;
-    writeToRemote(dataToWrite);
+    if (!dataToWrite.isEmpty()) {
+        writeToRemote(dataToWrite);
+    }
     dataToWrite.clear();
 }
 
@@ -229,6 +231,8 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                     Common::banAddress(local->peerAddress());
                 }
                 emit finished();
+                return;
+            } else if (data.isEmpty()) {
                 return;
             }
         }
