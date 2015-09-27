@@ -61,6 +61,8 @@ EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject
 
 EncryptorPrivate::EncryptorPrivate(QObject *parent) :
     QObject(parent),
+    keyLen(0),
+    ivLen(0),
     valid(false)
 {}
 

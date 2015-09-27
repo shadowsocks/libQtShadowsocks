@@ -40,6 +40,7 @@ void Encryptor::reset()
     if (enCipher) {
         enCipher->deleteLater();
         enCipher = nullptr;
+        enCipherIV = Cipher::randomIv(ep.ivLen);
     }
     if (deCipher) {
         deCipher->deleteLater();
