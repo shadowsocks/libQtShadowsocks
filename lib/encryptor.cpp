@@ -117,14 +117,14 @@ QByteArray Encryptor::deCipherIV() const
     }
 }
 
-void Encryptor::addOneTimeAuth(QByteArray &headerData) const
+void Encryptor::addHeaderAuth(QByteArray &headerData) const
 {
     QByteArray key = enCipherIV + ep.key;
     QByteArray authCode = Cipher::hmacSha1(key, headerData);
     headerData.append(authCode);
 }
 
-void Encryptor::addOneTimeAuth(QByteArray &data, const int &headerLen) const
+void Encryptor::addHeaderAuth(QByteArray &data, const int &headerLen) const
 {
     QByteArray key = enCipherIV + ep.key;
     QByteArray authCode = Cipher::hmacSha1(key, data.left(headerLen));
@@ -145,7 +145,7 @@ void Encryptor::addChunkAuth(QByteArray &data)
     data.prepend(len_c);
 }
 
-bool Encryptor::verifyOneTimeAuth(const QByteArray &data, const int &headerLen) const
+bool Encryptor::verifyHeaderAuth(const QByteArray &data, const int &headerLen) const
 {
     QByteArray key = deCipherIV() + ep.key;
     return Cipher::hmacSha1(key, data.left(headerLen)) == data.mid(headerLen, Cipher::AUTH_LEN);

@@ -113,19 +113,19 @@ void TcpRelay::handleStageAddr(QByteArray &data)
             if (data.length() > header_length) {
                 QByteArray header = data.left(header_length);
                 QByteArray chunk = data.mid(header_length);
-                encryptor->addOneTimeAuth(header);
+                encryptor->addHeaderAuth(header);
                 encryptor->addChunkAuth(chunk);
                 data = header + chunk;
             } else {
-                encryptor->addOneTimeAuth(data);
+                encryptor->addHeaderAuth(data);
             }
         }
         dataToWrite.append(encryptor->encrypt(data));
         serverAddress.lookUp();
     } else {
         if (auth) {
-            if (!encryptor->verifyOneTimeAuth(data, header_length)) {
-                emit info("One-time message authentication failed.");
+            if (!encryptor->verifyHeaderAuth(data, header_length)) {
+                emit info("One-time message authentication for header failed.");
                 if (autoBan) {
                     Common::banAddress(local->peerAddress());
                 }

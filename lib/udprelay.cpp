@@ -138,14 +138,14 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     if (isLocal) {
         if (auth || at_auth) {
-            encryptor->addOneTimeAuth(data, header_length);
+            encryptor->addHeaderAuth(data, header_length);
         }
         data = encryptor->encryptAll(data);
         destAddr = serverAddress;
     } else {
         if (auth || at_auth) {
-            if (!encryptor->verifyOneTimeAuth(data, header_length)) {
-                emit info("[UDP] One-time message authentication failed.");
+            if (!encryptor->verifyHeaderAuth(data, header_length)) {
+                emit info("[UDP] One-time message authentication for header failed.");
                 if (autoBan) {
                     Common::banAddress(r_addr);
                 }

@@ -51,11 +51,11 @@ public:
     bool selfTest();
     QByteArray deCipherIV() const;
 
-    void addOneTimeAuth(QByteArray &headerData) const;
-    void addOneTimeAuth(QByteArray &data, const int &headerLen) const;
+    void addHeaderAuth(QByteArray &headerData) const;
+    void addHeaderAuth(QByteArray &data, const int &headerLen) const;
     void addChunkAuth(QByteArray &data);
 
-    bool verifyOneTimeAuth(const QByteArray &data, const int &headerLen) const;
+    bool verifyHeaderAuth(const QByteArray &data, const int &headerLen) const;
 
     /*
      * data will be overwritten by extracted data which can be sent to downstream
