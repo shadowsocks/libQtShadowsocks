@@ -4,40 +4,15 @@ libQtShadowsocks
 Introduction
 ------------
 
-`libQtShadowsocks` is a lightweight library for `shadowsocks`.
+`libQtShadowsocks` is a lightweight [shadowsocks][ss] library.
 
-Written in C++ using Qt 5 framework, it aims to provide a developer-friendly shadowsocks library, mainly for Qt applications such as [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
+Written in C++ using Qt 5 framework and Botan library, it aims to provide a developer-friendly [shadowsocks][ss] library for Qt applications such as [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
 
-The `shadowsocks-libqss` utilises this library. You can check the code to see how to use `libQtShadowsocks` in your project. `shadowsocks-libqss` can also be used as a standalone program in both shadowsocks local-side and shadowsocks server-side.
+The sub-project `shadowsocks-libqss` utilises this library. You may wish to check the code to see how to integrate `libQtShadowsocks` into your project. `shadowsocks-libqss` can also be used as a standalone program in both local-side and server-side.
 
 Check [installation wiki page](https://github.com/librehat/libQtShadowsocks/wiki/Installation) to see how to install this library and/or `shadowsocks-libqss`.
 
-Current Status
---------------
-
-###Supported Platforms###
-
-- Microsoft Windows (XP or above)
-- GNU/Linux
-
-###Supported Methods###
-
-- AES-128-CFB
-- AES-192-CFB
-- AES-256-CFB
-- BF-CFB
-- CAMELLIA-128-CFB
-- CAMELLIA-192-CFB
-- CAMELLIA-256-CFB
-- CAST5-CFB
-- CHACHA20
-- DES-CFB
-- IDEA-CFB
-- RC2-CFB
-- RC4-MD5
-- SALSA20
-- SEED-CFB
-- SERPENT-CFB
+[ss]: http://shadowsocks.org
 
 License
 -------
