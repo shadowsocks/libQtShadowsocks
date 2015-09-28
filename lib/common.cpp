@@ -46,9 +46,9 @@ QByteArray Common::packAddress(const Address &addr, bool auth)//pack a shadowsoc
     qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(port_ns.data()));
 
     int type = addr.addressType();
-    if (type == Address::ADDRTYPE_HOST) {//should we care if it exceeds 255?
+    if (type == Address::ADDRTYPE_HOST) {
         QByteArray address_str = addr.getAddress().toLocal8Bit();
-        addr_bin.append(static_cast<char>(address_str.length()));
+        addr_bin.append(static_cast<char>(address_str.length()));//can't be longer than 255
         addr_bin += address_str;
     } else if (type == Address::ADDRTYPE_IPV4) {
         quint32 ipv4_addr = qToBigEndian(addr.getFirstIP().toIPv4Address());
@@ -96,7 +96,7 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
 
     if (addrtype == Address::ADDRTYPE_HOST) {
         if (data.length() > 2) {
-            int addrlen = static_cast<int>(data[1]);
+            quint8 addrlen = static_cast<quint8>(data[1]);
             if (data.size() >= 2 + addrlen) {
                 dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>(data.data() + 2 + addrlen)));
                 dest.setAddress(QString(data.mid(2, addrlen)));
