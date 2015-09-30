@@ -139,6 +139,7 @@ void HttpProxy::onProxySocketConnectedHttps()
     /* once it's connected, we use a light-weight SocketStream class to do the job */
     SocketStream *stream = new SocketStream(socket, proxySocket, this);
     connect(socket, &QTcpSocket::disconnected, stream, &SocketStream::deleteLater);
+    connect(proxySocket, &QTcpSocket::disconnected, stream, &SocketStream::deleteLater);
     connect(stream, &SocketStream::info, this, &HttpProxy::info);
     static const QByteArray httpsHeader = "HTTP/1.0 200 Connection established\r\n\r\n";
     socket->write(httpsHeader);
