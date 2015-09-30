@@ -68,6 +68,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     connect(con, &TcpRelay::debug, this, &TcpServer::debug);
     connect(con, &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
+    connect(con, &TcpRelay::latencyAvailable, this, &TcpServer::latencyAvailable);
     connect(con, &TcpRelay::finished, thread, &QThread::quit);
     connect(con, &TcpRelay::finished, this, &TcpServer::onConnectionFinished);
     connect(thread, &QThread::finished, this, &TcpServer::onThreadFinished);

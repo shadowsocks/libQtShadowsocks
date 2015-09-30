@@ -50,6 +50,7 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
     connect(tcpServer, &TcpServer::debug, this, &Controller::debug);
     connect(tcpServer, &TcpServer::bytesRead, this, &Controller::onBytesRead);
     connect(tcpServer, &TcpServer::bytesSend, this, &Controller::onBytesSend);
+    connect(tcpServer, &TcpServer::latencyAvailable, this, &Controller::tcpLatencyAvailable);
 
     connect(udpRelay, &UdpRelay::info, this, &Controller::info);
     connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);

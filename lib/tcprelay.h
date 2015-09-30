@@ -26,6 +26,7 @@
 #include <QObject>
 #include <QTcpSocket>
 #include <QTimer>
+#include <QTime>
 #include "address.h"
 #include "encryptor.h"
 
@@ -51,6 +52,7 @@ signals:
     void bytesRead(const qint64 &);
     void bytesSend(const qint64 &);
 
+    void latencyAvailable(const int &);//time used for remote to connect to the host (msec)
     void finished();
 
 private:
@@ -67,6 +69,7 @@ private:
     QTcpSocket *local;
     QTcpSocket *remote;
     QTimer *timer;
+    QTime startTime;
     Encryptor *encryptor;
 
     void handleStageAddr(QByteArray&);

@@ -181,6 +181,7 @@ void TcpRelay::onDNSResolved(const bool success, const QString errStr)
     if (success) {
         stage = CONNECTING;
         Address *addr = qobject_cast<Address*>(sender());
+        startTime = QTime::currentTime();
         remote->connectToHost(addr->getFirstIP(), addr->getPort());
     } else {
         emit info("DNS resolve failed: " + errStr);
@@ -195,6 +196,7 @@ bool TcpRelay::writeToRemote(const QByteArray &data)
 
 void TcpRelay::onRemoteConnected()
 {
+    emit latencyAvailable(startTime.msecsTo(QTime::currentTime()));
     stage = STREAM;
     if (!dataToWrite.isEmpty()) {
         writeToRemote(dataToWrite);

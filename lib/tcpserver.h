@@ -43,6 +43,7 @@ signals:
     void info(const QString &);
     void bytesRead(const qint64 &);
     void bytesSend(const qint64 &);
+    void latencyAvailable(const int &);
 
 protected:
     void incomingConnection(qintptr handler) Q_DECL_OVERRIDE;

@@ -70,6 +70,13 @@ signals:
     void bytesReceivedChanged(const qint64 &);
     void bytesSentChanged(const qint64 &);
 
+    /*
+     * time used to connect to remote host (msec)
+     * remote host means shadowsocks server if this controller is in local mode,
+     * or the address the client is accessing if it's in server mode.
+     */
+    void tcpLatencyAvailable(const int &);
+
 public slots:
     bool start();//return true if start successfully, otherwise return false
     void stop();
