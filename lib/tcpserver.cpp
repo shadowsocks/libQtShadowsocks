@@ -21,7 +21,6 @@
  */
 
 #include "tcpserver.h"
-#include "tcprelay.h"
 #include "common.h"
 #include <QThread>
 
@@ -39,12 +38,14 @@ TcpServer::TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool 
 
 TcpServer::~TcpServer()
 {
-    socketsCleaner.clear();
-}
+    for (auto &con : conList) {
+        con->deleteLater();
+    }
 
-void TcpServer::clear()
-{
-    socketsCleaner.clear();
+    for (auto &thread : threadList) {
+        thread->quit();
+        thread->deleteLater();
+    }
 }
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
@@ -60,14 +61,31 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
     //timeout * 1000: convert sec to msec
     TcpRelay *con = new TcpRelay(localSocket, timeout * 1000, serverAddress, ep, isLocal, autoBan, auth);
-    QThread *thread = new QThread(this);
+    QThread *thread = new QThread;
+    conList.append(con);
+    threadList.append(thread);
     connect(con, &TcpRelay::info, this, &TcpServer::info);
     connect(con, &TcpRelay::debug, this, &TcpServer::debug);
     connect(con, &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
     connect(con, &TcpRelay::finished, thread, &QThread::quit);
-    connect(thread, &QThread::finished, thread, &QThread::deleteLater);
-    connect(thread, &QThread::finished, con, &TcpServer::deleteLater);
+    connect(con, &TcpRelay::finished, this, &TcpServer::onConnectionFinished);
+    connect(thread, &QThread::finished, this, &TcpServer::onThreadFinished);
     con->moveToThread(thread);
     thread->start();
+}
+
+void TcpServer::onConnectionFinished()
+{
+    TcpRelay *con = qobject_cast<TcpRelay*>(sender());
+    if (conList.removeOne(con)) {//sometimes the finished signal from TcpRelay gets emitted multiple times
+        con->deleteLater();
+    }
+}
+
+void TcpServer::onThreadFinished()
+{
+    QThread *thread = qobject_cast<QThread*>(sender());
+    threadList.removeOne(thread);
+    thread->deleteLater();
 }

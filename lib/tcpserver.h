@@ -24,10 +24,10 @@
 #define TCPSERVER_H
 
 #include <QTcpServer>
-#include <QObjectCleanupHandler>
 #include "address.h"
 #include "encryptorprivate.h"
 #include "export.h"
+#include "tcprelay.h"
 
 namespace QSS {
 
@@ -37,8 +37,6 @@ class QSS_EXPORT TcpServer : public QTcpServer
 public:
     explicit TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const bool &auth, const Address &serverAddress, QObject *parent = nullptr);
     ~TcpServer();
-
-    void clear();
 
 signals:
     void debug(const QString &);
@@ -50,13 +48,19 @@ protected:
     void incomingConnection(qintptr handler) Q_DECL_OVERRIDE;
 
 private:
-    QObjectCleanupHandler socketsCleaner;
     const bool &isLocal;
     const bool &autoBan;
     const bool &auth;
     const Address &serverAddress;
     const int &timeout;
     const EncryptorPrivate &ep;
+
+    QList<TcpRelay*> conList;
+    QList<QThread*> threadList;
+
+private slots:
+    void onConnectionFinished();
+    void onThreadFinished();
 };
 
 }

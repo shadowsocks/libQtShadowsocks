@@ -37,7 +37,7 @@ class QSS_EXPORT TcpRelay : public QObject
 public:
     explicit TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_addr, const EncryptorPrivate &ep, const bool &is_local, const bool &autoBan, const bool &auth, QObject *parent = 0);
 
-    enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM};//we don't have DESTROYED stage
+    enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED};
 
 signals:
     void debug(const QString &);
@@ -80,6 +80,7 @@ private slots:
     void onLocalTcpSocketError();
     void onLocalTcpSocketReadyRead();
     void onTimeout();
+    void close();
 };
 
 }

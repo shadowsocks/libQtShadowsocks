@@ -45,14 +45,14 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_a
 
     local->setParent(this);
     connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &TcpRelay::onLocalTcpSocketError);
-    connect(local, &QTcpSocket::disconnected, this, &TcpRelay::finished);
+    connect(local, &QTcpSocket::disconnected, this, &TcpRelay::close);
     connect(local, &QTcpSocket::readyRead, this, &TcpRelay::onLocalTcpSocketReadyRead);
     connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
     remote = new QTcpSocket(this);
     connect(remote, &QTcpSocket::connected, this, &TcpRelay::onRemoteConnected);
     connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &TcpRelay::onRemoteTcpSocketError);
-    connect(remote, &QTcpSocket::disconnected, this, &TcpRelay::finished);
+    connect(remote, &QTcpSocket::disconnected, this, &TcpRelay::close);
     connect(remote, &QTcpSocket::readyRead, this, &TcpRelay::onRemoteTcpSocketReadyRead);
     connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
     connect(remote, &QTcpSocket::bytesWritten, this, &TcpRelay::bytesSend);
@@ -64,6 +64,18 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_a
     remote->setReadBufferSize(RecvSize);
     remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+}
+
+void TcpRelay::close()
+{
+    if (stage == DESTROYED) {
+        return;
+    }
+
+    local->close();
+    remote->close();
+    stage = DESTROYED;
+    emit finished();
 }
 
 void TcpRelay::handleStageAddr(QByteArray &data)
@@ -83,7 +95,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
             data = data.mid(3);
         } else {
             emit info("Unknown command " + QString::number(cmd));
-            emit finished();
+            close();
             return;
         }
     }
@@ -95,7 +107,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
         if (!isLocal && autoBan) {
             Common::banAddress(local->peerAddress());
         }
-        emit finished();
+        close();
         return;
     }
 
@@ -129,7 +141,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
                 if (autoBan) {
                     Common::banAddress(local->peerAddress());
                 }
-                emit finished();
+                close();
                 return;
             } else {
                 header_length += Cipher::AUTH_LEN;
@@ -144,7 +156,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
                     if (autoBan) {
                         Common::banAddress(local->peerAddress());
                     }
-                    emit finished();
+                    close();
                     return;
                 }
             }
@@ -161,7 +173,7 @@ void TcpRelay::onLocalTcpSocketError()
     } else {
         emit debug("Local socket debug: " + local->errorString());
     }
-    emit finished();
+    close();
 }
 
 void TcpRelay::onDNSResolved(const bool success, const QString errStr)
@@ -172,7 +184,7 @@ void TcpRelay::onDNSResolved(const bool success, const QString errStr)
         remote->connectToHost(addr->getFirstIP(), addr->getPort());
     } else {
         emit info("DNS resolve failed: " + errStr);
-        emit finished();
+        close();
     }
 }
 
@@ -197,7 +209,7 @@ void TcpRelay::onRemoteTcpSocketError()
     } else {
         emit debug("Remote socket debug: " + remote->errorString());
     }
-    emit finished();
+    close();
 }
 
 void TcpRelay::onLocalTcpSocketReadyRead()
@@ -206,7 +218,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
 
     if (data.isEmpty()) {
         emit info("Local received empty data.");
-        emit finished();
+        close();
         return;
     }
 
@@ -230,7 +242,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 if (autoBan) {
                     Common::banAddress(local->peerAddress());
                 }
-                emit finished();
+                close();
                 return;
             } else if (data.isEmpty()) {
                 return;
@@ -261,7 +273,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 if (autoBan) {
                     Common::banAddress(local->peerAddress());
                 }
-                emit finished();
+                close();
                 return;
             }
         }
@@ -276,7 +288,7 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
     QByteArray buf = remote->readAll();
     if (buf.isEmpty()) {
         emit info("Remote received empty data.");
-        emit finished();
+        close();
         return;
     }
     emit bytesRead(buf.size());
@@ -287,5 +299,5 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
 void TcpRelay::onTimeout()
 {
     emit info("TCP connection timeout.");
-    emit finished();
+    close();
 }

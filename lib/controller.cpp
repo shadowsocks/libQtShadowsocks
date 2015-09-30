@@ -69,6 +69,9 @@ Controller::Controller(const Profile &_profile, bool is_local, bool auto_ban, QO
 
 Controller::~Controller()
 {
+    if (tcpServer->isListening()) {
+        stop();
+    }
     Botan::LibraryInitializer::deinitialize();
 }
 
@@ -155,7 +158,6 @@ void Controller::stop()
 {
     httpProxy->close();
     tcpServer->close();
-    tcpServer->clear();
     emit runningStateChanged(false);
     emit debug("Stopped.");
 }
