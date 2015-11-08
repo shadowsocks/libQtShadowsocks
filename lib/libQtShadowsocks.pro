@@ -21,7 +21,7 @@ isEmpty(BOTAN_VER) {
     BOTAN_VER = 1.10
 }
 
-VERSION   = 1.7.0
+VERSION   = 1.8.0
 DEFINES  += QSS_VERSION=\\\"$$VERSION\\\"
 
 win32: {

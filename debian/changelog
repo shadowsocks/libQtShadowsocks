@@ -1,3 +1,11 @@
+libqtshadowsocks (1.8.0-1) stable; urgency=medium
+
+  * fix a bug in HTTP mode
+  * emit latency signal at real-time
+  * support one-time authentication
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Sun, 08 Nov 2015 16:39:00 +0000
+
 libqtshadowsocks (1.7.0-1) stable; urgency=medium
 
   * support HTTP proxy mode (in local)
