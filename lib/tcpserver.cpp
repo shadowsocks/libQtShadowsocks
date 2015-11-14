@@ -23,6 +23,7 @@
 #include "tcpserver.h"
 #include "common.h"
 #include <QThread>
+#include <thread>
 
 using namespace QSS;
 
@@ -33,8 +34,19 @@ TcpServer::TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool 
     auth(auth),
     serverAddress(serverAddress),
     timeout(timeout),
-    ep(ep)
-{}
+    ep(ep),
+    workerThreadID(0)
+{
+    totalWorkers = std::thread::hardware_concurrency();
+    if (totalWorkers == 0) {
+        totalWorkers = 1;// need at least one working thread
+    }
+    for (unsigned int i = 0; i < totalWorkers; ++i) {
+        QThread *t = new QThread(this);
+        threadList.append(t);
+        t->start();
+    }
+}
 
 TcpServer::~TcpServer()
 {
@@ -44,7 +56,7 @@ TcpServer::~TcpServer()
 
     for (auto &thread : threadList) {
         thread->quit();
-        thread->deleteLater();
+        thread->wait();
     }
 }
 
@@ -61,19 +73,15 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 
     //timeout * 1000: convert sec to msec
     TcpRelay *con = new TcpRelay(localSocket, timeout * 1000, serverAddress, ep, isLocal, autoBan, auth);
-    QThread *thread = new QThread;
     conList.append(con);
-    threadList.append(thread);
     connect(con, &TcpRelay::info, this, &TcpServer::info);
     connect(con, &TcpRelay::debug, this, &TcpServer::debug);
     connect(con, &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
     connect(con, &TcpRelay::latencyAvailable, this, &TcpServer::latencyAvailable);
-    connect(con, &TcpRelay::finished, thread, &QThread::quit);
     connect(con, &TcpRelay::finished, this, &TcpServer::onConnectionFinished);
-    connect(thread, &QThread::finished, this, &TcpServer::onThreadFinished);
-    con->moveToThread(thread);
-    thread->start();
+    con->moveToThread(threadList.at(workerThreadID++));
+    workerThreadID %= totalWorkers;
 }
 
 void TcpServer::onConnectionFinished()
@@ -82,11 +90,4 @@ void TcpServer::onConnectionFinished()
     if (conList.removeOne(con)) {//sometimes the finished signal from TcpRelay gets emitted multiple times
         con->deleteLater();
     }
-}
-
-void TcpServer::onThreadFinished()
-{
-    QThread *thread = qobject_cast<QThread*>(sender());
-    threadList.removeOne(thread);
-    thread->deleteLater();
 }
