@@ -49,7 +49,7 @@ TcpServer::TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool 
 
 TcpServer::~TcpServer()
 {
-    for (auto &con : conList) {
+    for (auto&& con : conList) {
         con->deleteLater();
     }
 
@@ -94,7 +94,7 @@ bool TcpServer::listen(const QHostAddress &address, quint16 port)
 {
     bool l = QTcpServer::listen(address, port);
     if (l) {
-        for (auto &thread : threadList) {
+        for (auto&& thread : threadList) {
             thread->start();
         }
     }
