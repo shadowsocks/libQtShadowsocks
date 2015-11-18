@@ -44,7 +44,6 @@ TcpServer::TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool 
     for (unsigned int i = 0; i < totalWorkers; ++i) {
         QThread *t = new QThread(this);
         threadList.append(t);
-        t->start();
     }
 }
 
@@ -54,9 +53,8 @@ TcpServer::~TcpServer()
         con->deleteLater();
     }
 
-    for (auto &thread : threadList) {
-        thread->quit();
-        thread->wait();
+    if (isListening()) {
+        close();
     }
 }
 
@@ -90,4 +88,26 @@ void TcpServer::onConnectionFinished()
     if (conList.removeOne(con)) {//sometimes the finished signal from TcpRelay gets emitted multiple times
         con->deleteLater();
     }
+}
+
+bool TcpServer::listen(const QHostAddress &address, quint16 port)
+{
+    bool l = QTcpServer::listen(address, port);
+    if (l) {
+        for (auto &thread : threadList) {
+            thread->start();
+        }
+    }
+    return l;
+}
+
+void TcpServer::close()
+{
+    for (auto&& thread : threadList) {
+        thread->quit();
+    }
+    for (auto&& thread : threadList) {
+        thread->wait();
+    }
+    QTcpServer::close();
 }

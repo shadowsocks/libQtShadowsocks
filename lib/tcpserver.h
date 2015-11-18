@@ -38,6 +38,9 @@ public:
     explicit TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const bool &auth, const Address &serverAddress, QObject *parent = nullptr);
     ~TcpServer();
 
+    bool listen(const QHostAddress &address, quint16 port);
+    void close();
+
 signals:
     void debug(const QString &);
     void info(const QString &);
