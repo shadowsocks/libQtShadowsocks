@@ -91,16 +91,12 @@ public:
         return this->data == o.data;
     }
 
-    friend QDataStream& operator<< (QDataStream &os, const Address &addr)
-    {
-        os << addr.toString();
-        return os;
+    friend inline QDataStream& operator<< (QDataStream &os, const Address &addr) {
+        return os << addr.toString();
     }
 
-    friend QDebug& operator<< (QDebug &os, const Address &addr)
-    {
-        os << addr.toString();
-        return os;
+    friend inline QDebug& operator<< (QDebug &os, const Address &addr) {
+        return os << addr.toString();
     }
 
 signals:
