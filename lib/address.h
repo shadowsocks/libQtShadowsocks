@@ -75,11 +75,9 @@ public:
     void setIPAddress(const QHostAddress &);
     void setPort(const quint16 &);
 
-    static const int ADDRTYPE_IPV4 = 1;
-    static const int ADDRTYPE_IPV6 = 4;
-    static const int ADDRTYPE_HOST = 3;
+    enum ATYP { IPV4 = 1, IPV6 = 4, HOST = 3 };
 
-    int addressType() const;
+    ATYP addressType() const;
 
     QString toString() const;
 

@@ -117,15 +117,15 @@ void Address::setPort(const quint16 &p)
     data.second = p;
 }
 
-int Address::addressType() const
+Address::ATYP Address::addressType() const
 {
     QHostAddress ipAddress(data.first);
     if (ipAddress.isNull()) {//it's a domain if it can't be parsed
-        return ADDRTYPE_HOST;
+        return HOST;
     } else if (ipAddress.protocol() == QAbstractSocket::IPv4Protocol) {
-        return ADDRTYPE_IPV4;
+        return IPV4;
     } else {
-        return ADDRTYPE_IPV6;
+        return IPV6;
     }
 }
 
