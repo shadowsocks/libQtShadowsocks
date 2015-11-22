@@ -83,7 +83,8 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
     if (enCipher) {
         enCipher->deleteLater();
     }
-    QByteArray iv = Cipher::randomIv(ep.ivLen);
+    QByteArray iv = enCipherIV;
+    enCipherIV = Cipher::randomIv(ep.ivLen);
     enCipher = new Cipher(ep.method, ep.key, iv, true, this);
     return iv + enCipher->update(in);
 }
