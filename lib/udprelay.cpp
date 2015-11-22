@@ -138,22 +138,29 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     if (isLocal) {
         if (auth || at_auth) {
-            encryptor->addHeaderAuth(data, header_length);
+            /*
+             * shadowsocks UDP Request (OTA-enabled, unencrypted)
+             * +------+----------+----------+----------+-------------+
+             * | ATYP | DST.ADDR | DST.PORT |   DATA   |  HMAC-SHA1  |
+             * +------+----------+----------+----------+-------------+
+             * |  1   | Variable |    2     | Variable |     10      |
+             * +------+----------+----------+----------+-------------+
+             */
+            encryptor->addHeaderAuth(data);
         }
         data = encryptor->encryptAll(data);
         destAddr = serverAddress;
     } else {
         if (auth || at_auth) {
-            if (!encryptor->verifyHeaderAuth(data, header_length)) {
+            if (!encryptor->verifyHeaderAuth(data, data.length() - Cipher::AUTH_LEN)) {
                 emit info("[UDP] One-time message authentication for header failed.");
                 if (autoBan) {
                     Common::banAddress(r_addr);
                 }
                 return;
             }
-            header_length += Cipher::AUTH_LEN;
         }
-        data = data.mid(header_length);
+        data = data.mid(header_length, data.length() - header_length - Cipher::AUTH_LEN);
     }
 
     if (!destAddr.isIPValid()) {//TODO async dns
