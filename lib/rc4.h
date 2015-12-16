@@ -36,7 +36,9 @@ class RC4 : public QObject
 {
     Q_OBJECT
 public:
-    //non-skip
+    // non-skip
+    // This class implements so-called RC4-MD5 cipher instead of original RC4
+    // _iv is not allowed to be empty!
     explicit RC4(const QByteArray &_key, const QByteArray &_iv, QObject *parent = 0);
 
 public slots:
@@ -46,7 +48,8 @@ private:
     void generate();
 
     quint32 position;
-    unsigned char x, y;
+    unsigned char x;
+    unsigned char y;
     QVector<unsigned char> state;
     QVector<unsigned char> buffer;
 };
