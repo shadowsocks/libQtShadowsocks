@@ -1,3 +1,10 @@
+libqtshadowsocks (1.8.2-1) stable; urgency=medium
+
+  * fix a bug in UDP relay when OTA is enabled
+  * improve stability
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Wed, 16 Dec 2015 21:09:00 +0000
+
 libqtshadowsocks (1.8.1-1) stable; urgency=medium
 
   * improve stability
