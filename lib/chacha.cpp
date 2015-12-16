@@ -24,23 +24,27 @@
 #include "common.h"
 #include <botan/loadstor.h>
 #include <botan/rotate.h>
+#include <stdexcept>
 
 using namespace QSS;
 using namespace Botan;
 
-#define CHACHA_QUARTER_ROUND(a, b, c, d)        \
-    do {                                        \
-        a += b; d ^= a; d = rotate_left(d, 16); \
-        c += d; b ^= c; b = rotate_left(b, 12); \
-        a += b; d ^= a; d = rotate_left(d, 8);  \
-        c += d; b ^= c; b = rotate_left(b, 7);  \
-    } while(0)
+// Using anonymous namespace and static keyword to hide this function from outside
+namespace {
+static inline void chacha_quarter_round(quint32 &a, quint32 &b, quint32 &c, quint32 &d) {
+    a += b; d ^= a; d = rotate_left(d, 16);
+    c += d; b ^= c; b = rotate_left(b, 12);
+    a += b; d ^= a; d = rotate_left(d, 8);
+    c += d; b ^= c; b = rotate_left(b, 7);
+}
+
+}
 
 ChaCha::ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
-    QObject (parent)
+    QObject (parent),
+    m_position(0)
 {
     const unsigned char *key = reinterpret_cast<const unsigned char*>(_key.constData());
-    const unsigned char *iv = reinterpret_cast<const unsigned char*>(_iv.constData());
 
     m_state.resize(16);
     m_buffer.resize(64);
@@ -61,10 +65,27 @@ ChaCha::ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
     m_state[9] = load_le<quint32>(key, 1);
     m_state[10] = load_le<quint32>(key, 2);
     m_state[11] = load_le<quint32>(key, 3);
+
+    setIV(_iv);
+}
+
+void ChaCha::setIV(const QByteArray &_iv)
+{
+    const unsigned char *iv = reinterpret_cast<const unsigned char*>(_iv.constData());
+
     m_state[12] = 0;
     m_state[13] = 0;
-    m_state[14] = load_le<quint32>(iv, 0);
-    m_state[15] = load_le<quint32>(iv, 1);
+
+    if (_iv.length() == 8) {
+        m_state[14] = load_le<quint32>(iv, 0);
+        m_state[15] = load_le<quint32>(iv, 1);
+    } else if (_iv.length() == 12) {
+        m_state[13] = load_le<quint32>(iv, 0);
+        m_state[14] = load_le<quint32>(iv, 1);
+        m_state[15] = load_le<quint32>(iv, 2);
+    } else {
+        throw std::length_error("The IV length for ChaCha20 is invalid");
+    }
 
     chacha();
 }
@@ -78,15 +99,15 @@ void ChaCha::chacha()
             x08 = input[ 8], x09 = input[ 9], x10 = input[10], x11 = input[11],
             x12 = input[12], x13 = input[13], x14 = input[14], x15 = input[15];
     for (quint32 i = 0; i != 10; ++i) {
-        CHACHA_QUARTER_ROUND(x00, x04, x08, x12);
-        CHACHA_QUARTER_ROUND(x01, x05, x09, x13);
-        CHACHA_QUARTER_ROUND(x02, x06, x10, x14);
-        CHACHA_QUARTER_ROUND(x03, x07, x11, x15);
+        chacha_quarter_round(x00, x04, x08, x12);
+        chacha_quarter_round(x01, x05, x09, x13);
+        chacha_quarter_round(x02, x06, x10, x14);
+        chacha_quarter_round(x03, x07, x11, x15);
 
-        CHACHA_QUARTER_ROUND(x00, x05, x10, x15);
-        CHACHA_QUARTER_ROUND(x01, x06, x11, x12);
-        CHACHA_QUARTER_ROUND(x02, x07, x08, x13);
-        CHACHA_QUARTER_ROUND(x03, x04, x09, x14);
+        chacha_quarter_round(x00, x05, x10, x15);
+        chacha_quarter_round(x01, x06, x11, x12);
+        chacha_quarter_round(x02, x07, x08, x13);
+        chacha_quarter_round(x03, x04, x09, x14);
     }
 
      store_le(x00 + input[ 0], output + 4 *  0);
@@ -119,7 +140,8 @@ QByteArray ChaCha::update(const QByteArray &input)
     const unsigned char *in = reinterpret_cast<const unsigned char*>(input.constData());
     unsigned char *out = reinterpret_cast<unsigned char*>(output.data());
 
-    for (quint32 delta = 64 - m_position; length >= delta; delta = 64 - m_position) {//64 == m_buffer.size()
+    quint32 buf_size = m_buffer.size();
+    for (quint32 delta = buf_size - m_position; length >= delta; delta = buf_size - m_position) {
         Common::exclusive_or(m_buffer.data() + m_position, in, out, delta);
         length -= delta;
         in += delta;

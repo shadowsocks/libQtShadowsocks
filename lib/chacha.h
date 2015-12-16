@@ -36,7 +36,7 @@ class ChaCha : public QObject
 public:
     /*
      * Key length must be 32 (16 is dropped)
-     * IV length must be 8
+     * IV length must be 8 or 12
      */
     explicit ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent = 0);
 
@@ -50,6 +50,7 @@ private:
     quint32 m_position;
 
     void chacha();
+    void setIV(const QByteArray &_iv);
 };
 
 }
