@@ -35,23 +35,28 @@ UdpRelay::UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const bool 
 {
     encryptor = new Encryptor(ep, this);
 
-    listen.setReadBufferSize(RecvSize);
-    listen.setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    listenSocket.setReadBufferSize(RecvSize);
+    listenSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
-    connect(&listen, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged);
-    connect(&listen, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead);
-    connect(&listen, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
-    connect(&listen, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend);
+    connect(&listenSocket, &QUdpSocket::stateChanged, this, &UdpRelay::onListenStateChanged);
+    connect(&listenSocket, &QUdpSocket::readyRead, this, &UdpRelay::onServerUdpSocketReadyRead);
+    connect(&listenSocket, static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)> (&QUdpSocket::error), this, &UdpRelay::onSocketError);
+    connect(&listenSocket, &QUdpSocket::bytesWritten, this, &UdpRelay::bytesSend);
 }
 
-void UdpRelay::setup(const QHostAddress &localAddr, const quint16 &localPort)
+bool UdpRelay::isListening() const
 {
-    listen.close();
-    if (isLocal) {
-        listen.bind(localAddr, localPort, QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
-    } else {
-        listen.bind(serverAddress.getFirstIP(), serverAddress.getPort(), QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
-    }
+    return listenSocket.isOpen();
+}
+
+bool UdpRelay::listen(const QHostAddress& addr, quint16 port)
+{
+    return listenSocket.bind(addr, port, QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint);
+}
+
+void UdpRelay::close()
+{
+    listenSocket.close();
     encryptor->reset();
     QList<QUdpSocket*> cachedSockets = cache.values();
     for (QUdpSocket* sock : cachedSockets) {
@@ -67,7 +72,7 @@ void UdpRelay::onSocketError()
         emit info("Fatal. A false object calling onSocketError.");
         return;
     }
-    if (sock == &listen) {
+    if (sock == &listenSocket) {
         emit info("[UDP] server socket error " + sock->errorString());
     } else {
         emit info("[UDP] client socket error " + sock->errorString());
@@ -83,16 +88,16 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
-    if (listen.pendingDatagramSize() > RecvSize) {
+    if (listenSocket.pendingDatagramSize() > RecvSize) {
         emit info("[UDP] Datagram is too large. discarded.");
         return;
     }
 
     QByteArray data;
-    data.resize(listen.pendingDatagramSize());
+    data.resize(listenSocket.pendingDatagramSize());
     QHostAddress r_addr;
     quint16 r_port;
-    qint64 readSize = listen.readDatagram(data.data(), RecvSize, &r_addr, &r_port);
+    qint64 readSize = listenSocket.readDatagram(data.data(), RecvSize, &r_addr, &r_port);
     emit bytesRead(readSize);
 
     if (isLocal) {
@@ -208,7 +213,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
     Address clientAddress = cache.key(sock);
     if (clientAddress.getPort() != 0) {
-        listen.writeDatagram(response, clientAddress.getFirstIP(), clientAddress.getPort());
+        listenSocket.writeDatagram(response, clientAddress.getFirstIP(), clientAddress.getPort());
     } else {
         emit debug("[UDP] Drop a packet from somewhere else we know.");
     }

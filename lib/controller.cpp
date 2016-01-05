@@ -101,13 +101,14 @@ bool Controller::setup(const Profile &p)
         valid = false;
     }
 
-    udpRelay->setup(getLocalAddr(), profile.local_port);
-
     if (httpProxy->isListening()) {
         httpProxy->close();
     }
     if (tcpServer->isListening()) {
         tcpServer->close();
+    }
+    if (udpRelay->isListening()) {
+        udpRelay->close();
     }
 
     return valid;
@@ -127,6 +128,7 @@ bool Controller::start()
         emit info("Running in local mode.");
         sstr.append(QString::number(profile.local_port));
         listen_ret = tcpServer->listen(getLocalAddr(), profile.http_proxy ? 0 : profile.local_port);
+        listen_ret |= udpRelay->listen(getLocalAddr(), profile.local_port);
         if (profile.http_proxy && listen_ret) {
             emit info("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
             if (httpProxy->httpListen(getLocalAddr(), profile.local_port, tcpServer->serverPort())) {
@@ -140,6 +142,7 @@ bool Controller::start()
         emit info("Running in server mode.");
         sstr.append(QString::number(profile.server_port));
         listen_ret = tcpServer->listen(serverAddress.getFirstIP(), profile.server_port);
+        listen_ret |= udpRelay->listen(serverAddress.getFirstIP(), profile.server_port);
     }
 
     if (listen_ret) {
@@ -159,6 +162,7 @@ void Controller::stop()
 {
     httpProxy->close();
     tcpServer->close();
+    udpRelay->close();
     emit runningStateChanged(false);
     emit debug("Stopped.");
 }
