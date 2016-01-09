@@ -1,5 +1,5 @@
 # This file is part of project libQtShadowsocks
-# Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+# Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
 # Licensed Under LGPLv3
 
 QT       += core network
@@ -31,7 +31,7 @@ isEmpty(BOTAN_VER) {
     BOTAN_VER = 1.10
 }
 
-# Youshould use these lines in your project.
+# You should use these lines in your project.
 #
 #unix: {
 #    CONFIG    += link_pkgconfig

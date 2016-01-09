@@ -4,7 +4,7 @@
  * This class enables transparent HTTP proxy that handles data transfer
  * and send/recv them via upper-level SOCKS5 proxy
  *
- * Copyright (C) 2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2015-2016 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *

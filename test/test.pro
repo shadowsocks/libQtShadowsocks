@@ -1,5 +1,5 @@
 # This file is part of project libQtShadowsocks
-# Copyright (C) 2015 Symeon Huang <hzwhuang@gmail.com>
+# Copyright (C) 2015-2016 Symeon Huang <hzwhuang@gmail.com>
 # Licensed Under LGPLv3
 
 QT       += testlib network

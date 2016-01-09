@@ -6,11 +6,11 @@ Introduction
 
 `libQtShadowsocks` is a lightweight [shadowsocks][ss] library.
 
-Written in C++ using Qt 5 framework and Botan library, it aims to provide a developer-friendly [shadowsocks][ss] library for Qt applications such as [shadowsocks-qt5] (https://github.com/librehat/shadowsocks-qt5/).
+Written in C++ using Qt 5 framework and Botan library, it aims to provide a developer-friendly [shadowsocks][ss] library for Qt applications such as [shadowsocks-qt5] (https://github.com/shadowsocks/shadowsocks-qt5/).
 
 The sub-project `shadowsocks-libqss` utilises this library. You may wish to check the code to see how to integrate `libQtShadowsocks` into your project. `shadowsocks-libqss` can also be used as a standalone program in both local-side and server-side.
 
-Check [installation wiki page](https://github.com/librehat/libQtShadowsocks/wiki/Installation) to see how to install this library and/or `shadowsocks-libqss`.
+Check [installation wiki page](https://github.com/shadowsocks/libQtShadowsocks/wiki/Installation) to see how to install this library and/or `shadowsocks-libqss`.
 
 [ss]: http://shadowsocks.org
 
@@ -19,7 +19,7 @@ License
 
 ![](http://www.gnu.org/graphics/lgplv3-147x51.png)
 
-Copyright (C) 2014-2015 Symeon Huang
+Copyright (C) 2014-2016 Symeon Huang
 
 This library is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as

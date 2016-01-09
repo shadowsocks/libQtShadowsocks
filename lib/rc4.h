@@ -5,7 +5,7 @@
  * unaligned memory. Therefore, I reimplemented RC4 here to get around
  * the crashes by not using unaligned memory xor.
  *
- * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *

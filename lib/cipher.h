@@ -7,7 +7,7 @@
  * If there is a modification associated with encryption/decryption, it's
  * this class that needs changes instead of messing up lots of classes.
  *
- * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
