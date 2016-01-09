@@ -36,8 +36,16 @@ class QSS_EXPORT UdpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit UdpRelay(const EncryptorPrivate &ep, const bool &is_local, const bool &auto_ban, const bool &auth, const Address &serverAddress, QObject *parent = 0);
-    void setup(const QHostAddress &localAddr, const quint16 &localPort);
+    explicit UdpRelay(const EncryptorPrivate &ep,
+                      const bool &is_local,
+                      const bool &auto_ban,
+                      const bool &auth,
+                      const Address &serverAddress,
+                      QObject *parent = 0);
+
+    void setup(const QHostAddress &localAddr,
+               const quint16 &localPort);
+
     bool isListening() const;
 
 public slots:
@@ -49,13 +57,15 @@ signals:
     void info(const QString &);
 
     /*
-     * the same situation here. we only count "listen" socket's read and written bytes
+     * The same situation here.
+     * We only count "listen" socket's read and written bytes
      */
     void bytesRead(const qint64 &);
     void bytesSend(const qint64 &);
 
 private:
-    static const qint64 RecvSize = 65536;//64KB, same as shadowsocks-python (udprelay)
+    //64KB, same as shadowsocks-python (udprelay)
+    static const qint64 RecvSize = 65536;
 
     const Address &serverAddress;
     const bool &isLocal;

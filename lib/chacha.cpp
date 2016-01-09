@@ -29,9 +29,12 @@
 using namespace QSS;
 using namespace Botan;
 
-// Using anonymous namespace and static keyword to hide this function from outside
+// Using anonymous namespace and static keyword to 'hide' this function
 namespace {
-static inline void chacha_quarter_round(quint32 &a, quint32 &b, quint32 &c, quint32 &d) {
+static inline void chacha_quarter_round(quint32 &a,
+                                        quint32 &b,
+                                        quint32 &c,
+                                        quint32 &d) {
     a += b; d ^= a; d = rotate_left(d, 16);
     c += d; b ^= c; b = rotate_left(b, 12);
     a += b; d ^= a; d = rotate_left(d, 8);
@@ -44,7 +47,8 @@ ChaCha::ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
     QObject (parent),
     m_position(0)
 {
-    const unsigned char *key = reinterpret_cast<const unsigned char*>(_key.constData());
+    const unsigned char *key =
+            reinterpret_cast<const unsigned char*>(_key.constData());
 
     m_state.resize(16);
     m_buffer.resize(64);
@@ -71,7 +75,8 @@ ChaCha::ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
 
 void ChaCha::setIV(const QByteArray &_iv)
 {
-    const unsigned char *iv = reinterpret_cast<const unsigned char*>(_iv.constData());
+    const unsigned char *iv =
+            reinterpret_cast<const unsigned char*>(_iv.constData());
 
     m_state[12] = 0;
     m_state[13] = 0;
@@ -137,11 +142,14 @@ QByteArray ChaCha::update(const QByteArray &input)
     quint32 length = input.length();
     QByteArray output;
     output.resize(length);
-    const unsigned char *in = reinterpret_cast<const unsigned char*>(input.constData());
+    const unsigned char *in =
+            reinterpret_cast<const unsigned char*>(input.constData());
     unsigned char *out = reinterpret_cast<unsigned char*>(output.data());
 
     quint32 buf_size = m_buffer.size();
-    for (quint32 delta = buf_size - m_position; length >= delta; delta = buf_size - m_position) {
+    for (quint32 delta = buf_size - m_position;
+         length >= delta;
+         delta = buf_size - m_position) {
         Common::exclusive_or(m_buffer.data() + m_position, in, out, delta);
         length -= delta;
         in += delta;

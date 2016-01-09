@@ -58,7 +58,8 @@ public:
     bool verifyHeaderAuth(const QByteArray &data, const int &headerLen) const;
 
     /*
-     * data will be overwritten by extracted data which can be sent to downstream
+     * data will be overwritten by extracted data which can be sent to
+     * downstream
      * @return the hash verification result
      */
     bool verifyExtractChunkAuth(QByteArray &data);
@@ -66,7 +67,8 @@ public:
 private:
     const EncryptorPrivate &ep;
     QByteArray enCipherIV;
-    QByteArray incompleteChunk;//incomplete data chunk from verifyExtractChunkAuth function
+    //incomplete data chunk from verifyExtractChunkAuth function
+    QByteArray incompleteChunk;
     quint32 chunkId;
 
 protected:

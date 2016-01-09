@@ -40,17 +40,31 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
         qCritical("%s", e.what());
     }
 
-    tcpServer = new TcpServer(ep, profile.timeout, isLocal, autoBan, profile.auth, serverAddress, this);
-    tcpServer->setMaxPendingConnections(FD_SETSIZE);//FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
-    udpRelay = new UdpRelay(ep, isLocal, autoBan, profile.auth, serverAddress, this);
+    tcpServer = new TcpServer(ep, profile.timeout,
+                              isLocal,
+                              autoBan,
+                              profile.auth,
+                              serverAddress,
+                              this);
+
+    //FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
+    tcpServer->setMaxPendingConnections(FD_SETSIZE);
+    udpRelay = new UdpRelay(ep,
+                            isLocal,
+                            autoBan,
+                            profile.auth,
+                            serverAddress,
+                            this);
     httpProxy = new HttpProxy(this);
 
-    connect(tcpServer, &TcpServer::acceptError, this, &Controller::onTcpServerError);
+    connect(tcpServer, &TcpServer::acceptError,
+            this, &Controller::onTcpServerError);
     connect(tcpServer, &TcpServer::info, this, &Controller::info);
     connect(tcpServer, &TcpServer::debug, this, &Controller::debug);
     connect(tcpServer, &TcpServer::bytesRead, this, &Controller::onBytesRead);
     connect(tcpServer, &TcpServer::bytesSend, this, &Controller::onBytesSend);
-    connect(tcpServer, &TcpServer::latencyAvailable, this, &Controller::tcpLatencyAvailable);
+    connect(tcpServer, &TcpServer::latencyAvailable,
+            this, &Controller::tcpLatencyAvailable);
 
     connect(udpRelay, &UdpRelay::info, this, &Controller::info);
     connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);
@@ -59,10 +73,14 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
 
     connect(httpProxy, &HttpProxy::info, this, &Controller::info);
 
-    connect(&serverAddress, &Address::lookedUp, this, &Controller::onServerAddressLookedUp);
+    connect(&serverAddress, &Address::lookedUp,
+            this, &Controller::onServerAddressLookedUp);
 }
 
-Controller::Controller(const Profile &_profile, bool is_local, bool auto_ban, QObject *parent) :
+Controller::Controller(const Profile &_profile,
+                       bool is_local,
+                       bool auto_ban,
+                       QObject *parent) :
     Controller(is_local, auto_ban, parent)
 {
     setup(_profile);
@@ -83,7 +101,8 @@ bool Controller::setup(const Profile &p)
 
     /*
      * the default QHostAddress constructor will construct "::" as AnyIPv6
-     * we explicitly use Any to enable dual stack which is the case in other shadowsocks ports
+     * we explicitly use Any to enable dual stack
+     * which is the case in other shadowsocks ports
      */
     if (p.server == "::") {
         serverAddress = Address(QHostAddress::Any, p.server_port);
@@ -95,7 +114,8 @@ bool Controller::setup(const Profile &p)
     emit info("Initialising ciphers...");
     ep = EncryptorPrivate(profile.method, profile.password);
     if (ep.isValid()) {
-        emit info(ep.getInternalMethodName() + " (" + profile.method + ") initialised.");
+        emit info(ep.getInternalMethodName() + " (" + profile.method
+                  + ") initialised.");
     } else {
         emit info("Initialisation failed.");
         valid = false;
@@ -127,11 +147,16 @@ bool Controller::start()
     if (isLocal) {
         emit info("Running in local mode.");
         sstr.append(QString::number(profile.local_port));
-        listen_ret = tcpServer->listen(getLocalAddr(), profile.http_proxy ? 0 : profile.local_port);
+        listen_ret = tcpServer->listen(
+                    getLocalAddr(),
+                    profile.http_proxy ? 0 : profile.local_port);
         listen_ret |= udpRelay->listen(getLocalAddr(), profile.local_port);
         if (profile.http_proxy && listen_ret) {
-            emit info("SOCKS5 port is " + QString::number(tcpServer->serverPort()));
-            if (httpProxy->httpListen(getLocalAddr(), profile.local_port, tcpServer->serverPort())) {
+            emit info("SOCKS5 port is "
+                      + QString::number(tcpServer->serverPort()));
+            if (httpProxy->httpListen(getLocalAddr(),
+                                      profile.local_port,
+                                      tcpServer->serverPort())) {
                 emit info("Running as a HTTP proxy server");
             } else {
                 emit info("HTTP proxy server listen failed.");
@@ -141,8 +166,10 @@ bool Controller::start()
     } else {
         emit info("Running in server mode.");
         sstr.append(QString::number(profile.server_port));
-        listen_ret = tcpServer->listen(serverAddress.getFirstIP(), profile.server_port);
-        listen_ret |= udpRelay->listen(serverAddress.getFirstIP(), profile.server_port);
+        listen_ret = tcpServer->listen(serverAddress.getFirstIP(),
+                                       profile.server_port);
+        listen_ret |= udpRelay->listen(serverAddress.getFirstIP(),
+                                       profile.server_port);
     }
 
     if (listen_ret) {
@@ -173,7 +200,9 @@ QHostAddress Controller::getLocalAddr()
     if (!addr.isNull()) {
         return addr;
     } else {
-        emit info("Can't get address from " + profile.local_address.toLocal8Bit() + ". Using localhost instead.");
+        emit info("Can't get address from "
+                  + profile.local_address.toLocal8Bit()
+                  + ". Using localhost instead.");
         return QHostAddress::LocalHost;
     }
 }

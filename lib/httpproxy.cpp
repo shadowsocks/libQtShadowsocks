@@ -33,18 +33,28 @@ HttpProxy::HttpProxy(QObject *parent) : QTcpServer(parent)
     this->setMaxPendingConnections(FD_SETSIZE);
 }
 
-bool HttpProxy::httpListen(const QHostAddress &http_addr, quint16 http_port, quint16 socks_port)
+bool HttpProxy::httpListen(const QHostAddress &http_addr,
+                           quint16 http_port,
+                           quint16 socks_port)
 {
-    upstreamProxy = QNetworkProxy(QNetworkProxy::Socks5Proxy, "127.0.0.1", socks_port);
+    upstreamProxy = QNetworkProxy(QNetworkProxy::Socks5Proxy,
+                                  "127.0.0.1",
+                                  socks_port);
     return this->listen(http_addr, http_port);
 }
 
 void HttpProxy::incomingConnection(qintptr socketDescriptor)
 {
     QTcpSocket *socket = new QTcpSocket(this);
-    connect(socket, &QTcpSocket::readyRead, this, &HttpProxy::onSocketReadyRead);
-    connect(socket, &QTcpSocket::disconnected, socket, &QTcpSocket::deleteLater);
-    connect(socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &HttpProxy::onSocketError);
+    connect(socket, &QTcpSocket::readyRead,
+            this, &HttpProxy::onSocketReadyRead);
+    connect(socket, &QTcpSocket::disconnected,
+            socket, &QTcpSocket::deleteLater);
+    connect(socket,
+            static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>
+            (&QTcpSocket::error),
+            this,
+            &HttpProxy::onSocketError);
     socket->setSocketDescriptor(socketDescriptor);
 }
 
@@ -100,7 +110,7 @@ void HttpProxy::onSocketReadyRead()
         }
     } else {//CONNECT method
         /*
-         * according to http://tools.ietf.org/html/draft-luotonen-ssl-tunneling-03
+         * http://tools.ietf.org/html/draft-luotonen-ssl-tunneling-03
          * the first line would CONNECT HOST:PORT VERSION
          */
         QList<QByteArray> host_port_list = address.split(':');
@@ -113,13 +123,21 @@ void HttpProxy::onSocketReadyRead()
     if (method != "CONNECT") {
         proxySocket->setObjectName(key);
         proxySocket->setProperty("reqData", reqData);
-        connect (proxySocket, &QTcpSocket::connected, this, &HttpProxy::onProxySocketConnected);
-        connect (proxySocket, &QTcpSocket::readyRead, this, &HttpProxy::onProxySocketReadyRead);
+        connect (proxySocket, &QTcpSocket::connected,
+                 this, &HttpProxy::onProxySocketConnected);
+        connect (proxySocket, &QTcpSocket::readyRead,
+                 this, &HttpProxy::onProxySocketReadyRead);
     } else {
-        connect (proxySocket, &QTcpSocket::connected, this, &HttpProxy::onProxySocketConnectedHttps);
+        connect (proxySocket, &QTcpSocket::connected,
+                 this, &HttpProxy::onProxySocketConnectedHttps);
     }
-    connect (proxySocket, &QTcpSocket::disconnected, proxySocket, &QTcpSocket::deleteLater);
-    connect (proxySocket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &HttpProxy::onSocketError);
+    connect (proxySocket, &QTcpSocket::disconnected,
+             proxySocket, &QTcpSocket::deleteLater);
+    connect (proxySocket,
+             static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>
+             (&QTcpSocket::error),
+             this,
+             &HttpProxy::onSocketError);
     proxySocket->connectToHost(host, port);
 }
 
@@ -134,14 +152,21 @@ void HttpProxy::onProxySocketConnectedHttps()
 {
     QTcpSocket *proxySocket = qobject_cast<QTcpSocket *>(sender());
     QTcpSocket *socket = qobject_cast<QTcpSocket *>(proxySocket->parent());
-    disconnect(socket, &QTcpSocket::readyRead, this, &HttpProxy::onSocketReadyRead);
+    disconnect(socket, &QTcpSocket::readyRead,
+               this, &HttpProxy::onSocketReadyRead);
 
-    /* once it's connected, we use a light-weight SocketStream class to do the job */
+    /*
+     * once it's connected
+     * we use a light-weight SocketStream class to do the job
+     */
     SocketStream *stream = new SocketStream(socket, proxySocket, this);
-    connect(socket, &QTcpSocket::disconnected, stream, &SocketStream::deleteLater);
-    connect(proxySocket, &QTcpSocket::disconnected, stream, &SocketStream::deleteLater);
+    connect(socket, &QTcpSocket::disconnected,
+            stream, &SocketStream::deleteLater);
+    connect(proxySocket, &QTcpSocket::disconnected,
+            stream, &SocketStream::deleteLater);
     connect(stream, &SocketStream::info, this, &HttpProxy::info);
-    static const QByteArray httpsHeader = "HTTP/1.0 200 Connection established\r\n\r\n";
+    static const QByteArray httpsHeader =
+            "HTTP/1.0 200 Connection established\r\n\r\n";
     socket->write(httpsHeader);
 }
 

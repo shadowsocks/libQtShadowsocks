@@ -25,7 +25,14 @@
 
 using namespace QSS;
 
-TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_addr, const EncryptorPrivate &ep, const bool &is_local, const bool &autoBan, const bool &auth, QObject *parent) :
+TcpRelay::TcpRelay(QTcpSocket *localSocket,
+                   int timeout,
+                   const Address &server_addr,
+                   const EncryptorPrivate &ep,
+                   const bool &is_local,
+                   const bool &autoBan,
+                   const bool &auth,
+                   QObject *parent) :
     QObject(parent),
     stage(INIT),
     serverAddress(server_addr),
@@ -36,25 +43,38 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_a
 {
     encryptor = new Encryptor(ep, this);
 
-    connect(&remoteAddress, &Address::lookedUp, this, &TcpRelay::onDNSResolved);
-    connect(&serverAddress, &Address::lookedUp, this, &TcpRelay::onDNSResolved);
+    connect(&remoteAddress, &Address::lookedUp,
+            this, &TcpRelay::onDNSResolved);
+    connect(&serverAddress, &Address::lookedUp,
+            this, &TcpRelay::onDNSResolved);
 
     timer = new QTimer(this);
     timer->setInterval(timeout);
     connect(timer, &QTimer::timeout, this, &TcpRelay::onTimeout);
 
     local->setParent(this);
-    connect(local, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &TcpRelay::onLocalTcpSocketError);
+    connect(local,
+            static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>
+            (&QTcpSocket::error),
+            this,
+            &TcpRelay::onLocalTcpSocketError);
     connect(local, &QTcpSocket::disconnected, this, &TcpRelay::close);
-    connect(local, &QTcpSocket::readyRead, this, &TcpRelay::onLocalTcpSocketReadyRead);
-    connect(local, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
+    connect(local, &QTcpSocket::readyRead,
+            this, &TcpRelay::onLocalTcpSocketReadyRead);
+    connect(local, &QTcpSocket::readyRead,
+            timer, static_cast<void (QTimer::*)()> (&QTimer::start));
 
     remote = new QTcpSocket(this);
     connect(remote, &QTcpSocket::connected, this, &TcpRelay::onRemoteConnected);
-    connect(remote, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)> (&QTcpSocket::error), this, &TcpRelay::onRemoteTcpSocketError);
+    connect(remote,
+            static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>
+            (&QTcpSocket::error),
+            this, &TcpRelay::onRemoteTcpSocketError);
     connect(remote, &QTcpSocket::disconnected, this, &TcpRelay::close);
-    connect(remote, &QTcpSocket::readyRead, this, &TcpRelay::onRemoteTcpSocketReadyRead);
-    connect(remote, &QTcpSocket::readyRead, timer, static_cast<void (QTimer::*)()> (&QTimer::start));
+    connect(remote, &QTcpSocket::readyRead,
+            this, &TcpRelay::onRemoteTcpSocketReadyRead);
+    connect(remote, &QTcpSocket::readyRead,
+            timer, static_cast<void (QTimer::*)()> (&QTimer::start));
     connect(remote, &QTcpSocket::bytesWritten, this, &TcpRelay::bytesSend);
 
     local->setReadBufferSize(RecvSize);
@@ -111,7 +131,11 @@ void TcpRelay::handleStageAddr(QByteArray &data)
         return;
     }
 
-    emit info(QString("Connecting %1:%2 from %3:%4").arg(remoteAddress.getAddress()).arg(remoteAddress.getPort()).arg(local->peerAddress().toString()).arg(local->peerPort()));
+    emit info(QString("Connecting %1:%2 from %3:%4")
+              .arg(remoteAddress.getAddress())
+              .arg(remoteAddress.getPort())
+              .arg(local->peerAddress().toString())
+              .arg(local->peerPort()));
 
     stage = DNS;
     if (isLocal) {
@@ -168,7 +192,8 @@ void TcpRelay::handleStageAddr(QByteArray &data)
 
 void TcpRelay::onLocalTcpSocketError()
 {
-    if (local->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
+    //it's not an "error" if remote host closed a connection
+    if (local->error() != QAbstractSocket::RemoteHostClosedError) {
         emit info("Local socket error: " + local->errorString());
     } else {
         emit debug("Local socket debug: " + local->errorString());
@@ -206,7 +231,8 @@ void TcpRelay::onRemoteConnected()
 
 void TcpRelay::onRemoteTcpSocketError()
 {
-    if (remote->error() != QAbstractSocket::RemoteHostClosedError) {//it's not an "error" if remote host closed a connection
+    //it's not an "error" if remote host closed a connection
+    if (remote->error() != QAbstractSocket::RemoteHostClosedError) {
         emit info("Remote socket error: " + remote->errorString());
     } else {
         emit debug("Remote socket debug: " + remote->errorString());
@@ -257,13 +283,15 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         static const QByteArray reject(reject_data, 2);
         static const QByteArray accept(accept_data, 2);
         if (data[0] != char(5)) {
-            emit info("An invalid socket connection was rejected. Please make sure the connection type is SOCKS5.");
+            emit info("An invalid socket connection was rejected. "
+                      "Please make sure the connection type is SOCKS5.");
             local->write(reject);
         } else {
             local->write(accept);
         }
         stage = ADDR;
-    } else if (stage == CONNECTING || stage == DNS) {//take DNS into account, otherwise some data will get lost
+    } else if (stage == CONNECTING || stage == DNS) {
+        //take DNS into account, otherwise some data will get lost
         if (isLocal) {
             if (auth) {
                 encryptor->addChunkAuth(data);

@@ -27,7 +27,13 @@
 
 using namespace QSS;
 
-TcpServer::TcpServer(const EncryptorPrivate &ep, const int &timeout, const bool &is_local, const bool &auto_ban, const bool &auth, const Address &serverAddress, QObject *parent) :
+TcpServer::TcpServer(const EncryptorPrivate &ep,
+                     const int &timeout,
+                     const bool &is_local,
+                     const bool &auto_ban,
+                     const bool &auth,
+                     const Address &serverAddress,
+                     QObject *parent) :
     QTcpServer(parent),
     isLocal(is_local),
     autoBan(auto_ban),
@@ -64,19 +70,27 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     localSocket->setSocketDescriptor(socketDescriptor);
 
     if (!isLocal && autoBan && Common::isAddressBanned(localSocket->peerAddress())) {
-        emit debug(QString("A banned IP %1 attempted to access this server").arg(localSocket->peerAddress().toString()));
+        emit debug(QString("A banned IP %1 attempted to access this server")
+                   .arg(localSocket->peerAddress().toString()));
         localSocket->deleteLater();
         return;
     }
 
     //timeout * 1000: convert sec to msec
-    TcpRelay *con = new TcpRelay(localSocket, timeout * 1000, serverAddress, ep, isLocal, autoBan, auth);
+    TcpRelay *con = new TcpRelay(localSocket,
+                                 timeout * 1000,
+                                 serverAddress,
+                                 ep,
+                                 isLocal,
+                                 autoBan,
+                                 auth);
     conList.append(con);
     connect(con, &TcpRelay::info, this, &TcpServer::info);
     connect(con, &TcpRelay::debug, this, &TcpServer::debug);
     connect(con, &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
-    connect(con, &TcpRelay::latencyAvailable, this, &TcpServer::latencyAvailable);
+    connect(con, &TcpRelay::latencyAvailable,
+            this, &TcpServer::latencyAvailable);
     connect(con, &TcpRelay::finished, this, &TcpServer::onConnectionFinished);
     con->moveToThread(threadList.at(workerThreadID++));
     workerThreadID %= totalWorkers;
@@ -85,7 +99,8 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
 void TcpServer::onConnectionFinished()
 {
     TcpRelay *con = qobject_cast<TcpRelay*>(sender());
-    if (conList.removeOne(con)) {//sometimes the finished signal from TcpRelay gets emitted multiple times
+    //sometimes the finished signal from TcpRelay gets emitted multiple times
+    if (conList.removeOne(con)) {
         con->deleteLater();
     }
 }

@@ -68,7 +68,11 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
 
     QByteArray out;
     if (!deCipher) {
-        deCipher = new Cipher(ep.method, ep.key, in.mid(0, ep.ivLen), false, this);
+        deCipher = new Cipher(ep.method,
+                              ep.key,
+                              in.mid(0, ep.ivLen),
+                              false,
+                              this);
         out = deCipher->update(in.mid(ep.ivLen));
     } else {
         out = deCipher->update(in);
@@ -102,7 +106,9 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
 
 bool Encryptor::selfTest()
 {
-    QByteArray test("barfoo!"), test2("Hello World!"), test3("libQtShadowsocks!");
+    QByteArray test("barfoo!");
+    QByteArray test2("Hello World!");
+    QByteArray test3("libQtShadowsocks!");
     QByteArray res  = decrypt(encrypt(test)),
                res2 = decrypt(encrypt(test2)),
                res3 = decryptAll(encryptAll(test3));
@@ -150,7 +156,8 @@ void Encryptor::addChunkAuth(QByteArray &data)
 bool Encryptor::verifyHeaderAuth(const QByteArray &data, const int &headerLen) const
 {
     QByteArray key = deCipherIV() + ep.key;
-    return Cipher::hmacSha1(key, data.left(headerLen)) == data.mid(headerLen, Cipher::AUTH_LEN);
+    return Cipher::hmacSha1(key, data.left(headerLen))
+            == data.mid(headerLen, Cipher::AUTH_LEN);
 }
 
 bool Encryptor::verifyExtractChunkAuth(QByteArray &data)
@@ -172,7 +179,10 @@ bool Encryptor::verifyExtractChunkAuth(QByteArray &data)
         chunkId++;
         QByteArray key = deCipherIV() + counter;
         QByteArray chunk = data.mid(pos + 2 + Cipher::AUTH_LEN, len);
-        verified &= (Cipher::hmacSha1(key, chunk) == data.mid(pos + 2, Cipher::AUTH_LEN));
+        verified &= (
+                    Cipher::hmacSha1(key, chunk)
+                    == data.mid(pos + 2, Cipher::AUTH_LEN)
+                    );
         if (verified) {
             result.append(chunk);
             pos += (2 + Cipher::AUTH_LEN + len);

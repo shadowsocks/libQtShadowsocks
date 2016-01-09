@@ -28,7 +28,9 @@
 
 using namespace QSS;
 
-AddressTester::AddressTester(const QHostAddress &_address, const quint16 &_port, QObject *parent) :
+AddressTester::AddressTester(const QHostAddress &_address,
+                             const quint16 &_port,
+                             QObject *parent) :
     QObject(parent),
     address(_address),
     port(_port)
@@ -37,7 +39,11 @@ AddressTester::AddressTester(const QHostAddress &_address, const quint16 &_port,
     time = QTime::currentTime();
 
     connect(&timer, &QTimer::timeout, this, &AddressTester::onTimeout);
-    connect(&socket, static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>(&QTcpSocket::error), this, &AddressTester::onSocketError);
+    connect(&socket,
+            static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>
+            (&QTcpSocket::error),
+            this,
+            &AddressTester::onSocketError);
     connect(&socket, &QTcpSocket::connected, this, &AddressTester::onConnected);
 }
 

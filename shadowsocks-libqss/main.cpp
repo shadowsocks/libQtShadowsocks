@@ -43,20 +43,49 @@ int main(int argc, char *argv[])
     QCommandLineParser parser;
     parser.addHelpOption();
     parser.addVersionOption();
-    QCommandLineOption configFile("c", "specify config.json file.", "config_file", "config.json");
-    QCommandLineOption serverAddress("s", "host name or IP address of your remote server.", "server_address");
-    QCommandLineOption serverPort("p", "port number of your remote server.", "server_port");
-    QCommandLineOption localAddress("b", "local address to bind. ignored in server mode.", "local_address", "127.0.0.1");
-    QCommandLineOption localPort("l", "port number of your local server. ignored in server mode.", "local_port");
-    QCommandLineOption password("k", "password of your remote server.", "password");
-    QCommandLineOption encryptionMethod("m", "encryption method.", "method");
-    QCommandLineOption timeout("t", "socket timeout in seconds.", "timeout");
-    QCommandLineOption http(QStringList() << "H" << "http-proxy", "run in HTTP(S) proxy mode. ignored in server mode.");
-    QCommandLineOption serverMode(QStringList() << "S" << "server-mode", "run as shadowsocks server.");
-    QCommandLineOption testSpeed(QStringList() << "T" << "speed-test", "test encrypt/decrypt speed.");
-    QCommandLineOption debug(QStringList() << "D" << "debug", "debug-level log.");
-    QCommandLineOption auth(QStringList() << "A" << "auth", "enable one-time message authentication.");
-    QCommandLineOption autoBan("autoban", "automatically ban IPs that send malformed header. ignored in local mode.");
+    QCommandLineOption configFile("c",
+                                  "specify config.json file.",
+                                  "config_file",
+                                  "config.json");
+    QCommandLineOption serverAddress("s",
+                              "host name or IP address of your remote server.",
+                              "server_address");
+    QCommandLineOption serverPort("p", "port number of your remote server.",
+                                  "server_port");
+    QCommandLineOption localAddress("b",
+                              "local address to bind. ignored in server mode.",
+                              "local_address",
+                              "127.0.0.1");
+    QCommandLineOption localPort("l",
+                  "port number of your local server. ignored in server mode.",
+                  "local_port");
+    QCommandLineOption password("k",
+                                "password of your remote server.",
+                                "password");
+    QCommandLineOption encryptionMethod("m",
+                                        "encryption method.",
+                                        "method");
+    QCommandLineOption timeout("t",
+                               "socket timeout in seconds.",
+                               "timeout");
+    QCommandLineOption http(
+                QStringList() << "H" << "http-proxy",
+                "run in HTTP(S) proxy mode. ignored in server mode.");
+    QCommandLineOption serverMode(
+                QStringList() << "S" << "server-mode",
+                "run as shadowsocks server.");
+    QCommandLineOption testSpeed(
+                QStringList() << "T" << "speed-test",
+                "test encrypt/decrypt speed.");
+    QCommandLineOption debug(
+                QStringList() << "D" << "debug",
+                "debug-level log.");
+    QCommandLineOption auth(
+                QStringList() << "A" << "auth",
+                "enable one-time message authentication.");
+    QCommandLineOption autoBan("autoban",
+                "automatically ban IPs that send malformed header. "
+                "ignored in local mode.");
     parser.addOption(configFile);
     parser.addOption(serverAddress);
     parser.addOption(serverPort);
@@ -76,11 +105,21 @@ int main(int argc, char *argv[])
     Client c;
 
     if (!c.readConfig(parser.value(configFile))) {
-        c.setup(parser.value(serverAddress), parser.value(serverPort), parser.value(localAddress), parser.value(localPort), parser.value(password), parser.value(encryptionMethod), parser.value(timeout), parser.isSet(http), parser.isSet(debug), parser.isSet(auth));
+        c.setup(parser.value(serverAddress),
+                parser.value(serverPort),
+                parser.value(localAddress),
+                parser.value(localPort),
+                parser.value(password),
+                parser.value(encryptionMethod),
+                parser.value(timeout),
+                parser.isSet(http),
+                parser.isSet(debug),
+                parser.isSet(auth));
     }
     c.setAutoBan(parser.isSet(autoBan));
     c.setDebug(parser.isSet(debug));
-    if (parser.isSet(http)) {//command-line option has a higher priority to make H, S, T consistent
+    //command-line option has a higher priority to make H, S, T consistent
+    if (parser.isSet(http)) {
         c.setHttpMode(true);
     }
     if (parser.isSet(auth)) {

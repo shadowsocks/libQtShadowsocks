@@ -25,7 +25,9 @@
 
 using namespace QSS;
 
-EncryptorPrivate::EncryptorPrivate(const QString &m, const QString &pwd, QObject *parent) :
+EncryptorPrivate::EncryptorPrivate(const QString &m,
+                                   const QString &pwd,
+                                   QObject *parent) :
     QObject (parent)
 {
     method = m.toUpper().toLocal8Bit();
@@ -92,7 +94,9 @@ void EncryptorPrivate::evpBytesToKey()
         i++;
     }
     QByteArray ms;
-    for (QVector<QByteArray>::ConstIterator it = m.begin(); it != m.end(); ++it) {
+    for (QVector<QByteArray>::ConstIterator it = m.begin();
+         it != m.end();
+         ++it) {
         ms.append(*it);
     }
 

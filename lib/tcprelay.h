@@ -36,9 +36,16 @@ class QSS_EXPORT TcpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpRelay(QTcpSocket *localSocket, int timeout, const Address &server_addr, const EncryptorPrivate &ep, const bool &is_local, const bool &autoBan, const bool &auth, QObject *parent = 0);
+    explicit TcpRelay(QTcpSocket *localSocket,
+                      int timeout,
+                      const Address &server_addr,
+                      const EncryptorPrivate &ep,
+                      const bool &is_local,
+                      const bool &autoBan,
+                      const bool &auth,
+                      QObject *parent = 0);
 
-    enum STAGE {INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED};
+    enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
 
 signals:
     void debug(const QString &);
@@ -52,7 +59,8 @@ signals:
     void bytesRead(const qint64 &);
     void bytesSend(const qint64 &);
 
-    void latencyAvailable(const int &);//time used for remote to connect to the host (msec)
+    //time used for remote to connect to the host (msec)
+    void latencyAvailable(const int &);
     void finished();
 
 private:

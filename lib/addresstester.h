@@ -37,7 +37,9 @@ class QSS_EXPORT AddressTester : public QObject
 {
     Q_OBJECT
 public:
-    explicit AddressTester(const QHostAddress &_address, const quint16 &_port, QObject *parent = 0);
+    explicit AddressTester(const QHostAddress &_address,
+                           const quint16 &_port,
+                           QObject *parent = 0);
 
     static const int LAG_TIMEOUT = -1;
     static const int LAG_ERROR = -2;

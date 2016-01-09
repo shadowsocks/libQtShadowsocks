@@ -39,7 +39,8 @@ const QByteArray Common::version()
     return QSS_VERSION;
 }
 
-QByteArray Common::packAddress(const Address &addr, bool auth)//pack a shadowsocks header
+//pack a shadowsocks header
+QByteArray Common::packAddress(const Address &addr, bool auth)
 {
     QByteArray addr_bin, port_ns;
     port_ns.resize(2);
@@ -48,13 +49,15 @@ QByteArray Common::packAddress(const Address &addr, bool auth)//pack a shadowsoc
     Address::ATYP type = addr.addressType();
     if (type == Address::HOST) {
         QByteArray address_str = addr.getAddress().toLocal8Bit();
-        addr_bin.append(static_cast<char>(address_str.length()));//can't be longer than 255
+        //can't be longer than 255
+        addr_bin.append(static_cast<char>(address_str.length()));
         addr_bin += address_str;
     } else if (type == Address::IPV4) {
         quint32 ipv4_addr = qToBigEndian(addr.getFirstIP().toIPv4Address());
         addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
     } else {
-        Q_IPV6ADDR ipv6_addr = addr.getFirstIP().toIPv6Address();//Q_IPV6ADDR is a 16-unsigned-char struct (big endian)
+        //Q_IPV6ADDR is a 16-unsigned-char struct (big endian)
+        Q_IPV6ADDR ipv6_addr = addr.getFirstIP().toIPv6Address();
         addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
     }
 
@@ -66,7 +69,9 @@ QByteArray Common::packAddress(const Address &addr, bool auth)//pack a shadowsoc
     return type_c + addr_bin + port_ns;
 }
 
-QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port, bool auth)
+QByteArray Common::packAddress(const QHostAddress &addr,
+                               const quint16 &port,
+                               bool auth)
 {
     QByteArray addr_bin, port_ns;
     char type_c;
@@ -87,7 +92,10 @@ QByteArray Common::packAddress(const QHostAddress &addr, const quint16 &port, bo
     return type_c + addr_bin + port_ns;
 }
 
-void Common::parseHeader(const QByteArray &data, Address &dest, int &header_length, bool &authFlag)
+void Common::parseHeader(const QByteArray &data,
+                         Address &dest,
+                         int &header_length,
+                         bool &authFlag)
 {
     char atyp = data[0];
     authFlag |= (atyp & ONETIMEAUTH_FLAG);
@@ -98,18 +106,24 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
         if (data.length() > 2) {
             quint8 addrlen = static_cast<quint8>(data[1]);
             if (data.size() >= 2 + addrlen) {
-                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>(data.data() + 2 + addrlen)));
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>
+                                            (data.data() + 2 + addrlen))
+                             );
                 dest.setAddress(QString(data.mid(2, addrlen)));
                 header_length = 4 + addrlen;
             }
         }
     } else if (addrtype == Address::IPV4) {
         if (data.length() >= 7) {
-            QHostAddress addr(qFromBigEndian(*reinterpret_cast<const quint32 *>(data.data() + 1)));
+            QHostAddress addr(qFromBigEndian(*reinterpret_cast<const quint32 *>
+                                             (data.data() + 1))
+                              );
             if (!addr.isNull()) {
                 header_length = 7;
                 dest.setIPAddress(addr);
-                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>(data.data() + 5)));
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>
+                                            (data.data() + 5))
+                             );
             }
         }
     } else if (addrtype == Address::IPV6) {
@@ -120,7 +134,9 @@ void Common::parseHeader(const QByteArray &data, Address &dest, int &header_leng
             if (!addr.isNull()) {
                 header_length = 19;
                 dest.setIPAddress(addr);
-                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>(data.data() + 17)));
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>
+                                            (data.data() + 17))
+                             );
             }
         }
     }
@@ -134,7 +150,10 @@ int Common::randomNumber(int max, int min)
     return dis(engine);
 }
 
-void Common::exclusive_or(unsigned char *ks, const unsigned char *in, unsigned char *out, quint32 length)
+void Common::exclusive_or(unsigned char *ks,
+                          const unsigned char *in,
+                          unsigned char *out,
+                          quint32 length)
 {
     unsigned char *end_ks = ks + length;
     do {

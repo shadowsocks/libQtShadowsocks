@@ -42,7 +42,9 @@ public:
      * DO NOT use listen() function, use httpListen instead
      * The socks_port is local socks proxy server port
      */
-    bool httpListen(const QHostAddress &http_addr, quint16 http_port, quint16 socks_port);
+    bool httpListen(const QHostAddress &http_addr,
+                    quint16 http_port,
+                    quint16 socks_port);
 
 signals:
     void info(const QString &);
@@ -57,7 +59,8 @@ private slots:
     void onSocketError(QAbstractSocket::SocketError);
     void onSocketReadyRead();
     void onProxySocketConnected();
-    void onProxySocketConnectedHttps();//this function is used for HTTPS transparent proxy
+    //this function is used for HTTPS transparent proxy
+    void onProxySocketConnectedHttps();
     void onProxySocketReadyRead();
 };
 

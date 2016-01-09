@@ -81,7 +81,9 @@ void Address::lookUp()
     if (isIPValid()) {
         emit lookedUp(true, QString());
     } else {
-        QHostInfo::lookupHost(data.first, this, SLOT(onLookUpFinished(QHostInfo)));
+        QHostInfo::lookupHost(data.first,
+                              this,
+                              SLOT(onLookUpFinished(QHostInfo)));
     }
 }
 

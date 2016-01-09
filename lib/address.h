@@ -38,25 +38,34 @@ class QSS_EXPORT Address : public QObject
 {
     Q_OBJECT
 public:
-    explicit Address(const QString &a = QString(), const quint16 &p = 0, QObject *parent = 0);
-    explicit Address(const QHostAddress &ip, const quint16 &p, QObject *parent = 0);
+    explicit Address(const QString &a = QString(),
+                     const quint16 &p = 0,
+                     QObject *parent = 0);
+
+    explicit Address(const QHostAddress &ip,
+                     const quint16 &p,
+                     QObject *parent = 0);
+
     Address(const Address &o);
-    Address(Address &&) = default;//force the generation of default move constructor
+    //force the generation of default move constructor
+    Address(Address &&) = default;
 
     QString getAddress() const;
 
     /*
      * Because the ipAddrList might include both IPv4 and IPv6 addresses
-     * getRandomIP() will literally return a random IP address (either IPv4 or IPv6)
-     * If there is no valid IP, a default constructed QHostAddress will be returned.
+     * getRandomIP() will literally return a random IP address
+     * (either IPv4 or IPv6)
+     * If there is no valid IP, a default constructed QHostAddress is returned.
      * TODO: detect IPv4/IPv6 reachability automatically
      */
     QHostAddress getRandomIP() const;
 
     /*
-     * Normally the order is platform-dependent and it'd consider IPv4 and IPv6 precedence
-     * which *might* be more suitable to use this function to get a reachable IP address
-     * If there is no valid IP, a default constructed QHostAddress will be returned.
+     * Normally the order is platform-dependent and it'd consider IPv4 and IPv6
+     * precedence, which *might* be more suitable to use this function to get
+     * a reachable IP address
+     * If there is no valid IP, a default constructed QHostAddress is returned.
      */
     QHostAddress getFirstIP() const;
 
@@ -66,7 +75,8 @@ public:
     /*
      * lookedUp signal will pass if it's successful
      * then you can use getRandomIP() to get a random IP address
-     * Note this function will emit lookedUp signal immediately if there is already a valid IP
+     * Note this function will emit lookedUp signal immediately if there is
+     * already a valid IP
      */
     void lookUp();
     void blockingLookUp();
@@ -91,7 +101,8 @@ public:
         return this->data == o.data;
     }
 
-    friend inline QDataStream& operator<< (QDataStream &os, const Address &addr) {
+    friend inline QDataStream& operator<< (QDataStream &os,
+                                           const Address &addr) {
         return os << addr.toString();
     }
 

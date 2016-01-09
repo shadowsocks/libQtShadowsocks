@@ -30,7 +30,11 @@
 
 using namespace QSS;
 
-Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent) :
+Cipher::Cipher(const QByteArray &method,
+               const QByteArray &key,
+               const QByteArray &iv,
+               bool encode,
+               QObject *parent) :
     QObject(parent),
     pipe(nullptr),
     rc4(nullptr),
@@ -47,10 +51,16 @@ Cipher::Cipher(const QByteArray &method, const QByteArray &key, const QByteArray
 #endif
         try {
             std::string str(method.constData(), method.length());
-            Botan::SymmetricKey _key(reinterpret_cast<const Botan::byte *>(key.constData()), key.size());
-            Botan::InitializationVector _iv(reinterpret_cast<const Botan::byte *>(iv.constData()), iv.size());
-            Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv, encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
-            //Botan::pipe will take control over filter, we shouldn't deallocate filter externally
+            Botan::SymmetricKey _key(
+                        reinterpret_cast<const Botan::byte *>(key.constData()),
+                        key.size());
+            Botan::InitializationVector _iv(
+                        reinterpret_cast<const Botan::byte *>(iv.constData()),
+                        iv.size());
+            Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv,
+                        encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
+            // Botan::pipe will take control over filter
+            // we shouldn't deallocate filter externally
             pipe = new Botan::Pipe(filter);
         } catch(Botan::Exception &e) {
             qWarning("%s\n", e.what());
@@ -66,7 +76,8 @@ Cipher::~Cipher()
     if (pipe)   delete pipe;
 }
 
-const QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::keyIvMap = Cipher::generateKeyIvMap();
+const QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::keyIvMap =
+        Cipher::generateKeyIvMap();
 const int Cipher::AUTH_LEN = 10;
 
 QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::generateKeyIvMap()
@@ -98,9 +109,11 @@ QByteArray Cipher::update(const QByteArray &data)
     } else if (rc4) {
         return rc4->update(data);
     } else if (pipe) {
-        pipe->process_msg(reinterpret_cast<const Botan::byte *>(data.constData()), data.size());
+        pipe->process_msg(reinterpret_cast<const Botan::byte *>
+                          (data.constData()), data.size());
         SecureByteArray c = pipe->read_all(Botan::Pipe::LAST_MESSAGE);
-        QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)), c.size());
+        QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)),
+                       c.size());
         return out;
     } else {
         throw std::runtime_error("Underlying ciphers are all uninitialised!");
@@ -114,7 +127,8 @@ const QByteArray &Cipher::getIV() const
 
 QByteArray Cipher::randomIv(int length)
 {
-    if (length == 0) {//directly return empty byte array if no need to genenrate iv
+    //directly return empty byte array if no need to genenrate iv
+    if (length == 0) {
         return QByteArray();
     }
 
@@ -127,7 +141,9 @@ QByteArray Cipher::randomIv(int length)
 
 QByteArray Cipher::hmacSha1(const QByteArray &key, const QByteArray &msg)
 {
-    return QMessageAuthenticationCode::hash(msg, key, QCryptographicHash::Sha1).left(AUTH_LEN);
+    return QMessageAuthenticationCode::hash(msg,
+                                       key,
+                                       QCryptographicHash::Sha1).left(AUTH_LEN);
 }
 
 QByteArray Cipher::md5Hash(const QByteArray &in)

@@ -34,10 +34,13 @@ class QSS_EXPORT SocketStream : public QObject
     Q_OBJECT
 public:
     /*
-     * a light-weight class dedicated to stream data between two sockets
-     * all available data from socket a will be written to socket b, and vice versa
+     * A light-weight class dedicated to stream data between two sockets
+     * all available data from socket a will be written to socket b
+     * vice versa
      */
-    explicit SocketStream(QAbstractSocket *a, QAbstractSocket *b, QObject *parent = 0);
+    explicit SocketStream(QAbstractSocket *a,
+                          QAbstractSocket *b,
+                          QObject *parent = 0);
 
 signals:
     void info(const QString &);

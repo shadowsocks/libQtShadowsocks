@@ -24,13 +24,17 @@
 
 using namespace QSS;
 
-SocketStream::SocketStream(QAbstractSocket *a, QAbstractSocket *b,  QObject *parent) :
+SocketStream::SocketStream(QAbstractSocket *a,
+                           QAbstractSocket *b,
+                           QObject *parent) :
     QObject(parent),
     as(a),
     bs(b)
 {
-    connect (as, &QAbstractSocket::readyRead, this, &SocketStream::onSocketAReadyRead);
-    connect (bs, &QAbstractSocket::readyRead, this, &SocketStream::onSocketBReadyRead);
+    connect (as, &QAbstractSocket::readyRead,
+             this, &SocketStream::onSocketAReadyRead);
+    connect (bs, &QAbstractSocket::readyRead,
+             this, &SocketStream::onSocketBReadyRead);
 }
 
 void SocketStream::onSocketAReadyRead()
