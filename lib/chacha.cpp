@@ -62,13 +62,10 @@ ChaCha::ChaCha(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
     m_state[5] = load_le<quint32>(key, 1);
     m_state[6] = load_le<quint32>(key, 2);
     m_state[7] = load_le<quint32>(key, 3);
-
-    key += 16;
-
-    m_state[8] = load_le<quint32>(key, 0);
-    m_state[9] = load_le<quint32>(key, 1);
-    m_state[10] = load_le<quint32>(key, 2);
-    m_state[11] = load_le<quint32>(key, 3);
+    m_state[8] = load_le<quint32>(key, 4);
+    m_state[9] = load_le<quint32>(key, 5);
+    m_state[10] = load_le<quint32>(key, 6);
+    m_state[11] = load_le<quint32>(key, 7);
 
     setIV(_iv);
 }
