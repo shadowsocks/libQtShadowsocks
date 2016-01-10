@@ -78,27 +78,53 @@ Cipher::~Cipher()
 
 const QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::keyIvMap =
         Cipher::generateKeyIvMap();
+const QMap<QByteArray, QByteArray> Cipher::cipherNameMap =
+        Cipher::generateCipherNameMap();
 const int Cipher::AUTH_LEN = 10;
 
 QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::generateKeyIvMap()
 {
     QMap<QByteArray, CipherKeyIVLength> map;
-    map.insert("AES-128/CFB", {16, 16});
-    map.insert("AES-192/CFB", {24, 16});
-    map.insert("AES-256/CFB", {32, 16});
-    map.insert("Blowfish/CFB", {16, 8});
-    map.insert("Camellia-128/CFB", {16, 16});
-    map.insert("Camellia-192/CFB", {24, 16});
-    map.insert("Camellia-256/CFB", {32, 16});
-    map.insert("CAST-128/CFB", {16, 8});
-    map.insert("ChaCha", {32, 8});
-    map.insert("DES/CFB", {8, 8});
-    map.insert("IDEA/CFB", {16, 8});
-    map.insert("RC2/CFB", {16, 8});
-    map.insert("RC4-MD5", {16, 16});
-    map.insert("Salsa20", {32, 8});
-    map.insert("SEED/CFB", {16, 16});
-    map.insert("Serpent/CFB", {32, 16});//256-bit Serpent
+    map.insert("aes-128-cfb", {16, 16});
+    map.insert("aes-192-cfb", {24, 16});
+    map.insert("aes-256-cfb", {32, 16});
+    map.insert("bf-cfb", {16, 8});
+    map.insert("camellia-128-cfb", {16, 16});
+    map.insert("camellia-192-cfb", {24, 16});
+    map.insert("camellia-256-cfb", {32, 16});
+    map.insert("cast5-cfb", {16, 8});
+    map.insert("chacha20", {32, 8});
+    map.insert("chacha20-ietf", {32, 12});
+    map.insert("des-cfb", {8, 8});
+    map.insert("idea-cfb", {16, 8});
+    map.insert("rc2-cfb", {16, 8});
+    map.insert("rc4-md5", {16, 16});
+    map.insert("salsa20", {32, 8});
+    map.insert("seed-cfb", {16, 16});
+    map.insert("serpent-256-cfb", {32, 16});
+    return map;
+}
+
+QMap<QByteArray, QByteArray> Cipher::generateCipherNameMap()
+{
+    QMap<QByteArray, QByteArray> map;
+    map.insert("aes-128-cfb", "AES-128/CFB");
+    map.insert("aes-192-cfb", "AES-192/CFB");
+    map.insert("aes-256-cfb", "AES-256/CFB");
+    map.insert("bf-cfb", "Blowfish/CFB");
+    map.insert("camellia-128-cfb", "Camellia-128/CFB");
+    map.insert("camellia-192-cfb", "Camellia-192/CFB");
+    map.insert("camellia-256-cfb", "Camellia-256/CFB");
+    map.insert("cast5-cfb", "CAST-128/CFB");
+    map.insert("chacha20", "ChaCha");
+    map.insert("chacha20-ietf", "ChaCha");
+    map.insert("des-cfb", "DES/CFB");
+    map.insert("idea-cfb", "IDEA/CFB");
+    map.insert("rc2-cfb", "RC2/CFB");
+    map.insert("rc4-md5", "RC4-MD5");
+    map.insert("salsa20", "Salsa20");
+    map.insert("seed-cfb", "SEED/CFB");
+    map.insert("serpent-256-cfb", "Serpent/CFB");
     return map;
 }
 

@@ -66,8 +66,15 @@ public:
     /*
      * keyIvMap contains required key length and IV length
      * The CipherKeyIVLength contains two integers, key length and IV length
+     * The key of this map is the encryption method (shadowsocks convention)
      */
     static const QMap<QByteArray, CipherKeyIVLength> keyIvMap;
+
+    /*
+     * This map stores the shadowsocks convention name and the corresponding
+     * cipher name in Botan library
+     */
+    static const QMap<QByteArray, QByteArray> cipherNameMap;
     static const int AUTH_LEN;
 
     static QByteArray randomIv(int length);
@@ -82,6 +89,7 @@ private:
     QByteArray iv;
 
     static QMap<QByteArray, CipherKeyIVLength> generateKeyIvMap();
+    static QMap<QByteArray, QByteArray> generateCipherNameMap();
 };
 
 }

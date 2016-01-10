@@ -30,28 +30,12 @@ EncryptorPrivate::EncryptorPrivate(const QString &m,
                                    QObject *parent) :
     QObject (parent)
 {
-    method = m.toUpper().toLocal8Bit();
+    method = m.toLower().toLocal8Bit();
     password = pwd.toLocal8Bit();
     valid = true;
 
-    if (method.contains("BF")) {
-        method = "Blowfish/CFB";
-    } else if (method.contains("CAST5")) {
-        method = "CAST-128/CFB";
-    } else if (method.contains("SALSA20")) {
-        method = "Salsa20";
-    } else if (method.contains("CHACHA20")) {
-        method = "ChaCha";
-    } else if (method.contains("SERPENT-CFB")) {
-        method = "Serpent/CFB";
-    } else {
-        if (method.contains("CAMELLIA")) {
-            method.replace("CAMELLIA", "Camellia");
-        }
-        method.replace("-C", "/C");//i.e. -CFB to /CFB
-    }
-
     Cipher::CipherKeyIVLength ki = Cipher::keyIvMap.value(method);
+    method = Cipher::cipherNameMap.value(method);
     if (ki[0] == 0 || !Cipher::isSupported(method)) {
         qCritical("The method %s is not supported.", m.toStdString().data());
         valid = false;
