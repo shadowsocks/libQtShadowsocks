@@ -150,7 +150,7 @@ bool Controller::start()
         listen_ret = tcpServer->listen(
                     getLocalAddr(),
                     profile.http_proxy ? 0 : profile.local_port);
-        listen_ret |= udpRelay->listen(getLocalAddr(), profile.local_port);
+        listen_ret &= udpRelay->listen(getLocalAddr(), profile.local_port);
         if (profile.http_proxy && listen_ret) {
             emit info("SOCKS5 port is "
                       + QString::number(tcpServer->serverPort()));
@@ -168,7 +168,7 @@ bool Controller::start()
         sstr.append(QString::number(profile.server_port));
         listen_ret = tcpServer->listen(serverAddress.getFirstIP(),
                                        profile.server_port);
-        listen_ret |= udpRelay->listen(serverAddress.getFirstIP(),
+        listen_ret &= udpRelay->listen(serverAddress.getFirstIP(),
                                        profile.server_port);
     }
 
