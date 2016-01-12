@@ -1,3 +1,10 @@
+libqtshadowsocks (1.8.4-1) stable; urgency=medium
+
+  * fix a false true return value bug
+  * support chacha20-ietf
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Tue, 12 Jan 2016 21:58:00 +0000
+
 libqtshadowsocks (1.8.3-1) stable; urgency=medium
 
   * refine UDP start/stop
