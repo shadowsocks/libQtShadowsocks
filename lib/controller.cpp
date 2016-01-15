@@ -150,17 +150,19 @@ bool Controller::start()
         listen_ret = tcpServer->listen(
                     getLocalAddr(),
                     profile.http_proxy ? 0 : profile.local_port);
-        listen_ret &= udpRelay->listen(getLocalAddr(), profile.local_port);
-        if (profile.http_proxy && listen_ret) {
-            emit info("SOCKS5 port is "
-                      + QString::number(tcpServer->serverPort()));
-            if (httpProxy->httpListen(getLocalAddr(),
-                                      profile.local_port,
-                                      tcpServer->serverPort())) {
-                emit info("Running as a HTTP proxy server");
-            } else {
-                emit info("HTTP proxy server listen failed.");
-                listen_ret = false;
+        if (listen_ret) {
+            listen_ret = udpRelay->listen(getLocalAddr(), profile.local_port);
+            if (profile.http_proxy && listen_ret) {
+                emit info("SOCKS5 port is "
+                          + QString::number(tcpServer->serverPort()));
+                if (httpProxy->httpListen(getLocalAddr(),
+                                          profile.local_port,
+                                          tcpServer->serverPort())) {
+                    emit info("Running as a HTTP proxy server");
+                } else {
+                    emit info("HTTP proxy server listen failed.");
+                    listen_ret = false;
+                }
             }
         }
     } else {
@@ -168,8 +170,10 @@ bool Controller::start()
         sstr.append(QString::number(profile.server_port));
         listen_ret = tcpServer->listen(serverAddress.getFirstIP(),
                                        profile.server_port);
-        listen_ret &= udpRelay->listen(serverAddress.getFirstIP(),
+        if (listen_ret) {
+            listen_ret = udpRelay->listen(serverAddress.getFirstIP(),
                                        profile.server_port);
+        }
     }
 
     if (listen_ret) {
