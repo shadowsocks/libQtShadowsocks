@@ -30,9 +30,6 @@ public:
     //test data encrypt/decrypt speed. print result to terminal
     static void testSpeed(const QString &method, quint32 data_size_mb);
     static void testSpeed(quint32 data_size_mb);//test all methods
-
-private:
-    static const QStringList allMethods;
 };
 
 #endif // UTILS_H

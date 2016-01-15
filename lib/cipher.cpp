@@ -198,3 +198,16 @@ bool Cipher::isSupported(const QByteArray &method)
         return true;
     }
 }
+
+QList<QByteArray> Cipher::getSupportedMethodList()
+{
+    QList<QByteArray> supportedMethods;
+    for (auto it = Cipher::cipherNameMap.cbegin();
+         it != Cipher::cipherNameMap.cend();
+         ++it) {
+        if (Cipher::isSupported(it.value())) {
+            supportedMethods.push_back(it.key());
+        }
+    }
+    return supportedMethods;
+}

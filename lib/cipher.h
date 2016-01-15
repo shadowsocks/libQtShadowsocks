@@ -82,6 +82,8 @@ public:
     static QByteArray md5Hash(const QByteArray &in);
     static bool isSupported(const QByteArray &method);
 
+    static QList<QByteArray> getSupportedMethodList();
+
 private:
     Botan::Pipe *pipe;
     RC4 *rc4;
