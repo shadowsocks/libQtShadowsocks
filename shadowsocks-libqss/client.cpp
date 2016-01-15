@@ -126,6 +126,19 @@ bool Client::start(bool _server)
         connect(lc, &QSS::Controller::debug, this, &Client::logHandler);
     }
     lc->setup(profile);
+
+    if (!_server) {
+        QSS::Address server(profile.server, profile.server_port);
+        QSS::AddressTester *tester =
+                new QSS::AddressTester(server.getFirstIP(),
+                                       server.getPort());
+        connect(tester, &QSS::AddressTester::connectivityTestFinished,
+                this, &Client::onConnectivityResultArrived);
+        tester->startConnectivityTest(profile.method,
+                                      profile.password,
+                                      profile.auth);
+    }
+
     return lc->start();
 }
 
@@ -171,4 +184,17 @@ void Client::logHandler(const QString &log)
 QString Client::getMethod() const
 {
     return profile.method;
+}
+
+void Client::onConnectivityResultArrived(bool c)
+{
+    if (c) {
+        QSS::Common::qOut << "The shadowsocks connection is okay." << endl;
+    } else {
+        QSS::Common::qOut << "Destination is not reachable. "
+                             "Please check your network and firewall settings. "
+                             "And make sure the profile is correct."
+                          << endl;
+    }
+    sender()->deleteLater();
 }

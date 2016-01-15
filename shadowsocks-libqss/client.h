@@ -64,6 +64,7 @@ private:
 
 private slots:
     void logHandler(const QString &);
+    void onConnectivityResultArrived(bool);
 };
 
 #endif // CLIENT_H
