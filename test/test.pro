@@ -30,7 +30,11 @@ unix: {
     CONFIG      += link_pkgconfig
     PKGCONFIG   += botan-$$BOTAN_VER
 }
-
+win32: {
+    DEFINES     += QSS_STATIC
+    CONFIG(release, release|debug): LIBS += -L../lib/release
+    else:            LIBS += -L../lib/debug
+}
 INCLUDEPATH     += $$top_srcdir/../lib
 LIBS            += -L$$top_srcdir/../lib \
                    -L../lib \
