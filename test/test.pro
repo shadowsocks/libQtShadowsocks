@@ -15,11 +15,13 @@ CONFIG   -= app_bundle
 TEMPLATE = app
 
 HEADERS += \
-    address.t.h
+    address.t.h \
+    chacha.t.h
 
 SOURCES += \
     main.cpp \
-    address.t.cpp
+    address.t.cpp \
+    chacha.t.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 isEmpty(BOTAN_VER) {
