@@ -12,6 +12,7 @@ public:
 private Q_SLOTS:
     void test8ByteIV();
     void test12ByteIV();
+    void referenceTest();
 
 private:
     QByteArray key;

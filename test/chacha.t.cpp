@@ -31,3 +31,18 @@ void ChaCha_T::test12ByteIV()
     QByteArray iv  = Cipher::randomIv(12);
     testChaCha(iv);
 }
+
+void ChaCha_T::referenceTest()
+{
+    // Test original ChaCha20 (96-byte IV)
+    QByteArray testKey(32, 0);
+    QByteArray testIv(8, 0);
+    QByteArray testData(9, '\0');
+    ChaCha chacha(testKey, testIv);
+    QCOMPARE(chacha.update(testData), QByteArray::fromHex("76b8e0ada0f13d9040"));
+
+    // Test ChaCha20-IETF
+    QByteArray testIv_ietf(12, 0);
+    ChaCha chacha_ietf(testKey, testIv_ietf);
+    QCOMPARE(chacha_ietf.update(testData), QByteArray::fromHex("76b8e0ada0f13d9040"));
+}
