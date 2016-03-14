@@ -1,6 +1,8 @@
 libQtShadowsocks
 ================
 
+[![Build Status](https://travis-ci.org/shadowsocks/libQtShadowsocks.svg?branch=master)](https://travis-ci.org/shadowsocks/libQtShadowsocks)
+
 Introduction
 ------------
 
