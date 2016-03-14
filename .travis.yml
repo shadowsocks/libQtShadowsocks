@@ -1,0 +1,17 @@
+sudo: required
+dist: trusty
+language: cpp
+cache: apt
+
+branches:
+  only:
+    - 'master'
+
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get -qq install qt5-qmake qtbase5-dev libbotan1.10-dev gcc-4.8
+
+script:
+  - qmake
+  - make
+
