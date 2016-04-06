@@ -39,9 +39,12 @@ else {
 
 include(QtShadowsocks.pri)
 
-unix: {
-    macx: QT_CONFIG -= no-pkg-config
+macx: {
+    QT_CONFIG  -= no-pkg-config
+    DEFINES    += "FD_SETSIZE=1024"
+}
 
+unix: {
     CONFIG     += create_pc create_prl no_install_prl link_pkgconfig
 
     contains(DEFINES, LIB64): target.path = $$INSTALL_PREFIX/lib64

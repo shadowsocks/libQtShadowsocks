@@ -30,6 +30,10 @@ isEmpty(BOTAN_VER) {
     BOTAN_VER = 1.10
 }
 
+macx: {
+    QT_CONFIG  -= no-pkg-config
+    DEFINES    += "FD_SETSIZE=1024"
+}
 unix: {
     CONFIG      += link_pkgconfig
     PKGCONFIG   += botan-$$BOTAN_VER
