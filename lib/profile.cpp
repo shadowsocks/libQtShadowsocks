@@ -1,5 +1,5 @@
 #include "profile.h"
-#include <QList>
+#include <QStringList>
 
 using namespace QSS;
 
@@ -12,14 +12,14 @@ Profile::Profile() :
 Profile::Profile(QByteArray uri) : Profile()
 {
     uri.remove(0, 5);//remove the prefix "ss://" from uri
-    QList<QByteArray> resultList = QByteArray::fromBase64(uri).split(':');
+    QStringList resultList = QString(QByteArray::fromBase64(uri)).split(':');
     method = resultList.takeFirst();
     if (method.endsWith(QStringLiteral("-auth"))) {
         method = method.remove(QStringLiteral("-auth"));
         auth = true;
     }
     server_port = resultList.takeLast().toUShort();
-    QList<QByteArray> ser = resultList.join(':').split('@');//there are lots of ':' in IPv6 address
+    QStringList ser = resultList.join(':').split('@');//there are lots of ':' in IPv6 address
     server = ser.takeLast();
     password = ser.join('@');//incase there is a '@' in password
 }
