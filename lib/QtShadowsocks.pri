@@ -16,7 +16,8 @@ SOURCES  += \
             udprelay.cpp \
             httpproxy.cpp \
             socketstream.cpp \
-            tcpserver.cpp
+            tcpserver.cpp \
+            profile.cpp
 
 
 HEADERS  += \

@@ -24,6 +24,7 @@
 #define PROFILE_H
 
 #include <QString>
+#include <QByteArray>
 
 namespace QSS {
 
@@ -47,8 +48,17 @@ struct Profile {
     bool debug;//turn on debug output or not
     bool auth;
 
-    Profile() : local_address("127.0.0.1"), server_port(8388), local_port(1080),
-                timeout(600), http_proxy(false), debug(false), auth(false) {}
+    Profile();
+
+    /*
+     * Construct Profile using ss:// URI
+     * Please check https://shadowsocks.org/en/config/quick-guide.html for more
+     * details. Undefined behaviour if uri is invalid.
+     */
+    Profile(QByteArray uri);
+
+    // Encode profile as a ss:// URI
+    QByteArray toURI();
 };
 
 }

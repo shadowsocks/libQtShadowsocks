@@ -17,13 +17,15 @@ TEMPLATE = app
 HEADERS += \
     address.t.h \
     chacha.t.h \
-    cipher.t.h
+    cipher.t.h \
+    profile.t.h
 
 SOURCES += \
     main.cpp \
     address.t.cpp \
     chacha.t.cpp \
-    cipher.t.cpp
+    cipher.t.cpp \
+    profile.t.cpp
 DEFINES += SRCDIR=\\\"$$PWD/\\\"
 
 isEmpty(BOTAN_VER) {
