@@ -1,3 +1,12 @@
+libqtshadowsocks (1.9.0-1) stable; urgency=medium
+
+  * add an API to return supported ciphers at run-time
+  * add an API to test shadowsocks Internet connectivity
+  * fix building issues on Mac OS X
+  * add ss uri utility functions to Profile class
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Wed, 11 May 2016 22:34:00 +0100
+
 libqtshadowsocks (1.8.4-1) stable; urgency=medium
 
   * fix a false true return value bug
