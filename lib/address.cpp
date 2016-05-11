@@ -99,7 +99,7 @@ void Address::blockingLookUp()
 
 void Address::setAddress(const QString &a)
 {
-    data.first = a;
+    data.first = a.trimmed();
     ipAddrList.clear();
     QHostAddress ipAddress(a);
     if (!ipAddress.isNull()) {

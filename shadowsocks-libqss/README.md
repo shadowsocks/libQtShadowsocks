@@ -41,7 +41,7 @@ If `config.json` is specified, most command-line options will be **ignored**. Th
 License
 -------
 
-Copyright (C) 2014-2015 Symeon Huang
+Copyright (C) 2014-2016 Symeon Huang
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
