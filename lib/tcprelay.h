@@ -44,6 +44,7 @@ public:
                       const bool &autoBan,
                       const bool &auth,
                       QObject *parent = 0);
+	~TcpRelay();
 
     enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
 

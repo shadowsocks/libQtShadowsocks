@@ -86,15 +86,23 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
 
+TcpRelay::~TcpRelay()
+{
+	encryptor->deleteLater();
+	timer->deleteLater();
+	remote->deleteLater();
+	local->deleteLater();
+}
+
 void TcpRelay::close()
 {
     if (stage == DESTROYED) {
         return;
     }
 
+    stage = DESTROYED;
     local->close();
     remote->close();
-    stage = DESTROYED;
     emit finished();
 }
 
@@ -260,6 +268,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
 
     if (stage == STREAM) {
         if (isLocal) {
+            Common::qOut << data.toHex() << endl;
             if (auth) {
                 encryptor->addChunkAuth(data);
             }
