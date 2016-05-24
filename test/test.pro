@@ -46,7 +46,6 @@ win32: {
     else:            LIBS += -L../lib/debug
 }
 INCLUDEPATH     += $$top_srcdir/../lib
-LIBS            += -L$$top_srcdir/../lib \
-                   -L../lib \
+LIBS            += -L../lib \
                    -lQtShadowsocks \
                    -lbotan-$$BOTAN_VER
