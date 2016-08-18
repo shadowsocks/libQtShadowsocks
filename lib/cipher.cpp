@@ -88,6 +88,9 @@ QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::generateKeyIvMap()
     map.insert("aes-128-cfb", {16, 16});
     map.insert("aes-192-cfb", {24, 16});
     map.insert("aes-256-cfb", {32, 16});
+    map.insert("aes-128-ctr", {16, 16});
+    map.insert("aes-192-ctr", {24, 16});
+    map.insert("aes-256-ctr", {32, 16});
     map.insert("bf-cfb", {16, 8});
     map.insert("camellia-128-cfb", {16, 16});
     map.insert("camellia-192-cfb", {24, 16});
@@ -111,6 +114,9 @@ QMap<QByteArray, QByteArray> Cipher::generateCipherNameMap()
     map.insert("aes-128-cfb", "AES-128/CFB");
     map.insert("aes-192-cfb", "AES-192/CFB");
     map.insert("aes-256-cfb", "AES-256/CFB");
+    map.insert("aes-128-ctr", "AES-128/CTR-BE");
+    map.insert("aes-192-ctr", "AES-192/CTR-BE");
+    map.insert("aes-256-ctr", "AES-256/CTR-BE");
     map.insert("bf-cfb", "Blowfish/CFB");
     map.insert("camellia-128-cfb", "Camellia-128/CFB");
     map.insert("camellia-192-cfb", "Camellia-192/CFB");
