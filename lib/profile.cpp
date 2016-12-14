@@ -12,7 +12,13 @@ Profile::Profile() :
 Profile::Profile(QByteArray uri) : Profile()
 {
     uri.remove(0, 5);//remove the prefix "ss://" from uri
-    QStringList resultList = QString(QByteArray::fromBase64(uri)).split(':');
+
+    QList<QByteArray> tagList = uri.split('#');
+    if (tagList.length() > 1) {
+        nameTag = QString::fromUtf8(tagList.at(1));
+    }
+
+    QStringList resultList = QString(QByteArray::fromBase64(tagList.first())).split(':');
     method = resultList.takeFirst();
     if (method.endsWith(QStringLiteral("-auth"))) {
         method = method.remove(QStringLiteral("-auth"));
@@ -29,5 +35,7 @@ QByteArray Profile::toURI()
     QString ssurl = QString("%1%2:%3@%4:%5").arg(method.toLower()).arg(auth ? "-auth" : "").arg(password).arg(server).arg(QString::number(server_port));
     QByteArray uri = QByteArray(ssurl.toStdString().c_str()).toBase64();
     uri.prepend("ss://");
+    uri.append("#");
+    uri.append(nameTag.toUtf8());
     return uri;
 }

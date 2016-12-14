@@ -29,6 +29,7 @@
 namespace QSS {
 
 struct Profile {
+    QString nameTag;// Profile "name" or "remark"
     QString server;
     QString local_address;
     QString method;
