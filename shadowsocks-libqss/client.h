@@ -58,8 +58,6 @@ private:
     QSS::Controller *lc;
     QSS::Profile profile;
     bool autoBan;
-
-    bool cipherTest();
     bool headerTest();
 
 private slots:

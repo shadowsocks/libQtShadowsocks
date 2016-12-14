@@ -107,10 +107,6 @@ void Client::setAuth(bool auth)
 bool Client::start(bool _server)
 {
     if (profile.debug) {
-        if (!cipherTest()) {
-            QSS::Common::qOut << "Cipher test failed" << endl;
-            return false;
-        }
         if (!headerTest()) {
             QSS::Common::qOut << "Header test failed" << endl;
             return false;
@@ -140,13 +136,6 @@ bool Client::start(bool _server)
     }
 
     return lc->start();
-}
-
-bool Client::cipherTest()
-{
-    QSS::EncryptorPrivate ep(profile.method, profile.password);
-    QSS::Encryptor e(ep);
-    return e.selfTest();
 }
 
 bool Client::headerTest()

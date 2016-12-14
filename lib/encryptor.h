@@ -48,7 +48,6 @@ public:
     QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
     QByteArray encryptAll(const QByteArray &);
     void reset();
-    bool selfTest();
     QByteArray deCipherIV() const;
 
     void addHeaderAuth(QByteArray &headerData) const;

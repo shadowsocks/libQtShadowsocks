@@ -67,8 +67,8 @@ private:
 
     QList<TcpRelay*> conList;
     QList<QThread*> threadList;
-    unsigned int workerThreadID;
-    unsigned int totalWorkers;
+    quint64 workerThreadID;
+    quint64 totalWorkers;
 
 private slots:
     void onConnectionFinished();
