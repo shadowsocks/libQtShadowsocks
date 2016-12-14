@@ -68,9 +68,13 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
 
     QByteArray out;
     if (!deCipher) {
+        QByteArray iv = in.mid(0, ep.ivLen);
+        if (iv.length() != ep.ivLen) {
+            return out;
+        }
         deCipher = new Cipher(ep.method,
                               ep.key,
-                              in.mid(0, ep.ivLen),
+                              iv,
                               false,
                               this);
         out = deCipher->update(in.mid(ep.ivLen));
@@ -100,7 +104,11 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
     if (deCipher) {
         deCipher->deleteLater();
     }
-    deCipher = new Cipher(ep.method, ep.key, in.mid(0, ep.ivLen), false, this);
+    QByteArray iv = in.mid(0, ep.ivLen);
+    if (iv.length() != ep.ivLen) {
+        return QByteArray();
+    }
+    deCipher = new Cipher(ep.method, ep.key, iv, false, this);
     return deCipher->update(in.mid(ep.ivLen));
 }
 
