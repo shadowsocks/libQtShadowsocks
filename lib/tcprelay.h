@@ -64,7 +64,7 @@ signals:
     void finished();
 
 private:
-    static const qint64 RecvSize = 65536;
+    static const qint64 RemoteRecvSize = 65536;
 
     STAGE stage;
     Address remoteAddress;

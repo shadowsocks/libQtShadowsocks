@@ -40,7 +40,14 @@ UdpRelay::UdpRelay(const EncryptorPrivate &ep,
 {
     encryptor = new Encryptor(ep, this);
 
-    listenSocket.setReadBufferSize(RecvSize);
+    // To make sure datagram doesn't exceed remote server's maximum, we can
+    // limit how many bytes we take from local socket at a time. This is due
+    // the overhead introduced by OTA.
+    quint64 localRecvSize = RemoteRecvSize;
+    if (auth && isLocal) {
+        localRecvSize -= (Cipher::AUTH_LEN + 2);
+    }
+    listenSocket.setReadBufferSize(localRecvSize);
     listenSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
     connect(&listenSocket, &QUdpSocket::stateChanged,
@@ -104,7 +111,7 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
-    if (listenSocket.pendingDatagramSize() > RecvSize) {
+    if (listenSocket.pendingDatagramSize() > RemoteRecvSize) {
         emit info("[UDP] Datagram is too large. discarded.");
         return;
     }
@@ -114,7 +121,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
     QHostAddress r_addr;
     quint16 r_port;
     qint64 readSize = listenSocket.readDatagram(data.data(),
-                                                RecvSize,
+                                                RemoteRecvSize,
                                                 &r_addr,
                                                 &r_port);
     emit bytesRead(readSize);
@@ -152,7 +159,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
     QString dbg;
     if (!client) {
         client = new QUdpSocket(this);
-        client->setReadBufferSize(RecvSize);
+        client->setReadBufferSize(RemoteRecvSize);
         client->setSocketOption(QAbstractSocket::LowDelayOption, 1);
         cache.insert(remoteAddr, client);
         connect(client, &QUdpSocket::readyRead,
@@ -210,7 +217,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
         return;
     }
 
-    if (sock->pendingDatagramSize() > RecvSize) {
+    if (sock->pendingDatagramSize() > RemoteRecvSize) {
         emit info("[UDP] Datagram is too large. Discarded.");
         return;
     }
@@ -219,7 +226,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
     data.resize(sock->pendingDatagramSize());
     QHostAddress r_addr;
     quint16 r_port;
-    sock->readDatagram(data.data(), RecvSize, &r_addr, &r_port);
+    sock->readDatagram(data.data(), RemoteRecvSize, &r_addr, &r_port);
 
     QByteArray response;
     if (isLocal) {

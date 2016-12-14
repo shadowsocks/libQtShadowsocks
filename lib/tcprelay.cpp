@@ -77,11 +77,18 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
             timer, static_cast<void (QTimer::*)()> (&QTimer::start));
     connect(remote, &QTcpSocket::bytesWritten, this, &TcpRelay::bytesSend);
 
-    local->setReadBufferSize(RecvSize);
+    // To make sure datagram doesn't exceed remote server's maximum, we can
+    // limit how many bytes we take from local socket at a time. This is due
+    // the overhead introduced by OTA.
+    quint64 localRecvSize = RemoteRecvSize;
+    if (auth && isLocal) {
+        localRecvSize -= (Cipher::AUTH_LEN + 2);
+    }
+    local->setReadBufferSize(localRecvSize);
     local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     local->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
-    remote->setReadBufferSize(RecvSize);
+    remote->setReadBufferSize(RemoteRecvSize);
     remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 }
