@@ -7,7 +7,7 @@
  * If there is a modification associated with encryption/decryption, it's
  * this class that needs changes instead of messing up lots of classes.
  *
- * Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -30,8 +30,8 @@
 #define CIPHER_H
 
 #include <array>
+#include <map>
 #include <QObject>
-#include <QMap>
 #include <botan/pipe.h>
 #include <botan/version.h>
 #include "rc4.h"
@@ -68,13 +68,13 @@ public:
      * The CipherKeyIVLength contains two integers, key length and IV length
      * The key of this map is the encryption method (shadowsocks convention)
      */
-    static const QMap<QByteArray, CipherKeyIVLength> keyIvMap;
+    static const std::map<QByteArray, CipherKeyIVLength> keyIvMap;
 
     /*
      * This map stores the shadowsocks convention name and the corresponding
      * cipher name in Botan library
      */
-    static const QMap<QByteArray, QByteArray> cipherNameMap;
+    static const std::map<QByteArray, QByteArray> cipherNameMap;
     static const int AUTH_LEN;
 
     static QByteArray randomIv(int length);
@@ -89,9 +89,6 @@ private:
     RC4 *rc4;
     ChaCha *chacha;
     QByteArray iv;
-
-    static QMap<QByteArray, CipherKeyIVLength> generateKeyIvMap();
-    static QMap<QByteArray, QByteArray> generateCipherNameMap();
 };
 
 }

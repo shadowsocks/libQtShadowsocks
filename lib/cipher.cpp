@@ -1,7 +1,7 @@
 /*
  * cipher.cpp - the source file of Cipher class
  *
- * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -63,7 +63,7 @@ Cipher::Cipher(const QByteArray &method,
             // we shouldn't deallocate filter externally
             pipe = new Botan::Pipe(filter);
         } catch(Botan::Exception &e) {
-            qWarning("%s\n", e.what());
+            qFatal("%s\n", e.what());
         }
 #if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
         }
@@ -76,63 +76,51 @@ Cipher::~Cipher()
     if (pipe)   delete pipe;
 }
 
-const QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::keyIvMap =
-        Cipher::generateKeyIvMap();
-const QMap<QByteArray, QByteArray> Cipher::cipherNameMap =
-        Cipher::generateCipherNameMap();
+const std::map<QByteArray, Cipher::CipherKeyIVLength> Cipher::keyIvMap = {
+    {"aes-128-cfb", {16, 16}},
+    {"aes-192-cfb", {24, 16}},
+    {"aes-256-cfb", {32, 16}},
+    {"aes-128-ctr", {16, 16}},
+    {"aes-192-ctr", {24, 16}},
+    {"aes-256-ctr", {32, 16}},
+    {"bf-cfb", {16, 8}},
+    {"camellia-128-cfb", {16, 16}},
+    {"camellia-192-cfb", {24, 16}},
+    {"camellia-256-cfb", {32, 16}},
+    {"cast5-cfb", {16, 8}},
+    {"chacha20", {32, 8}},
+    {"chacha20-ietf", {32, 12}},
+    {"des-cfb", {8, 8}},
+    {"idea-cfb", {16, 8}},
+    {"rc2-cfb", {16, 8}},
+    {"rc4-md5", {16, 16}},
+    {"salsa20", {32, 8}},
+    {"seed-cfb", {16, 16}},
+    {"serpent-256-cfb", {32, 16}}
+};
+const std::map<QByteArray, QByteArray> Cipher::cipherNameMap= {
+    {"aes-128-cfb", "AES-128/CFB"},
+    {"aes-192-cfb", "AES-192/CFB"},
+    {"aes-256-cfb", "AES-256/CFB"},
+    {"aes-128-ctr", "AES-128/CTR-BE"},
+    {"aes-192-ctr", "AES-192/CTR-BE"},
+    {"aes-256-ctr", "AES-256/CTR-BE"},
+    {"bf-cfb", "Blowfish/CFB"},
+    {"camellia-128-cfb", "Camellia-128/CFB"},
+    {"camellia-192-cfb", "Camellia-192/CFB"},
+    {"camellia-256-cfb", "Camellia-256/CFB"},
+    {"cast5-cfb", "CAST-128/CFB"},
+    {"chacha20", "ChaCha"},
+    {"chacha20-ietf", "ChaCha"},
+    {"des-cfb", "DES/CFB"},
+    {"idea-cfb", "IDEA/CFB"},
+    {"rc2-cfb", "RC2/CFB"},
+    {"rc4-md5", "RC4-MD5"},
+    {"salsa20", "Salsa20"},
+    {"seed-cfb", "SEED/CFB"},
+    {"serpent-256-cfb", "Serpent/CFB"}
+};
 const int Cipher::AUTH_LEN = 10;
-
-QMap<QByteArray, Cipher::CipherKeyIVLength> Cipher::generateKeyIvMap()
-{
-    QMap<QByteArray, CipherKeyIVLength> map;
-    map.insert("aes-128-cfb", {16, 16});
-    map.insert("aes-192-cfb", {24, 16});
-    map.insert("aes-256-cfb", {32, 16});
-    map.insert("aes-128-ctr", {16, 16});
-    map.insert("aes-192-ctr", {24, 16});
-    map.insert("aes-256-ctr", {32, 16});
-    map.insert("bf-cfb", {16, 8});
-    map.insert("camellia-128-cfb", {16, 16});
-    map.insert("camellia-192-cfb", {24, 16});
-    map.insert("camellia-256-cfb", {32, 16});
-    map.insert("cast5-cfb", {16, 8});
-    map.insert("chacha20", {32, 8});
-    map.insert("chacha20-ietf", {32, 12});
-    map.insert("des-cfb", {8, 8});
-    map.insert("idea-cfb", {16, 8});
-    map.insert("rc2-cfb", {16, 8});
-    map.insert("rc4-md5", {16, 16});
-    map.insert("salsa20", {32, 8});
-    map.insert("seed-cfb", {16, 16});
-    map.insert("serpent-256-cfb", {32, 16});
-    return map;
-}
-
-QMap<QByteArray, QByteArray> Cipher::generateCipherNameMap()
-{
-    QMap<QByteArray, QByteArray> map;
-    map.insert("aes-128-cfb", "AES-128/CFB");
-    map.insert("aes-192-cfb", "AES-192/CFB");
-    map.insert("aes-256-cfb", "AES-256/CFB");
-    map.insert("aes-128-ctr", "AES-128/CTR-BE");
-    map.insert("aes-192-ctr", "AES-192/CTR-BE");
-    map.insert("aes-256-ctr", "AES-256/CTR-BE");
-    map.insert("bf-cfb", "Blowfish/CFB");
-    map.insert("camellia-128-cfb", "Camellia-128/CFB");
-    map.insert("camellia-192-cfb", "Camellia-192/CFB");
-    map.insert("camellia-256-cfb", "Camellia-256/CFB");
-    map.insert("cast5-cfb", "CAST-128/CFB");
-    map.insert("chacha20", "ChaCha");
-    map.insert("chacha20-ietf", "ChaCha");
-    map.insert("des-cfb", "DES/CFB");
-    map.insert("idea-cfb", "IDEA/CFB");
-    map.insert("rc2-cfb", "RC2/CFB");
-    map.insert("rc4-md5", "RC4-MD5");
-    map.insert("salsa20", "Salsa20");
-    map.insert("seed-cfb", "SEED/CFB");
-    map.insert("serpent-256-cfb", "Serpent/CFB");
-    return map;
-}
 
 QByteArray Cipher::update(const QByteArray &data)
 {
@@ -208,11 +196,9 @@ bool Cipher::isSupported(const QByteArray &method)
 QList<QByteArray> Cipher::getSupportedMethodList()
 {
     QList<QByteArray> supportedMethods;
-    for (auto it = Cipher::cipherNameMap.cbegin();
-         it != Cipher::cipherNameMap.cend();
-         ++it) {
-        if (Cipher::isSupported(it.value())) {
-            supportedMethods.push_back(it.key());
+    for (auto& cipher : Cipher::cipherNameMap) {
+        if (Cipher::isSupported(cipher.second)) {
+            supportedMethods.push_back(cipher.first);
         }
     }
     return supportedMethods;

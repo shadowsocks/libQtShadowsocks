@@ -34,8 +34,8 @@ EncryptorPrivate::EncryptorPrivate(const QString &m,
     password = pwd.toLocal8Bit();
     valid = true;
 
-    Cipher::CipherKeyIVLength ki = Cipher::keyIvMap.value(method);
-    method = Cipher::cipherNameMap.value(method);
+    Cipher::CipherKeyIVLength ki = Cipher::keyIvMap.at(method);
+    method = Cipher::cipherNameMap.at(method);
     if (ki[0] == 0 || !Cipher::isSupported(method)) {
         qCritical("The method %s is not supported.", m.toStdString().data());
         valid = false;

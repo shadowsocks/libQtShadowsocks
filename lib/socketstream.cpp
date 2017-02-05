@@ -31,10 +31,10 @@ SocketStream::SocketStream(QAbstractSocket *a,
     as(a),
     bs(b)
 {
-    connect (as, &QAbstractSocket::readyRead,
-             this, &SocketStream::onSocketAReadyRead);
-    connect (bs, &QAbstractSocket::readyRead,
-             this, &SocketStream::onSocketBReadyRead);
+    connect(as, &QAbstractSocket::readyRead,
+            this, &SocketStream::onSocketAReadyRead);
+    connect(bs, &QAbstractSocket::readyRead,
+            this, &SocketStream::onSocketBReadyRead);
 }
 
 void SocketStream::onSocketAReadyRead()
