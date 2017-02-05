@@ -42,7 +42,7 @@ namespace QSS {
 
 #if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,10,0)
 #error "Botan library is too old."
-#elif BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
+#elif BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
 typedef Botan::SecureVector<Botan::byte> SecureByteArray;
 #define DataOfSecureByteArray(sba) sba.begin()
 #else

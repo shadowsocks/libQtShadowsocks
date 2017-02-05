@@ -44,7 +44,7 @@ Cipher::Cipher(const QByteArray &method,
     if (method.contains("RC4")) {
         rc4 = new RC4(key, iv, this);
     } else {
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
+#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
         if (method.contains("ChaCha")) {
             chacha = new ChaCha(key, iv, this);
         } else {
@@ -65,7 +65,7 @@ Cipher::Cipher(const QByteArray &method,
         } catch(Botan::Exception &e) {
             qWarning("%s\n", e.what());
         }
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
+#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
         }
 #endif
     }
@@ -185,7 +185,7 @@ QByteArray Cipher::md5Hash(const QByteArray &in)
 
 bool Cipher::isSupported(const QByteArray &method)
 {
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,11,0)
+#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
     if (method.contains("ChaCha"))  return true;
 #endif
 
