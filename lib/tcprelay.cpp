@@ -20,10 +20,22 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore>
 #include "tcprelay.h"
 #include "common.h"
 
 using namespace QSS;
+
+static const char * _tmp_resp =
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Length: 3059\r\n"
+        "Server: GWS/2.0\r\n"
+        "Date: Sat, 11 Jan 2003 02:44:04 GMT\r\n"
+        "Content-Type: text/html\r\n"
+        "Cache-control: private\r\n"
+        "Set-Cookie: PREF=ID=73d4aef52e57bae9:TM=1042253044:LM=1042253044:S=SMCc_HRPCQiqy\r\n"
+        "X9j; expires=Sun, 17-Jan-2038 19:14:07 GMT; path=/; domain=.google.com\r\n"
+        "Connection: keep-alive\r\n";
 
 TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    int timeout,
@@ -132,7 +144,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
     if (header_length == 0) {
         emit info("Can't parse header. Wrong encryption method or password?");
         if (!isLocal && autoBan) {
-            Common::banAddress(local->peerAddress());
+        Common::banAddress(local->peerAddress());
         }
         close();
         return;
@@ -258,6 +270,17 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     }
 
     if (!isLocal) {
+        if (stage == INIT) {
+            QByteArray headers;
+            int header_length;
+            bool isHttp = Common::parseHttpHeader(data, header_length, headers);
+            if (isHttp) {
+                emit info("Handling http resources");
+                local->write(_tmp_resp);
+                local->flush();
+                close();
+            }
+        }
         data = encryptor->decrypt(data);
         if (data.isEmpty()) {
             emit debug("Data is empty after decryption.");

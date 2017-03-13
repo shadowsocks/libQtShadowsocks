@@ -27,7 +27,18 @@
 #include <QHostAddress>
 #include <QVector>
 #include <QMutex>
+#include <QtCore>
 #include "address.h"
+
+#define DEF_HTTP_METHOD(V) \
+    V(OPTIONS) \
+    V(GET) \
+    V(HEAD) \
+    V(POST) \
+    V(PUT) \
+    V(DELETE) \
+    V(TRACE) \
+    V(CONNECT)
 
 namespace QSS {
 
@@ -46,6 +57,11 @@ QSS_EXPORT void parseHeader(const QByteArray &data,
                             Address &addr,
                             int &length,
                             bool &authFlag);
+
+QSS_EXPORT bool parseHttpHeader(const QByteArray &data,
+                                int &length,
+                                QByteArray &headersData);
+
 //generate a random number which is in the range [min, max)
 QSS_EXPORT int randomNumber(int max, int min = 0);
 QSS_EXPORT void exclusive_or(unsigned char *ks,

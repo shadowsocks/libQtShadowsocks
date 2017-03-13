@@ -25,6 +25,7 @@
 #include <QtEndian>
 #include <random>
 #include "common.h"
+#include <string.h>
 
 using namespace QSS;
 
@@ -33,6 +34,13 @@ QVector<QHostAddress> Common::bannedAddressVector;
 QMutex Common::bannedAddressMutex;
 const quint8 Common::ADDRESS_MASK = 0b00001111;//0xf
 const quint8 Common::ONETIMEAUTH_FLAG = 0b00010000;//0x10
+const char* CRLF = "\r\n";
+
+#define DEF_HTTP_CHAR(THAT) static const char* C_HTTP_##THAT = #THAT;
+
+DEF_HTTP_METHOD(DEF_HTTP_CHAR)
+
+#undef DEF_HTTP_CHAR
 
 const QByteArray Common::version()
 {
@@ -141,6 +149,38 @@ void Common::parseHeader(const QByteArray &data,
         }
     }
 }
+
+#define TEST_DATA(V) else if (data.indexOf(C_HTTP_##V) == 0) { \
+    _method = C_HTTP_##V; \
+    isHttp = true; \
+    }
+
+bool Common::parseHttpHeader(const QByteArray &data,
+                                int &length,
+                                QByteArray &headersData) {
+    QString _tmp = QString::fromUtf8(data);
+    const char* _method;
+    bool isHttp = false;
+    if (false) {
+    }
+    DEF_HTTP_METHOD(TEST_DATA)
+
+
+    if (isHttp) {
+        int endIndex = data.indexOf("\r\n\r\n");
+        if (endIndex > 0) {
+            headersData.clear();
+            length = endIndex + strlen("\r\n\r\n");
+            for (int i = 0; i < length; i++) {
+                headersData.push_back(data.at(i));
+            }
+            return true;
+        }
+    }
+    return false;
+}
+
+#undef TEST_DATA
 
 int Common::randomNumber(int max, int min)
 {
