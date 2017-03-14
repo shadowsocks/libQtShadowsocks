@@ -17,7 +17,8 @@ SOURCES  += \
             httpproxy.cpp \
             socketstream.cpp \
             tcpserver.cpp \
-            profile.cpp
+            profile.cpp \
+    $$PWD/httpheaders.cpp
 
 
 HEADERS  += \
@@ -37,4 +38,5 @@ HEADERS  += \
             udprelay.h \
             httpproxy.h \
             socketstream.h \
-            tcpserver.h
+            tcpserver.h \
+    $$PWD/httpheaders.h
