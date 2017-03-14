@@ -272,17 +272,16 @@ void TcpRelay::onLocalTcpSocketReadyRead()
             bool isHttp = Common::parseHttpHeader(data, header_length, headers);
             if (isHttp) {
                 HttpHeaders my_headers(data.constData());
+                emit info(QString("Handling http request: ") + my_headers.getHttpMethod() +
+                          " " + my_headers.getHttpUri());
                 QByteArray _host(redirectAddress->toString().toUtf8());
                 my_headers.setValue("Host", _host.constData());
-                my_headers.setValue("Connection", "close");
 
                 isRedirectingHttp = true;
                 dataToWrite.append(my_headers.toByteArray());
-                // dataToWrite.append(headers);
                 for (int i = header_length; i < headers.length(); ++i) {
                     dataToWrite.push_back(headers[i]);
                 }
-                dataToWrite.append('\0');
                 remoteAddress = *redirectAddress;
                 stage = DNS;
                 remoteAddress.lookUp();
@@ -312,6 +311,25 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 close();
                 return;
             } else if (data.isEmpty()) {
+                return;
+            }
+        } else if (isRedirectingHttp) {
+            QByteArray headers, writeData;
+            int headers_length;
+            bool isHeader = Common::parseHttpHeader(data, headers_length, headers);
+            if (isHeader) {
+                HttpHeaders my_headers(data.constData());
+                QByteArray _host(redirectAddress->toString().toUtf8());
+                my_headers.setValue("Host", _host.constData());
+
+                writeData.append(my_headers.toByteArray());
+                for (int i = headers_length; i < headers.length(); ++i) {
+                    writeData.push_back(headers[i]);
+                }
+
+                emit info(QString("Stream HTTP: ") +
+                          my_headers.getHttpMethod() + " " + my_headers.getHttpUri());
+                writeToRemote(writeData);
                 return;
             }
         }

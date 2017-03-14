@@ -42,7 +42,7 @@ public:
 
     const char* getHttpMethod() const;
     const char* getHttpUri() const;
-    const char* getHttpVertion() const;
+    const char* getHttpVersion() const;
 
     const char* getValue(const char* key) const;
 

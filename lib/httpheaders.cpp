@@ -152,7 +152,7 @@ const char* HttpHeaders::getHttpUri() const {
     return _httpUri.constData();
 }
 
-const char* HttpHeaders::getHttpVertion() const {
+const char* HttpHeaders::getHttpVersion() const {
     return _httpVersion.constData();
 }
 
