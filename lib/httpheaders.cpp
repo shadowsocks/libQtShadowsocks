@@ -171,12 +171,11 @@ QByteArray HttpHeaders::toByteArray() const {
     result.append(_httpUri);
     result.append(' ');
     result.append(_httpVersion);
-    result.append(' ');
     result.append("\r\n");
     for (QHash<QByteArray, QByteArray>::const_iterator iter = _map.begin();
          iter != _map.end(); ++iter) {
         result.append(iter.key());
-        result.append(':');
+        result.append(": ");
         result.append(iter.value());
         result.append("\r\n");
     }

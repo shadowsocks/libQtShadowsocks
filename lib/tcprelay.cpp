@@ -21,21 +21,11 @@
  */
 
 #include <QtCore>
+#include "httpheaders.h"
 #include "tcprelay.h"
 #include "common.h"
 
 using namespace QSS;
-
-static const char * _tmp_resp =
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Length: 3059\r\n"
-        "Server: GWS/2.0\r\n"
-        "Date: Sat, 11 Jan 2003 02:44:04 GMT\r\n"
-        "Content-Type: text/html\r\n"
-        "Cache-control: private\r\n"
-        "Set-Cookie: PREF=ID=73d4aef52e57bae9:TM=1042253044:LM=1042253044:S=SMCc_HRPCQiqy\r\n"
-        "X9j; expires=Sun, 17-Jan-2038 19:14:07 GMT; path=/; domain=.google.com\r\n"
-        "Connection: keep-alive\r\n";
 
 TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    int timeout,
@@ -44,6 +34,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    const bool &is_local,
                    const bool &autoBan,
                    const bool &auth,
+                   const Address *redirect_addr,
                    QObject *parent) :
     QObject(parent),
     stage(INIT),
@@ -51,7 +42,9 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     isLocal(is_local),
     autoBan(autoBan),
     auth(auth),
-    local(localSocket)
+    local(localSocket),
+    redirectAddress(redirect_addr),
+    isRedirectingHttp(false)
 {
     encryptor = new Encryptor(ep, this);
 
@@ -103,6 +96,9 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     remote->setReadBufferSize(RemoteRecvSize);
     remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+
+    // debug
+    redirectAddress = new Address("127.0.0.1", 9999, this);
 }
 
 void TcpRelay::close()
@@ -270,21 +266,34 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     }
 
     if (!isLocal) {
-        if (stage == INIT) {
+        if (stage == INIT && redirectAddress != Q_NULLPTR) {
             QByteArray headers;
             int header_length;
             bool isHttp = Common::parseHttpHeader(data, header_length, headers);
             if (isHttp) {
-                emit info("Handling http resources");
-                local->write(_tmp_resp);
-                local->flush();
-                close();
+                HttpHeaders my_headers(data.constData());
+                QByteArray _host(redirectAddress->toString().toUtf8());
+                my_headers.setValue("Host", _host.constData());
+                my_headers.setValue("Connection", "close");
+
+                isRedirectingHttp = true;
+                dataToWrite.append(my_headers.toByteArray());
+                // dataToWrite.append(headers);
+                for (int i = header_length; i < headers.length(); ++i) {
+                    dataToWrite.push_back(headers[i]);
+                }
+                dataToWrite.append('\0');
+                remoteAddress = *redirectAddress;
+                stage = DNS;
+                remoteAddress.lookUp();
+                return;
             }
-        }
-        data = encryptor->decrypt(data);
-        if (data.isEmpty()) {
-            emit debug("Data is empty after decryption.");
-            return;
+        } else if (!isRedirectingHttp) {
+            data = encryptor->decrypt(data);
+            if (data.isEmpty()) {
+                emit debug("Data is empty after decryption.");
+                return;
+            }
         }
     }
 
@@ -294,7 +303,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 encryptor->addChunkAuth(data);
             }
             data = encryptor->encrypt(data);
-        } else if (auth) {
+        } else if (auth && !isRedirectingHttp) {
             if (!encryptor->verifyExtractChunkAuth(data)) {
                 emit info("Data chunk hash authentication failed.");
                 if (autoBan) {
@@ -352,7 +361,7 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
         return;
     }
     emit bytesRead(buf.size());
-    buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
+    buf = isRedirectingHttp? buf : isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
     local->write(buf);
 }
 

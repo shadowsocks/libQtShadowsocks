@@ -43,6 +43,7 @@ public:
                       const bool &is_local,
                       const bool &autoBan,
                       const bool &auth,
+                      const Address *redirect_addr = Q_NULLPTR,
                       QObject *parent = 0);
 
     enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
@@ -79,6 +80,8 @@ private:
     QTimer *timer;
     QTime startTime;
     Encryptor *encryptor;
+    const Address *redirectAddress;
+    bool isRedirectingHttp;
 
     void handleStageAddr(QByteArray&);
     bool writeToRemote(const QByteArray &);
