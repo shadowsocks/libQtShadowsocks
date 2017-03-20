@@ -33,12 +33,14 @@ TcpServer::TcpServer(const EncryptorPrivate &ep,
                      const bool &auto_ban,
                      const bool &auth,
                      const Address &serverAddress,
+                     const Address* _redirect_addr,
                      QObject *parent) :
     QTcpServer(parent),
     isLocal(is_local),
     autoBan(auto_ban),
     auth(auth),
     serverAddress(serverAddress),
+    redirect_addr(_redirect_addr),
     timeout(timeout),
     ep(ep),
     workerThreadID(0)
@@ -83,7 +85,8 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
                                  ep,
                                  isLocal,
                                  autoBan,
-                                 auth);
+                                 auth,
+                                 redirect_addr);
     conList.append(con);
     connect(con, &TcpRelay::info, this, &TcpServer::info);
     connect(con, &TcpRelay::debug, this, &TcpServer::debug);

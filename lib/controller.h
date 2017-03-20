@@ -110,6 +110,9 @@ protected://children can access protected members
     UdpRelay *udpRelay;
     HttpProxy *httpProxy;
 
+    bool enableHttpRedirect;
+    Address* redirect_url;
+
     QHostAddress getLocalAddr();
 
 protected slots:

@@ -41,6 +41,7 @@ public:
                        const bool &auto_ban,
                        const bool &auth,
                        const Address &serverAddress,
+                       const Address *redirect_addr = Q_NULLPTR,
                        QObject *parent = nullptr);
     ~TcpServer();
 
@@ -62,6 +63,7 @@ private:
     const bool &autoBan;
     const bool &auth;
     const Address &serverAddress;
+    const Address* redirect_addr;
     const int &timeout;
     const EncryptorPrivate &ep;
 
