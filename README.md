@@ -1,4 +1,4 @@
-libQtShadowsocks
+A fork from libQtShadowsocks
 ================
 
 [![Build Status](https://travis-ci.org/shadowsocks/libQtShadowsocks.svg?branch=master)](https://travis-ci.org/shadowsocks/libQtShadowsocks)
@@ -6,7 +6,7 @@ libQtShadowsocks
 Introduction
 ------------
 
-`libQtShadowsocks` is a lightweight [shadowsocks][ss] library.
+`libQtShadowsocks` is a lightweight [shadowsocks][ss] library. And this is a fork from it.
 
 Written in C++ using Qt 5 framework and Botan library, it aims to provide a developer-friendly [shadowsocks][ss] library for Qt applications such as [shadowsocks-qt5] (https://github.com/shadowsocks/shadowsocks-qt5/).
 
@@ -15,6 +15,15 @@ The sub-project `shadowsocks-libqss` utilises this library. You may wish to chec
 Check [installation wiki page](https://github.com/shadowsocks/libQtShadowsocks/wiki/Installation) to see how to install this library and/or `shadowsocks-libqss`.
 
 [ss]: http://shadowsocks.org
+
+
+New Feature: SS protocol and HTTP in a port(server side)
+------------
+
+Look at the [config.json](https://github.com/ChannelOne/libQtShadowsocks/blob/master/shadowsocks-libqss/config.json) file.
+
+If the `http_redirect` field begins with a "http://", the http redirect feature will be enabled.
+All the requests to the server port, will try to be parsed as SS connection, if fails, the header will be parsed as a http connection. If success, return ss or http result.
 
 License
 -------
