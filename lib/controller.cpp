@@ -91,10 +91,6 @@ Controller::Controller(const Profile &_profile,
 
 Controller::~Controller()
 {
-    if (redirect_url != Q_NULLPTR) {
-        delete redirect_url;
-    }
-
     if (tcpServer->isListening()) {
         stop();
     }
@@ -106,18 +102,19 @@ bool Controller::setup(const Profile &p)
     valid = true;
     profile = p;
 
-    if (redirect_url != Q_NULLPTR) {
-        delete redirect_url;
-        redirect_url = Q_NULLPTR;
-    }
-
     if (p.http_redirect.startsWith("http://")) {
         QString copy = p.http_redirect;
         QString _url = copy.remove(0, 7);
+        emit info(QString("Redirect url: ") + _url);
         QStringList _list = _url.split(':');
-        quint16 _port = static_cast<quint16>(_list[1].toInt());
         enableHttpRedirect = true;
-        redirect_url = new Address(_list[0], _port);
+        if (_list.length() < 2) {
+            redirect_url = new Address(_url, 80, this);
+        } else {
+            quint16 _port = static_cast<quint16>(_list[1].toInt());
+            redirect_url = new Address(_list[0], _port, this);
+        }
+        tcpServer->setHttpRedirectAddr(redirect_url);
     }
 
     /*

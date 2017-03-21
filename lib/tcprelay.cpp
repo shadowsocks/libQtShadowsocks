@@ -97,8 +97,6 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
-    // debug
-    redirectAddress = new Address("127.0.0.1", 9999, this);
 }
 
 void TcpRelay::close()
@@ -287,6 +285,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 remoteAddress.lookUp();
                 return;
             }
+            data = encryptor->decrypt(data);
         } else if (!isRedirectingHttp) {
             data = encryptor->decrypt(data);
             if (data.isEmpty()) {

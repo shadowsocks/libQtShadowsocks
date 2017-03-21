@@ -71,6 +71,9 @@ int main(int argc, char *argv[])
     QCommandLineOption http(
                 QStringList() << "H" << "http-proxy",
                 "run in HTTP(S) proxy mode. ignored in server mode.");
+    QCommandLineOption httpRedirect(
+                QStringList() << "R" << "http-redirect",
+                "redirect the http connection to another server.");
     QCommandLineOption serverMode(
                 QStringList() << "S" << "server-mode",
                 "run as shadowsocks server.");
@@ -95,6 +98,7 @@ int main(int argc, char *argv[])
     parser.addOption(encryptionMethod);
     parser.addOption(timeout);
     parser.addOption(http);
+    parser.addOption(httpRedirect);
     parser.addOption(serverMode);
     parser.addOption(testSpeed);
     parser.addOption(debug);
@@ -113,6 +117,7 @@ int main(int argc, char *argv[])
                 parser.value(encryptionMethod),
                 parser.value(timeout),
                 parser.isSet(http),
+                parser.value(httpRedirect),
                 parser.isSet(debug),
                 parser.isSet(auth));
     }

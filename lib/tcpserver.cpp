@@ -55,6 +55,10 @@ TcpServer::TcpServer(const EncryptorPrivate &ep,
     }
 }
 
+void TcpServer::setHttpRedirectAddr(const Address *addr) {
+    redirect_addr = addr;
+}
+
 TcpServer::~TcpServer()
 {
     for (auto&& con : conList) {

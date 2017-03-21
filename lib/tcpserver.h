@@ -46,6 +46,7 @@ public:
     ~TcpServer();
 
     bool listen(const QHostAddress &address, quint16 port);
+    void setHttpRedirectAddr(const Address* addrl);
     void close();
 
 signals:
