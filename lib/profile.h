@@ -36,6 +36,12 @@ struct Profile {
     QString password;
     quint16 server_port;
     quint16 local_port;
+
+    /*
+     * http redirection enable when the `http_redirect`
+     * field begin with "http://"
+     */
+    QString http_redirect;
     int timeout;
 
     /*

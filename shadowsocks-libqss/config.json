@@ -7,5 +7,6 @@
     "timeout":600,
     "method":"rc4-md5",
     "http_proxy": false,
+    "http_redirect": "http://127.0.0.1:8888",
     "auth": false
 }

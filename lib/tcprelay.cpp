@@ -20,6 +20,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <QtCore>
+#include "httpheaders.h"
 #include "tcprelay.h"
 #include "common.h"
 
@@ -32,6 +34,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    const bool &is_local,
                    const bool &autoBan,
                    const bool &auth,
+                   const Address *redirect_addr,
                    QObject *parent) :
     QObject(parent),
     stage(INIT),
@@ -39,7 +42,9 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     isLocal(is_local),
     autoBan(autoBan),
     auth(auth),
-    local(localSocket)
+    local(localSocket),
+    redirectAddress(redirect_addr),
+    isRedirectingHttp(false)
 {
     encryptor = new Encryptor(ep, this);
 
@@ -91,6 +96,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     remote->setReadBufferSize(RemoteRecvSize);
     remote->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     remote->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
+
 }
 
 void TcpRelay::close()
@@ -132,7 +138,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
     if (header_length == 0) {
         emit info("Can't parse header. Wrong encryption method or password?");
         if (!isLocal && autoBan) {
-            Common::banAddress(local->peerAddress());
+        Common::banAddress(local->peerAddress());
         }
         close();
         return;
@@ -258,10 +264,34 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     }
 
     if (!isLocal) {
-        data = encryptor->decrypt(data);
-        if (data.isEmpty()) {
-            emit debug("Data is empty after decryption.");
-            return;
+        if (stage == INIT && redirectAddress != Q_NULLPTR) {
+            QByteArray headers;
+            int header_length;
+            bool isHttp = Common::parseHttpHeader(data, header_length, headers);
+            if (isHttp) {
+                HttpHeaders my_headers(data.constData());
+                emit info(QString("Handling http request: ") + my_headers.getHttpMethod() +
+                          " " + my_headers.getHttpUri());
+                QByteArray _host(redirectAddress->toString().toUtf8());
+                my_headers.setValue("Host", _host.constData());
+
+                isRedirectingHttp = true;
+                dataToWrite.append(my_headers.toByteArray());
+                for (int i = header_length; i < headers.length(); ++i) {
+                    dataToWrite.push_back(headers[i]);
+                }
+                remoteAddress = *redirectAddress;
+                stage = DNS;
+                remoteAddress.lookUp();
+                return;
+            }
+            data = encryptor->decrypt(data);
+        } else if (!isRedirectingHttp) {
+            data = encryptor->decrypt(data);
+            if (data.isEmpty()) {
+                emit debug("Data is empty after decryption.");
+                return;
+            }
         }
     }
 
@@ -271,7 +301,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 encryptor->addChunkAuth(data);
             }
             data = encryptor->encrypt(data);
-        } else if (auth) {
+        } else if (auth && !isRedirectingHttp) {
             if (!encryptor->verifyExtractChunkAuth(data)) {
                 emit info("Data chunk hash authentication failed.");
                 if (autoBan) {
@@ -280,6 +310,25 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 close();
                 return;
             } else if (data.isEmpty()) {
+                return;
+            }
+        } else if (isRedirectingHttp) {
+            QByteArray headers, writeData;
+            int headers_length;
+            bool isHeader = Common::parseHttpHeader(data, headers_length, headers);
+            if (isHeader) {
+                HttpHeaders my_headers(data.constData());
+                QByteArray _host(redirectAddress->toString().toUtf8());
+                my_headers.setValue("Host", _host.constData());
+
+                writeData.append(my_headers.toByteArray());
+                for (int i = headers_length; i < headers.length(); ++i) {
+                    writeData.push_back(headers[i]);
+                }
+
+                emit info(QString("Stream HTTP: ") +
+                          my_headers.getHttpMethod() + " " + my_headers.getHttpUri());
+                writeToRemote(writeData);
                 return;
             }
         }
@@ -329,7 +378,7 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
         return;
     }
     emit bytesRead(buf.size());
-    buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
+    buf = isRedirectingHttp? buf : isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
     local->write(buf);
 }
 

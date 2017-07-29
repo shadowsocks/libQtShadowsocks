@@ -56,6 +56,7 @@ bool Client::readConfig(const QString &file)
     profile.server_port = confObj["server_port"].toInt();
     profile.timeout = confObj["timeout"].toInt();
     profile.http_proxy = confObj["http_proxy"].toBool();
+    profile.http_redirect = confObj["http_redirect"].toString();
     profile.auth = confObj["auth"].toBool();
 
     return true;
@@ -69,6 +70,7 @@ void Client::setup(const QString &remote_addr,
                    const QString &method,
                    const QString &timeout,
                    const bool http_proxy,
+                   const QString &http_redirect,
                    const bool debug,
                    const bool auth)
 {
@@ -80,6 +82,7 @@ void Client::setup(const QString &remote_addr,
     profile.method = method;
     profile.timeout = timeout.toInt();
     profile.http_proxy = http_proxy;
+    profile.http_redirect = http_redirect;
     profile.debug = debug;
     profile.auth = auth;
 }

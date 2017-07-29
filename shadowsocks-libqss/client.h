@@ -42,6 +42,7 @@ public:
                const QString &method,
                const QString &timeout,
                const bool http_proxy,
+               const QString &http_redirect,
                const bool debug,
                const bool auth);
 
