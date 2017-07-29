@@ -7,11 +7,11 @@ License:	LGPLv3+
 URL:		https://github.com/shadowsocks/%{name}
 Source0:	%{url}/archive/v%{version}.tar.gz
 
-BuildRequires:	qt5-qtbase-devel
-BuildRequires:	qt5-qttools
 BuildRequires:	botan-devel
-Requires:	qt5-qtbase
+BuildRequires:	cmake
+BuildRequires:	qt5-qtbase-devel
 Requires:	botan
+Requires:	qt5-qtbase
 
 AutoReq:	no
 
@@ -38,16 +38,11 @@ A shadowsocks CLI client using libQtShadowsocks.
 
 
 %build
-%ifarch x86_64 amd64 ppc64le aarch64
-%{qmake_qt5} DEFINES+="LIB64"
-%else
-%{qmake_qt5}
-%endif
+%cmake .
 make %{?_smp_mflags}
 
-
 %install
-make install INSTALL_ROOT=%{buildroot}
+make install DESTDIR=%{buildroot}
 
 
 %files

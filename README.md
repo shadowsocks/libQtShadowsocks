@@ -21,7 +21,7 @@ License
 
 ![](http://www.gnu.org/graphics/lgplv3-147x51.png)
 
-Copyright (C) 2014-2016 Symeon Huang
+Copyright (C) 2014-2017 Symeon Huang
 
 This library is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as
