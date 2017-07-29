@@ -19,7 +19,7 @@ find_package(Qt5Network)
 find_package(PkgConfig)
 pkg_search_module(BOTAN REQUIRED botan-1.10 botan-2)
 
-if(BUILD_SHARED_LIBS)
+if(NOT BUILD_SHARED_LIBS)
     add_definitions(-DQSS_STATIC)
 endif()
 
