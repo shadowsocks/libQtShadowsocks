@@ -2,6 +2,14 @@ sudo: required
 dist: trusty
 language: cpp
 cache: apt
+addons:
+  apt:
+    sources:
+      - ubuntu-toolchain-r-test
+    packages:
+      - gcc-6
+      - g++-6
+      - cmake
 
 branches:
   only:
@@ -9,9 +17,16 @@ branches:
 
 before_install:
   - sudo apt-get -qq update
-  - sudo apt-get -qq install qt5-qmake qt5-default qtbase5-dev libbotan1.10-dev gcc-4.8
+  - sudo apt-get -qq install cmake qt5-default qtbase5-dev libbotan1.10-dev
 
 script:
-  - qmake
+  # Export CC and CXX to tell cmake which compiler to use
+  - export CC=/usr/bin/gcc-6
+  - export CXX=/usr/bin/g++-6
+  # Check versions of gcc, g++ and cmake
+  - gcc -v && g++ -v && cmake --version
+  # Build
+  - mkdir build && cd build
+  - cmake ..
   - make
 
