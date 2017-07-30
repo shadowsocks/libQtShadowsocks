@@ -1,7 +1,7 @@
 /*
  * encryptorprivate.cpp - the source file of EncryptorPrivate class
  *
- * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -34,15 +34,16 @@ EncryptorPrivate::EncryptorPrivate(const QString &m,
     password = pwd.toLocal8Bit();
     valid = true;
 
-    Cipher::CipherKeyIVLength ki = Cipher::keyIvMap.at(method);
-    method = Cipher::cipherNameMap.at(method);
-    if (ki[0] == 0 || !Cipher::isSupported(method)) {
-        qCritical("The method %s is not supported.", m.toStdString().data());
+    const auto it = Cipher::cipherInfoMap.find(method);
+    if (it == Cipher::cipherInfoMap.end() || !Cipher::isSupported(it->second.internalName)) {
+        qCritical("The method \"%s\" is not supported.", m.toStdString().data());
         valid = false;
+    } else {
+        method = it->second.internalName;
+        keyLen = it->second.keyLen;
+        ivLen = it->second.ivLen;
+        evpBytesToKey();
     }
-    keyLen = ki[0];
-    ivLen = ki[1];
-    evpBytesToKey();
 }
 
 EncryptorPrivate::EncryptorPrivate(QObject *parent) :
@@ -57,9 +58,9 @@ bool EncryptorPrivate::isValid() const
     return valid;
 }
 
-QString EncryptorPrivate::getInternalMethodName() const
+const QByteArray& EncryptorPrivate::getInternalMethodName() const
 {
-    return QString(method);
+    return method;
 }
 
 void EncryptorPrivate::evpBytesToKey()

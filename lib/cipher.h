@@ -62,19 +62,17 @@ public:
     const QByteArray &getIV() const;
 
     typedef std::array<int, 2> CipherKeyIVLength;
+    struct CipherInfo {
+        QByteArray internalName; // internal implementation name
+        int keyLen;
+        int ivLen;
+    };
 
     /*
-     * keyIvMap contains required key length and IV length
-     * The CipherKeyIVLength contains two integers, key length and IV length
      * The key of this map is the encryption method (shadowsocks convention)
      */
-    static const std::map<QByteArray, CipherKeyIVLength> keyIvMap;
+    static const std::map<QByteArray, CipherInfo> cipherInfoMap;
 
-    /*
-     * This map stores the shadowsocks convention name and the corresponding
-     * cipher name in Botan library
-     */
-    static const std::map<QByteArray, QByteArray> cipherNameMap;
     static const int AUTH_LEN;
 
     static QByteArray randomIv(int length);

@@ -1,7 +1,7 @@
 /*
  * controller.cpp - the source file of Controller class
  *
- * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -114,7 +114,7 @@ bool Controller::setup(const Profile &p)
     emit info("Initialising ciphers...");
     ep = EncryptorPrivate(profile.method, profile.password);
     if (ep.isValid()) {
-        emit info(ep.getInternalMethodName() + " (" + profile.method
+        emit info(QString(ep.getInternalMethodName()) + " (" + profile.method
                   + ") initialised.");
     } else {
         emit info("Initialisation failed.");

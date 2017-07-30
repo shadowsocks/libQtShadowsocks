@@ -1,7 +1,7 @@
 /*
  * encryptorprivate.cpp - the header file of EncryptorPrivate class
  *
- * Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -54,7 +54,7 @@ public:
      * i.e. aes-128-cfb becomes AES-128/CFB. This function may be helpful
      * for developers to diagnose the problem (if there is one).
      */
-    QString getInternalMethodName() const;
+    const QByteArray& getInternalMethodName() const;
 
     EncryptorPrivate& operator= (const EncryptorPrivate &o);
 

@@ -76,49 +76,27 @@ Cipher::~Cipher()
     if (pipe)   delete pipe;
 }
 
-const std::map<QByteArray, Cipher::CipherKeyIVLength> Cipher::keyIvMap = {
-    {"aes-128-cfb", {16, 16}},
-    {"aes-192-cfb", {24, 16}},
-    {"aes-256-cfb", {32, 16}},
-    {"aes-128-ctr", {16, 16}},
-    {"aes-192-ctr", {24, 16}},
-    {"aes-256-ctr", {32, 16}},
-    {"bf-cfb", {16, 8}},
-    {"camellia-128-cfb", {16, 16}},
-    {"camellia-192-cfb", {24, 16}},
-    {"camellia-256-cfb", {32, 16}},
-    {"cast5-cfb", {16, 8}},
-    {"chacha20", {32, 8}},
-    {"chacha20-ietf", {32, 12}},
-    {"des-cfb", {8, 8}},
-    {"idea-cfb", {16, 8}},
-    {"rc2-cfb", {16, 8}},
-    {"rc4-md5", {16, 16}},
-    {"salsa20", {32, 8}},
-    {"seed-cfb", {16, 16}},
-    {"serpent-256-cfb", {32, 16}}
-};
-const std::map<QByteArray, QByteArray> Cipher::cipherNameMap= {
-    {"aes-128-cfb", "AES-128/CFB"},
-    {"aes-192-cfb", "AES-192/CFB"},
-    {"aes-256-cfb", "AES-256/CFB"},
-    {"aes-128-ctr", "AES-128/CTR-BE"},
-    {"aes-192-ctr", "AES-192/CTR-BE"},
-    {"aes-256-ctr", "AES-256/CTR-BE"},
-    {"bf-cfb", "Blowfish/CFB"},
-    {"camellia-128-cfb", "Camellia-128/CFB"},
-    {"camellia-192-cfb", "Camellia-192/CFB"},
-    {"camellia-256-cfb", "Camellia-256/CFB"},
-    {"cast5-cfb", "CAST-128/CFB"},
-    {"chacha20", "ChaCha"},
-    {"chacha20-ietf", "ChaCha"},
-    {"des-cfb", "DES/CFB"},
-    {"idea-cfb", "IDEA/CFB"},
-    {"rc2-cfb", "RC2/CFB"},
-    {"rc4-md5", "RC4-MD5"},
-    {"salsa20", "Salsa20"},
-    {"seed-cfb", "SEED/CFB"},
-    {"serpent-256-cfb", "Serpent/CFB"}
+const std::map<QByteArray, Cipher::CipherInfo> Cipher::cipherInfoMap = {
+    {"aes-128-cfb", {"AES-128/CFB", 16, 16}},
+    {"aes-192-cfb", {"AES-192/CFB", 24, 16}},
+    {"aes-256-cfb", {"AES-256/CFB", 32, 16}},
+    {"aes-128-ctr", {"AES-128/CTR-BE", 16, 16}},
+    {"aes-192-ctr", {"AES-192/CTR-BE", 24, 16}},
+    {"aes-256-ctr", {"AES-256/CTR-BE", 32, 16}},
+    {"bf-cfb", {"Blowfish/CFB", 16, 8}},
+    {"camellia-128-cfb", {"Camellia-128/CFB", 16, 16}},
+    {"camellia-192-cfb", {"Camellia-192/CFB", 24, 16}},
+    {"camellia-256-cfb", {"Camellia-256/CFB", 32, 16}},
+    {"cast5-cfb", {"CAST-128/CFB", 16, 8}},
+    {"chacha20", {"ChaCha", 32, 8}},
+    {"chacha20-ietf", {"ChaCha", 32, 12}},
+    {"des-cfb", {"DES/CFB", 8, 8}},
+    {"idea-cfb", {"IDEA/CFB", 16, 8}},
+    {"rc2-cfb", {"RC2/CFB", 16, 8}},
+    {"rc4-md5", {"RC4-MD5", 16, 16}},
+    {"salsa20", {"Salsa20", 32, 8}},
+    {"seed-cfb", {"SEED/CFB", 16, 16}},
+    {"serpent-256-cfb", {"Serpent/CFB", 32, 16}}
 };
 const int Cipher::AUTH_LEN = 10;
 
@@ -196,8 +174,8 @@ bool Cipher::isSupported(const QByteArray &method)
 QList<QByteArray> Cipher::getSupportedMethodList()
 {
     QList<QByteArray> supportedMethods;
-    for (auto& cipher : Cipher::cipherNameMap) {
-        if (Cipher::isSupported(cipher.second)) {
+    for (auto& cipher : Cipher::cipherInfoMap) {
+        if (Cipher::isSupported(cipher.second.internalName)) {
             supportedMethods.push_back(cipher.first);
         }
     }
