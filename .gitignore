@@ -3,3 +3,5 @@
 *.bak
 *.orig
 *.swp
+build/
+compile_commands.json
