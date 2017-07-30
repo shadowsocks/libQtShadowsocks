@@ -31,9 +31,6 @@
 
 namespace QSS {
 
-//fist: r; second: d
-typedef QPair<Address, Address> CacheKey;
-
 namespace Common {
 
 QSS_EXPORT const QByteArray version();
