@@ -45,7 +45,7 @@ public:
                         QObject *parent = 0);
 
     //overloaded function to construct a Controller with given profile
-    explicit Controller(const Profile & _profile,
+    Controller(const Profile & _profile,
                         bool is_local,
                         bool auto_ban,
                         QObject *parent = 0);

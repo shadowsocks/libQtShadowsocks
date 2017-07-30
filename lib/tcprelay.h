@@ -36,7 +36,7 @@ class QSS_EXPORT TcpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit TcpRelay(QTcpSocket *localSocket,
+    TcpRelay(QTcpSocket *localSocket,
                       int timeout,
                       const Address &server_addr,
                       const EncryptorPrivate &ep,

@@ -36,7 +36,7 @@ class QSS_EXPORT UdpRelay : public QObject
 {
     Q_OBJECT
 public:
-    explicit UdpRelay(const EncryptorPrivate &ep,
+    UdpRelay(const EncryptorPrivate &ep,
                       const bool &is_local,
                       const bool &auto_ban,
                       const bool &auth,

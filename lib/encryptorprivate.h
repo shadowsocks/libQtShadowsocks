@@ -40,7 +40,7 @@ public:
      * using same encryption method and password.
      * If the initialisation doesn't succeed, isValid() function return false
      */
-    explicit EncryptorPrivate(const QString &method,
+    EncryptorPrivate(const QString &method,
                               const QString &password,
                               QObject *parent = 0);
 

@@ -54,7 +54,7 @@ class QSS_EXPORT Cipher : public QObject
 {
     Q_OBJECT
 public:
-    explicit Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
+    Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
     Cipher(Cipher &&) = default;
     ~Cipher();
 

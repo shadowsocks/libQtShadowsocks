@@ -39,7 +39,7 @@ public:
     // non-skip
     // This class implements so-called RC4-MD5 cipher instead of original RC4
     // _iv is not allowed to be empty!
-    explicit RC4(const QByteArray &_key,
+    RC4(const QByteArray &_key,
                  const QByteArray &_iv,
                  QObject *parent = 0);
 

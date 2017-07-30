@@ -38,7 +38,7 @@ public:
      * Key length must be 32 (16 is dropped)
      * IV length must be 8 or 12
      */
-    explicit ChaCha(const QByteArray &_key,
+    ChaCha(const QByteArray &_key,
                     const QByteArray &_iv,
                     QObject *parent = 0);
 

@@ -38,7 +38,7 @@ public:
      * all available data from socket a will be written to socket b
      * vice versa
      */
-    explicit SocketStream(QAbstractSocket *a,
+    SocketStream(QAbstractSocket *a,
                           QAbstractSocket *b,
                           QObject *parent = 0);
 

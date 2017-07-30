@@ -125,11 +125,17 @@ bool Client::start(bool _server)
 
     if (!_server) {
         QSS::Address server(profile.server, profile.server_port);
+        server.blockingLookUp();
         QSS::AddressTester *tester =
                 new QSS::AddressTester(server.getFirstIP(),
-                                       server.getPort());
+                                       server.getPort(),
+                                       this);
         connect(tester, &QSS::AddressTester::connectivityTestFinished,
                 this, &Client::onConnectivityResultArrived);
+        connect(tester, &QSS::AddressTester::testErrorString,
+                [] (const QString& error) {
+            QSS::Common::qOut << "Connectivity testing error: " << error << endl;
+        });
         tester->startConnectivityTest(profile.method,
                                       profile.password,
                                       profile.auth);
@@ -185,5 +191,4 @@ void Client::onConnectivityResultArrived(bool c)
                              "And make sure the profile is correct."
                           << endl;
     }
-    sender()->deleteLater();
 }

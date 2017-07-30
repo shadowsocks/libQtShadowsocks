@@ -38,7 +38,7 @@ class QSS_EXPORT AddressTester : public QObject
 {
     Q_OBJECT
 public:
-    explicit AddressTester(const QHostAddress &server_address,
+    AddressTester(const QHostAddress &server_address,
                            const quint16 &server_port,
                            QObject *parent = 0);
 

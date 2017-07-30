@@ -35,7 +35,7 @@ class QSS_EXPORT TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit TcpServer(const EncryptorPrivate &ep,
+    TcpServer(const EncryptorPrivate &ep,
                        const int &timeout,
                        const bool &is_local,
                        const bool &auto_ban,
