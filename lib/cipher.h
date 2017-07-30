@@ -32,23 +32,15 @@
 #include <array>
 #include <map>
 #include <QObject>
-#include <botan/pipe.h>
-#include <botan/version.h>
 #include "rc4.h"
 #include "chacha.h"
 #include "export.h"
 
-namespace QSS {
+namespace Botan {
+class Pipe;
+}
 
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,10,0)
-#error "Botan library is too old."
-#elif BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
-typedef Botan::SecureVector<Botan::byte> SecureByteArray;
-#define DataOfSecureByteArray(sba) sba.begin()
-#else
-typedef Botan::secure_vector<Botan::byte> SecureByteArray;
-#define DataOfSecureByteArray(sba) sba.data()
-#endif
+namespace QSS {
 
 class QSS_EXPORT Cipher : public QObject
 {

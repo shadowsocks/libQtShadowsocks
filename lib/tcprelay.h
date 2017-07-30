@@ -37,13 +37,13 @@ class QSS_EXPORT TcpRelay : public QObject
     Q_OBJECT
 public:
     TcpRelay(QTcpSocket *localSocket,
-                      int timeout,
-                      const Address &server_addr,
-                      const EncryptorPrivate &ep,
-                      const bool &is_local,
-                      const bool &autoBan,
-                      const bool &auth,
-                      QObject *parent = 0);
+             int timeout,
+             const Address &server_addr,
+             const EncryptorPrivate &ep,
+             const bool &is_local,
+             const bool &autoBan,
+             const bool &auth,
+             QObject *parent = 0);
 
     enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
 

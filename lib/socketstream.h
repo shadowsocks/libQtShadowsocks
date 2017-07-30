@@ -39,8 +39,8 @@ public:
      * vice versa
      */
     SocketStream(QAbstractSocket *a,
-                          QAbstractSocket *b,
-                          QObject *parent = 0);
+                 QAbstractSocket *b,
+                 QObject *parent = 0);
 
 signals:
     void info(const QString &);

@@ -39,8 +39,8 @@ public:
      * IV length must be 8 or 12
      */
     ChaCha(const QByteArray &_key,
-                    const QByteArray &_iv,
-                    QObject *parent = 0);
+           const QByteArray &_iv,
+           QObject *parent = 0);
 
 public slots:
     //encrypt (or decrypt, same process for ChaCha algorithm) a byte array.

@@ -46,7 +46,7 @@ add_library(${LIBNAME} ${SOURCE})
 target_link_libraries(${LIBNAME}
     PUBLIC Qt5::Core
     PUBLIC Qt5::Network
-    PUBLIC ${BOTAN_LIBRARIES})
+    PRIVATE ${BOTAN_LIBRARIES})
 target_include_directories(${LIBNAME} PRIVATE ${BOTAN_INCLUDE_DIRS})
 
 foreach(LIB Qt5Network Qt5Core ${BOTAN_LIBRARIES})

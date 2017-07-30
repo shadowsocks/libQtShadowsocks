@@ -41,8 +41,8 @@ public:
      * If the initialisation doesn't succeed, isValid() function return false
      */
     EncryptorPrivate(const QString &method,
-                              const QString &password,
-                              QObject *parent = 0);
+                     const QString &password,
+                     QObject *parent = 0);
 
     //construct an invalid/null instance
     explicit EncryptorPrivate(QObject *parent = 0);

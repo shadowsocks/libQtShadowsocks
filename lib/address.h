@@ -43,8 +43,8 @@ public:
                      QObject *parent = 0);
 
     Address(const QHostAddress &ip,
-                     const quint16 &p,
-                     QObject *parent = 0);
+            const quint16 &p,
+            QObject *parent = 0);
 
     Address(const Address &o);
     //force the generation of default move constructor

@@ -40,8 +40,8 @@ public:
     // This class implements so-called RC4-MD5 cipher instead of original RC4
     // _iv is not allowed to be empty!
     RC4(const QByteArray &_key,
-                 const QByteArray &_iv,
-                 QObject *parent = 0);
+        const QByteArray &_iv,
+        QObject *parent = 0);
 
 public slots:
     QByteArray update(const QByteArray &input);

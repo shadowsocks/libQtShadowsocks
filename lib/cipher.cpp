@@ -24,11 +24,23 @@
 #include <botan/auto_rng.h>
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
-#include <stdexcept>
+#include <botan/pipe.h>
+#include <botan/version.h>
 #include <QCryptographicHash>
 #include <QMessageAuthenticationCode>
+#include <stdexcept>
 
 using namespace QSS;
+
+#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,10,0)
+#error "Botan library is too old."
+#elif BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
+typedef Botan::SecureVector<Botan::byte> SecureByteArray;
+#define DataOfSecureByteArray(sba) sba.begin()
+#else
+typedef Botan::secure_vector<Botan::byte> SecureByteArray;
+#define DataOfSecureByteArray(sba) sba.data()
+#endif
 
 Cipher::Cipher(const QByteArray &method,
                const QByteArray &key,
