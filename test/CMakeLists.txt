@@ -12,7 +12,6 @@ set(SOURCE
 add_executable(${TASK} ${SOURCE})
 
 find_package(Qt5Test)
-target_link_libraries(${TASK} Qt5::Core Qt5::Network Qt5::Test ${BOTAN_LIBRARIES} QtShadowsocks)
+target_link_libraries(${TASK} Qt5::Core Qt5::Network Qt5::Test QtShadowsocks)
 target_include_directories(${TASK}
-    PUBLIC ${BOTAN_INCLUDE_DIRS}
     PUBLIC ${PROJECT_SOURCE_DIR}/lib)
