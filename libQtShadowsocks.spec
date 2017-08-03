@@ -1,6 +1,6 @@
 Name:		libQtShadowsocks
 Version:	1.11.0
-Release:	1%{?dist}
+Release:	2%{?dist}
 Summary:	A lightweight and ultra-fast shadowsocks library
 
 License:	LGPLv3+
@@ -8,7 +8,11 @@ URL:		https://github.com/shadowsocks/%{name}
 Source0:	%{url}/archive/v%{version}.tar.gz
 
 BuildRequires:	botan-devel
+%if 0%{?rhel}
+BuildRequires:	cmake3
+%else
 BuildRequires:	cmake
+%endif
 BuildRequires:	qt5-qtbase-devel
 Requires:	botan
 Requires:	qt5-qtbase
@@ -38,7 +42,11 @@ A shadowsocks CLI client using libQtShadowsocks.
 
 
 %build
+%if 0%{?rhel}
+%cmake3 .
+%else
 %cmake .
+%endif
 make %{?_smp_mflags}
 
 %install
