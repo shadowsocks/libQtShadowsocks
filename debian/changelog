@@ -1,3 +1,11 @@
+libqtshadowsocks (1.11.0-1) stable; urgency=medium
+
+  * adds support for botan-2 (>=2.2.0)
+  * uses botan as a private library (only in implementation)
+  * migrates to use CMake as the build system
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Thu, 03 Aug 2017 21:53:00 +0100
+
 libqtshadowsocks (1.10.0-1) stable; urgency=medium
 
   * supports tag/remark in ss uri
