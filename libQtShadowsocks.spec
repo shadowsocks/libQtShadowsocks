@@ -9,9 +9,9 @@ Source0:	%{url}/archive/v%{version}.tar.gz
 
 BuildRequires:	botan-devel
 %if 0%{?rhel}
-BuildRequires:	cmake3
+BuildRequires:	cmake3 >= 3.1
 %else
-BuildRequires:	cmake
+BuildRequires:	cmake >= 3.1
 %endif
 BuildRequires:	qt5-qtbase-devel
 Requires:	botan
