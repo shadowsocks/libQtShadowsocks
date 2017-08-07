@@ -69,9 +69,6 @@ private:
     QList<QThread*> threadList;
     quint64 workerThreadID;
     quint64 totalWorkers;
-
-private slots:
-    void onConnectionFinished();
 };
 
 }

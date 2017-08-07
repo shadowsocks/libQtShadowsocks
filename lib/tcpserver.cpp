@@ -91,18 +91,13 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
     connect(con, &TcpRelay::latencyAvailable,
             this, &TcpServer::latencyAvailable);
-    connect(con, &TcpRelay::finished, this, &TcpServer::onConnectionFinished);
+    connect(con, &TcpRelay::finished, this, [=]() {
+        if (conList.removeOne(con)) {
+            con->deleteLater();
+        }
+    });
     con->moveToThread(threadList.at(workerThreadID++));
     workerThreadID %= totalWorkers;
-}
-
-void TcpServer::onConnectionFinished()
-{
-    TcpRelay *con = qobject_cast<TcpRelay*>(sender());
-    //sometimes the finished signal from TcpRelay gets emitted multiple times
-    if (conList.removeOne(con)) {
-        con->deleteLater();
-    }
 }
 
 bool TcpServer::listen(const QHostAddress &address, quint16 port)
