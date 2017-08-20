@@ -38,6 +38,9 @@
 
 namespace Botan {
 class Pipe;
+class KDF;
+class HashFunction;
+class MessageAuthenticationCode;
 }
 
 namespace QSS {
@@ -53,11 +56,18 @@ public:
     QByteArray update(const QByteArray &data);
     const QByteArray &getIV() const;
 
-    typedef std::array<int, 2> CipherKeyIVLength;
+    enum CipherType {
+        STREAM,
+        AEAD
+    };
+
     struct CipherInfo {
         QByteArray internalName; // internal implementation name
         int keyLen;
         int ivLen;
+        CipherType type;
+        int saltLen; // only for AEAD
+        int tagLen; // only for AEAD
     };
 
     /*
@@ -65,9 +75,18 @@ public:
      */
     static const std::map<QByteArray, CipherInfo> cipherInfoMap;
 
+    /*
+     * The label/info string used for key derivation function
+     */
+    static const std::string kdfLabel;
+
     static const int AUTH_LEN;
 
+    /*
+     * Generates a vector of random characters of given length
+     */
     static QByteArray randomIv(int length);
+
     static QByteArray hmacSha1(const QByteArray &key, const QByteArray &msg);
     static QByteArray md5Hash(const QByteArray &in);
     static bool isSupported(const QByteArray &method);
@@ -78,7 +97,19 @@ private:
     Botan::Pipe *pipe;
     RC4 *rc4;
     ChaCha *chacha;
-    QByteArray iv;
+    const QByteArray key; // preshared key
+    const QByteArray iv; // nonce
+    const CipherInfo cipherInfo;
+
+#ifdef USE_BOTAN2
+    // AEAD support needs Botan-2 library
+
+    Botan::HashFunction *msgHashFunc;
+    Botan::MessageAuthenticationCode *msgAuthCode;
+    Botan::KDF *kdf;
+
+    QByteArray deriveSubkey();
+#endif
 };
 
 }

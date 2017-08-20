@@ -22,6 +22,7 @@ find_package(Qt5Network)
 find_package(PkgConfig)
 
 if (USE_BOTAN2)
+    add_definitions(-DUSE_BOTAN2)
     pkg_check_modules(BOTAN REQUIRED botan-2>=2.2.0)
 else()
     pkg_check_modules(BOTAN REQUIRED botan-1.10)

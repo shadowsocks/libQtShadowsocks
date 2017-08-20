@@ -21,25 +21,30 @@
  */
 
 #include "cipher.h"
+
 #include <botan/auto_rng.h>
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
 #include <botan/pipe.h>
-#include <botan/version.h>
+
+#ifdef USE_BOTAN2
+#include <botan/hkdf.h>
+#include <botan/hmac.h>
+#include <botan/sha160.h>
+#endif
+
 #include <QCryptographicHash>
 #include <QMessageAuthenticationCode>
 #include <stdexcept>
 
 using namespace QSS;
 
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(1,10,0)
-#error "Botan library is too old."
-#elif BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
-typedef Botan::SecureVector<Botan::byte> SecureByteArray;
-#define DataOfSecureByteArray(sba) sba.begin()
-#else
+#ifdef USE_BOTAN2
 typedef Botan::secure_vector<Botan::byte> SecureByteArray;
 #define DataOfSecureByteArray(sba) sba.data()
+#else
+typedef Botan::SecureVector<Botan::byte> SecureByteArray;
+#define DataOfSecureByteArray(sba) sba.begin()
 #endif
 
 Cipher::Cipher(const QByteArray &method,
@@ -51,65 +56,86 @@ Cipher::Cipher(const QByteArray &method,
     pipe(nullptr),
     rc4(nullptr),
     chacha(nullptr),
-    iv(iv)
+    key(key),
+    iv(iv),
+    cipherInfo(cipherInfoMap.at(method))
+#ifdef USE_BOTAN2
+  , msgHashFunc(nullptr),
+    msgAuthCode(nullptr),
+    kdf(nullptr)
+#endif
 {
     if (method.contains("RC4")) {
         rc4 = new RC4(key, iv, this);
-    } else {
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
-        if (method.contains("ChaCha")) {
-            chacha = new ChaCha(key, iv, this);
-        } else {
+        return;
+    }
+#ifndef USE_BOTAN2
+    else if (method.contains("ChaCha")) {
+        chacha = new ChaCha(key, iv, this);
+        return;
+    }
 #endif
-        try {
-            std::string str(method.constData(), method.length());
-            Botan::SymmetricKey _key(
-                        reinterpret_cast<const Botan::byte *>(key.constData()),
-                        key.size());
-            Botan::InitializationVector _iv(
-                        reinterpret_cast<const Botan::byte *>(iv.constData()),
-                        iv.size());
-            Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv,
-                        encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
-            // Botan::pipe will take control over filter
-            // we shouldn't deallocate filter externally
-            pipe = new Botan::Pipe(filter);
-        } catch(Botan::Exception &e) {
-            qFatal("%s\n", e.what());
-        }
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
+    try {
+#ifdef USE_BOTAN2
+        if (cipherInfoMap.at(method).type == CipherType::AEAD) {
+            // Initialises necessary class members for AEAD ciphers
+            msgHashFunc = new Botan::SHA_160(); // SHA1
+            msgAuthCode = new Botan::HMAC(msgHashFunc);
+            kdf = new Botan::HKDF(msgAuthCode);
         }
 #endif
+
+        std::string str(method.constData(), method.length());
+        Botan::SymmetricKey _key(
+                    reinterpret_cast<const Botan::byte *>(key.constData()),
+                    key.size());
+        Botan::InitializationVector _iv(
+                    reinterpret_cast<const Botan::byte *>(iv.constData()),
+                    iv.size());
+        Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv,
+                    encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
+        // Botan::pipe will take control over filter
+        // we shouldn't deallocate filter externally
+        pipe = new Botan::Pipe(filter);
+    } catch(const Botan::Exception &e) {
+        qFatal("%s\n", e.what());
     }
 }
 
 Cipher::~Cipher()
 {
     if (pipe)   delete pipe;
+    if (kdf)    delete kdf;
+    if (msgAuthCode)    delete msgAuthCode;
+    if (msgHashFunc)    delete msgHashFunc;
 }
 
 const std::map<QByteArray, Cipher::CipherInfo> Cipher::cipherInfoMap = {
-    {"aes-128-cfb", {"AES-128/CFB", 16, 16}},
-    {"aes-192-cfb", {"AES-192/CFB", 24, 16}},
-    {"aes-256-cfb", {"AES-256/CFB", 32, 16}},
-    {"aes-128-ctr", {"AES-128/CTR-BE", 16, 16}},
-    {"aes-192-ctr", {"AES-192/CTR-BE", 24, 16}},
-    {"aes-256-ctr", {"AES-256/CTR-BE", 32, 16}},
-    {"bf-cfb", {"Blowfish/CFB", 16, 8}},
-    {"camellia-128-cfb", {"Camellia-128/CFB", 16, 16}},
-    {"camellia-192-cfb", {"Camellia-192/CFB", 24, 16}},
-    {"camellia-256-cfb", {"Camellia-256/CFB", 32, 16}},
-    {"cast5-cfb", {"CAST-128/CFB", 16, 8}},
-    {"chacha20", {"ChaCha", 32, 8}},
-    {"chacha20-ietf", {"ChaCha", 32, 12}},
-    {"des-cfb", {"DES/CFB", 8, 8}},
-    {"idea-cfb", {"IDEA/CFB", 16, 8}},
-    {"rc2-cfb", {"RC2/CFB", 16, 8}},
-    {"rc4-md5", {"RC4-MD5", 16, 16}},
-    {"salsa20", {"Salsa20", 32, 8}},
-    {"seed-cfb", {"SEED/CFB", 16, 16}},
-    {"serpent-256-cfb", {"Serpent/CFB", 32, 16}}
+    {"aes-128-cfb", {"AES-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
+    {"aes-192-cfb", {"AES-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
+    {"aes-256-cfb", {"AES-256/CFB", 32, 16, Cipher::CipherType::STREAM}},
+    {"aes-128-ctr", {"AES-128/CTR-BE", 16, 16, Cipher::CipherType::STREAM}},
+    {"aes-192-ctr", {"AES-192/CTR-BE", 24, 16, Cipher::CipherType::STREAM}},
+    {"aes-256-ctr", {"AES-256/CTR-BE", 32, 16, Cipher::CipherType::STREAM}},
+    {"bf-cfb", {"Blowfish/CFB", 16, 8, Cipher::CipherType::STREAM}},
+    {"camellia-128-cfb", {"Camellia-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
+    {"camellia-192-cfb", {"Camellia-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
+    {"camellia-256-cfb", {"Camellia-256/CFB", 32, 16, Cipher::CipherType::STREAM}},
+    {"cast5-cfb", {"CAST-128/CFB", 16, 8, Cipher::CipherType::STREAM}},
+    {"chacha20", {"ChaCha", 32, 8, Cipher::CipherType::STREAM}},
+    {"chacha20-ietf", {"ChaCha", 32, 12, Cipher::CipherType::STREAM}},
+    {"des-cfb", {"DES/CFB", 8, 8, Cipher::CipherType::STREAM}},
+    {"idea-cfb", {"IDEA/CFB", 16, 8, Cipher::CipherType::STREAM}},
+    {"rc2-cfb", {"RC2/CFB", 16, 8, Cipher::CipherType::STREAM}},
+    {"rc4-md5", {"RC4-MD5", 16, 16, Cipher::CipherType::STREAM}},
+    {"salsa20", {"Salsa20", 32, 8, Cipher::CipherType::STREAM}},
+    {"seed-cfb", {"SEED/CFB", 16, 16, Cipher::CipherType::STREAM}},
+    {"serpent-256-cfb", {"Serpent/CFB", 32, 16, Cipher::CipherType::STREAM}}
+#ifdef USE_BOTAN2
+   ,{"aes-256-gcm", {"AES-128/GCM", 32, 12, Cipher::CipherType::AEAD, 32, 16}}
+#endif
 };
+const std::string Cipher::kdfLabel = {"ss-subkey"};
 const int Cipher::AUTH_LEN = 10;
 
 QByteArray Cipher::update(const QByteArray &data)
@@ -163,24 +189,21 @@ QByteArray Cipher::md5Hash(const QByteArray &in)
 
 bool Cipher::isSupported(const QByteArray &method)
 {
-#if BOTAN_VERSION_CODE < BOTAN_VERSION_CODE_FOR(2,0,0)
+#ifndef USE_BOTAN2
     if (method.contains("ChaCha"))  return true;
 #endif
 
-    if (method.contains("RC4")) {
-        return true;
-    } else {
+    if (!method.contains("RC4")) {
         std::string str(method.constData(), method.length());
-        Botan::Keyed_Filter *filter;
+        std::unique_ptr<Botan::Keyed_Filter> filter;
         try {
-            filter = Botan::get_cipher(str, Botan::ENCRYPTION);
+            filter.reset(Botan::get_cipher(str, Botan::ENCRYPTION));
         } catch (Botan::Exception &e) {
-            qWarning("%s\n", e.what());
+            qDebug("%s\n", e.what());
             return false;
         }
-        delete filter;
-        return true;
     }
+    return true;
 }
 
 QList<QByteArray> Cipher::getSupportedMethodList()
@@ -193,3 +216,19 @@ QList<QByteArray> Cipher::getSupportedMethodList()
     }
     return supportedMethods;
 }
+
+#ifdef USE_BOTAN2
+/*
+ * Derives per-session subkey from the master key and IV, which is required
+ * for Shadowsocks AEAD ciphers
+ */
+QByteArray Cipher::deriveSubkey()
+{
+    Q_ASSERT(kdf);
+    std::string salt = randomIv(cipherInfo.saltLen).toStdString();
+    SecureByteArray skey = kdf->derive_key(cipherInfo.keyLen, reinterpret_cast<const uint8_t*>(key.data()), key.length(), salt, kdfLabel);
+    QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(skey)),
+                   skey.size());
+    return out;
+}
+#endif
