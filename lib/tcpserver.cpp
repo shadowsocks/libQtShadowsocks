@@ -91,7 +91,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
     connect(con, &TcpRelay::latencyAvailable,
             this, &TcpServer::latencyAvailable);
-    connect(con, &TcpRelay::finished, this, [=]() {
+    connect(con, &TcpRelay::finished, this, [&]() {
         if (conList.removeOne(con)) {
             con->deleteLater();
         }
