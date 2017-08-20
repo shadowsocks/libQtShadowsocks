@@ -31,6 +31,7 @@
 
 #include <array>
 #include <map>
+#include <memory>
 #include <QObject>
 #include "rc4.h"
 #include "chacha.h"
@@ -94,9 +95,9 @@ public:
     static QList<QByteArray> getSupportedMethodList();
 
 private:
-    Botan::Pipe *pipe;
-    RC4 *rc4;
-    ChaCha *chacha;
+    std::unique_ptr<Botan::Pipe> pipe;
+    std::unique_ptr<RC4> rc4;
+    std::unique_ptr<ChaCha> chacha;
     const QByteArray key; // preshared key
     const QByteArray iv; // nonce
     const CipherInfo cipherInfo;
@@ -104,9 +105,9 @@ private:
 #ifdef USE_BOTAN2
     // AEAD support needs Botan-2 library
 
-    Botan::HashFunction *msgHashFunc;
-    Botan::MessageAuthenticationCode *msgAuthCode;
-    Botan::KDF *kdf;
+    std::unique_ptr<Botan::HashFunction> msgHashFunc;
+    std::unique_ptr<Botan::MessageAuthenticationCode> msgAuthCode;
+    std::unique_ptr<Botan::KDF> kdf;
 
     QByteArray deriveSubkey();
 #endif

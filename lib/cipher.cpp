@@ -53,25 +53,17 @@ Cipher::Cipher(const QByteArray &method,
                bool encode,
                QObject *parent) :
     QObject(parent),
-    pipe(nullptr),
-    rc4(nullptr),
-    chacha(nullptr),
     key(key),
     iv(iv),
     cipherInfo(cipherInfoMap.at(method))
-#ifdef USE_BOTAN2
-  , msgHashFunc(nullptr),
-    msgAuthCode(nullptr),
-    kdf(nullptr)
-#endif
 {
     if (method.contains("RC4")) {
-        rc4 = new RC4(key, iv, this);
+        rc4.reset(new RC4(key, iv));
         return;
     }
 #ifndef USE_BOTAN2
     else if (method.contains("ChaCha")) {
-        chacha = new ChaCha(key, iv, this);
+        chacha.reset(new ChaCha(key, iv));
         return;
     }
 #endif
@@ -79,9 +71,9 @@ Cipher::Cipher(const QByteArray &method,
 #ifdef USE_BOTAN2
         if (cipherInfoMap.at(method).type == CipherType::AEAD) {
             // Initialises necessary class members for AEAD ciphers
-            msgHashFunc = new Botan::SHA_160(); // SHA1
-            msgAuthCode = new Botan::HMAC(msgHashFunc);
-            kdf = new Botan::HKDF(msgAuthCode);
+            msgHashFunc.reset(new Botan::SHA_160()); // SHA1
+            msgAuthCode.reset(new Botan::HMAC(msgHashFunc.get()));
+            kdf.reset(new Botan::HKDF(msgAuthCode.get()));
         }
 #endif
 
@@ -96,7 +88,7 @@ Cipher::Cipher(const QByteArray &method,
                     encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
         // Botan::pipe will take control over filter
         // we shouldn't deallocate filter externally
-        pipe = new Botan::Pipe(filter);
+        pipe.reset(new Botan::Pipe(filter));
     } catch(const Botan::Exception &e) {
         qFatal("%s\n", e.what());
     }
@@ -104,10 +96,6 @@ Cipher::Cipher(const QByteArray &method,
 
 Cipher::~Cipher()
 {
-    if (pipe)   delete pipe;
-    if (kdf)    delete kdf;
-    if (msgAuthCode)    delete msgAuthCode;
-    if (msgHashFunc)    delete msgHashFunc;
 }
 
 const std::map<QByteArray, Cipher::CipherInfo> Cipher::cipherInfoMap = {
