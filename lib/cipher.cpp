@@ -36,6 +36,7 @@
 #include <QCryptographicHash>
 #include <QMessageAuthenticationCode>
 #include <stdexcept>
+#include <memory>
 
 using namespace QSS;
 
@@ -105,9 +106,11 @@ Cipher::Cipher(const QByteArray &method,
 Cipher::~Cipher()
 {
     if (pipe)   delete pipe;
+#if USE_BOTAN2
     if (kdf)    delete kdf;
     if (msgAuthCode)    delete msgAuthCode;
     if (msgHashFunc)    delete msgHashFunc;
+#endif
 }
 
 const std::map<QByteArray, Cipher::CipherInfo> Cipher::cipherInfoMap = {
