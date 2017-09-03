@@ -32,7 +32,7 @@ Encryptor::Encryptor(const EncryptorPrivate &ep, QObject *parent) :
     enCipher(nullptr),
     deCipher(nullptr)
 {
-    enCipherIV = Cipher::randomIv(ep.ivLen);
+    enCipherIV = QByteArray::fromStdString(Cipher::randomIv(ep.ivLen));
 }
 
 void Encryptor::reset()
@@ -40,7 +40,7 @@ void Encryptor::reset()
     if (enCipher) {
         enCipher->deleteLater();
         enCipher = nullptr;
-        enCipherIV = Cipher::randomIv(ep.ivLen);
+        enCipherIV = QByteArray::fromStdString(Cipher::randomIv(ep.ivLen));
     }
     if (deCipher) {
         deCipher->deleteLater();
@@ -55,10 +55,10 @@ QByteArray Encryptor::encrypt(const QByteArray &in)
 
     QByteArray out;
     if (!enCipher) {
-        enCipher = new Cipher(ep.method, ep.key, enCipherIV, true, this);
-        out = enCipherIV + enCipher->update(in);
+        enCipher = new Cipher(ep.method.toStdString(), ep.key.toStdString(), enCipherIV.toStdString(), true, this);
+        out = enCipherIV + QByteArray::fromStdString(enCipher->update(in.toStdString()));
     } else {
-        out = enCipher->update(in);
+        out = QByteArray::fromStdString(enCipher->update(in.toStdString()));
     }
     return out;
 }
@@ -73,14 +73,14 @@ QByteArray Encryptor::decrypt(const QByteArray &in)
         if (iv.length() != ep.ivLen) {
             return out;
         }
-        deCipher = new Cipher(ep.method,
-                              ep.key,
-                              iv,
+        deCipher = new Cipher(ep.method.toStdString(),
+                              ep.key.toStdString(),
+                              iv.toStdString(),
                               false,
                               this);
-        out = deCipher->update(in.mid(ep.ivLen));
+        out = QByteArray::fromStdString(deCipher->update(in.mid(ep.ivLen).toStdString()));
     } else {
-        out = deCipher->update(in);
+        out = QByteArray::fromStdString(deCipher->update(in.toStdString()));
     }
     return out;
 }
@@ -93,9 +93,9 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
         enCipher->deleteLater();
     }
     QByteArray iv = enCipherIV;
-    enCipherIV = Cipher::randomIv(ep.ivLen);
-    enCipher = new Cipher(ep.method, ep.key, iv, true, this);
-    return iv + enCipher->update(in);
+    enCipherIV = QByteArray::fromStdString(Cipher::randomIv(ep.ivLen));
+    enCipher = new Cipher(ep.method.toStdString(), ep.key.toStdString(), iv.toStdString(), true, this);
+    return iv + QByteArray::fromStdString(enCipher->update(in.toStdString()));
 }
 
 QByteArray Encryptor::decryptAll(const QByteArray &in)
@@ -109,14 +109,14 @@ QByteArray Encryptor::decryptAll(const QByteArray &in)
     if (iv.length() != ep.ivLen) {
         return QByteArray();
     }
-    deCipher = new Cipher(ep.method, ep.key, iv, false, this);
-    return deCipher->update(in.mid(ep.ivLen));
+    deCipher = new Cipher(ep.method.toStdString(), ep.key.toStdString(), iv.toStdString(), false, this);
+    return QByteArray::fromStdString(deCipher->update(in.mid(ep.ivLen).toStdString()));
 }
 
 QByteArray Encryptor::deCipherIV() const
 {
     if (deCipher) {
-        return deCipher->getIV();
+        return QByteArray::fromStdString(deCipher->getIV());
     } else {
         return QByteArray();
     }

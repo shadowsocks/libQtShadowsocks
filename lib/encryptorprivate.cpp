@@ -34,12 +34,12 @@ EncryptorPrivate::EncryptorPrivate(const QString &m,
     password = pwd.toLocal8Bit();
     valid = true;
 
-    const auto it = Cipher::cipherInfoMap.find(method);
+    const auto it = Cipher::cipherInfoMap.find(method.toStdString());
     if (it == Cipher::cipherInfoMap.end() || !Cipher::isSupported(it->second.internalName)) {
         qCritical("The method \"%s\" is not supported.", m.toStdString().data());
         valid = false;
     } else {
-        method = it->second.internalName;
+        method = QByteArray::fromStdString(it->second.internalName);
         keyLen = it->second.keyLen;
         ivLen = it->second.ivLen;
         evpBytesToKey();
@@ -75,7 +75,7 @@ void EncryptorPrivate::evpBytesToKey()
         } else {
             data = m[i - 1] + password;
         }
-        m.append(Cipher::md5Hash(data));
+        m.append(QByteArray::fromStdString(Cipher::md5Hash(data.toStdString())));
         i++;
     }
     QByteArray ms;

@@ -34,7 +34,7 @@ RC4::RC4(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
     state.resize(256);
     buffer.resize(4096);//4096 is the "BOTAN_DEFAULT_BUFFER_SIZE"
 
-    QByteArray realKey = Cipher::md5Hash(_key + _iv);
+    QByteArray realKey = QByteArray::fromStdString(Cipher::md5Hash(QByteArray(_key + _iv).toStdString()));
     realKey.resize(_key.size());
     unsigned char *key = reinterpret_cast<unsigned char *>(realKey.data());
 

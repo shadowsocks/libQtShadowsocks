@@ -50,12 +50,12 @@ class QSS_EXPORT Cipher : public QObject
 {
     Q_OBJECT
 public:
-    Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
+    Cipher(const std::string &method, const std::string &key, const std::string &iv, bool encode, QObject *parent = 0);
     Cipher(Cipher &&) = default;
     ~Cipher();
 
-    QByteArray update(const QByteArray &data);
-    const QByteArray &getIV() const;
+    std::string update(const std::string &data);
+    const std::string &getIV() const;
 
     enum CipherType {
         STREAM,
@@ -63,7 +63,7 @@ public:
     };
 
     struct CipherInfo {
-        QByteArray internalName; // internal implementation name
+        std::string internalName; // internal implementation name in Botan
         int keyLen;
         int ivLen;
         CipherType type;
@@ -74,7 +74,7 @@ public:
     /*
      * The key of this map is the encryption method (shadowsocks convention)
      */
-    static const std::map<QByteArray, CipherInfo> cipherInfoMap;
+    static const std::map<std::string, CipherInfo> cipherInfoMap;
 
     /*
      * The label/info string used for key derivation function
@@ -86,20 +86,30 @@ public:
     /*
      * Generates a vector of random characters of given length
      */
-    static QByteArray randomIv(int length);
+    static std::string randomIv(int length);
+    static std::string md5Hash(const std::string &in);
 
-    static QByteArray hmacSha1(const QByteArray &key, const QByteArray &msg);
-    static QByteArray md5Hash(const QByteArray &in);
+    static bool isSupported(const std::string &method);
+    static std::vector<std::string> supportedMethods();
+
+    /*
+     * These methods are deprecated because alternatives are provided using
+     * STL types
+     */
     static bool isSupported(const QByteArray &method);
-
     static QList<QByteArray> getSupportedMethodList();
+
+    /*
+     * OTA is deprecated, these methods will be removed in future releases
+     */
+    static QByteArray hmacSha1(const QByteArray &key, const QByteArray &msg);
 
 private:
     std::unique_ptr<Botan::Pipe> pipe;
     std::unique_ptr<RC4> rc4;
     std::unique_ptr<ChaCha> chacha;
-    const QByteArray key; // preshared key
-    const QByteArray iv; // nonce
+    const std::string key; // preshared key
+    const std::string iv; // nonce
     const CipherInfo cipherInfo;
 
 #ifdef USE_BOTAN2
@@ -109,7 +119,7 @@ private:
     std::unique_ptr<Botan::MessageAuthenticationCode> msgAuthCode;
     std::unique_ptr<Botan::KDF> kdf;
 
-    QByteArray deriveSubkey();
+    std::string deriveSubkey() const;
 #endif
 };
 
