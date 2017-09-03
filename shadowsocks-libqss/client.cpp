@@ -116,12 +116,11 @@ bool Client::start(bool _server)
     if (lc) {
         lc->deleteLater();
     }
-    lc = new QSS::Controller(!_server, autoBan, this);
+    lc = new QSS::Controller(profile, !_server, autoBan, this);
     connect (lc, &QSS::Controller::info, this, &Client::logHandler);
     if (profile.debug) {
         connect(lc, &QSS::Controller::debug, this, &Client::logHandler);
     }
-    lc->setup(profile);
 
     if (!_server) {
         QSS::Address server(profile.server, profile.server_port);

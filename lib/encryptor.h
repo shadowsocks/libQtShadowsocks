@@ -33,7 +33,6 @@
 #include <QObject>
 #include "cipher.h"
 #include "export.h"
-#include "encryptorprivate.h"
 
 namespace QSS {
 
@@ -41,15 +40,21 @@ class QSS_EXPORT Encryptor : public QObject
 {
     Q_OBJECT
 public:
-    explicit Encryptor(const EncryptorPrivate &ep, QObject *parent = 0);
+    /**
+     * @brief Encryptor
+     * @param method The encryption method in Shadowsocks convention
+     * @param password The preshared password
+     * @param parent The parent QObject
+     */
+    Encryptor(const QByteArray& method,
+              const QByteArray& password,
+              QObject *parent = 0);
 
     QByteArray decrypt(const QByteArray &);
     QByteArray encrypt(const QByteArray &);
     QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
     QByteArray encryptAll(const QByteArray &);
     void reset();
-    QByteArray deCipherIV() const;
-
     void addHeaderAuth(QByteArray &headerData) const;
     void addHeaderAuth(QByteArray &data, const int &headerLen) const;
     void addChunkAuth(QByteArray &data);
@@ -64,11 +69,14 @@ public:
     bool verifyExtractChunkAuth(QByteArray &data);
 
 private:
-    const EncryptorPrivate &ep;
-    QByteArray enCipherIV;
+    std::string method;
+    std::string password;
+    std::string enCipherIV;
     //incomplete data chunk from verifyExtractChunkAuth function
     QByteArray incompleteChunk;
     quint32 chunkId;
+
+    std::string deCipherIV() const;
 
 protected:
     Cipher *enCipher;

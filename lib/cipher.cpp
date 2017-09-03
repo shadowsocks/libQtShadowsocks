@@ -49,34 +49,33 @@ typedef Botan::SecureVector<Botan::byte> SecureByteArray;
 #endif
 
 Cipher::Cipher(const std::string &method,
-               const std::string &key,
+               const std::string &psKey,
                const std::string &iv,
-               bool encode,
+               bool encrypt,
                QObject *parent) :
     QObject(parent),
-    key(key),
+    key(psKey),
     iv(iv),
     cipherInfo(cipherInfoMap.at(method))
 {
-    if (method.find("RC4") != std::string::npos) {
+    if (method.find("rc4") != std::string::npos) {
         rc4.reset(new RC4(QByteArray::fromStdString(key), QByteArray::fromStdString(iv)));
         return;
     }
 #ifndef USE_BOTAN2
-    else if (method.find("ChaCha") != std::string::npos) {
+    else if (method.find("chacha20") != std::string::npos) {
         chacha.reset(new ChaCha(QByteArray::fromStdString(key), QByteArray::fromStdString(iv)));
         return;
     }
 #endif
     try {
 #ifdef USE_BOTAN2
-        //FIXME: method is passed as internal method name, it should be changed to shadowsocks cipher name
-        /*if (cipherInfoMap.at(method).type == CipherType::AEAD) {
+        if (cipherInfoMap.at(method).type == CipherType::AEAD) {
             // Initialises necessary class members for AEAD ciphers
             msgHashFunc.reset(new Botan::SHA_160()); // SHA1
             msgAuthCode.reset(new Botan::HMAC(msgHashFunc.get()));
             kdf.reset(new Botan::HKDF(msgAuthCode.get()));
-        }*/
+        }
 #endif
 
         Botan::SymmetricKey _key(
@@ -85,8 +84,8 @@ Cipher::Cipher(const std::string &method,
         Botan::InitializationVector _iv(
                     reinterpret_cast<const Botan::byte *>(iv.data()),
                     iv.size());
-        Botan::Keyed_Filter *filter = Botan::get_cipher(method, _key, _iv,
-                    encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
+        Botan::Keyed_Filter *filter = Botan::get_cipher(cipherInfo.internalName, _key, _iv,
+                    encrypt ? Botan::ENCRYPTION : Botan::DECRYPTION);
         // Botan::pipe will take control over filter
         // we shouldn't deallocate filter externally
         pipe.reset(new Botan::Pipe(filter));
@@ -161,6 +160,11 @@ std::string Cipher::randomIv(int length)
     return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(out)), out.size());
 }
 
+std::string Cipher::randomIv(const std::string &method)
+{
+    return randomIv(cipherInfoMap.at(method).ivLen);
+}
+
 QByteArray Cipher::hmacSha1(const QByteArray &key, const QByteArray &msg)
 {
     return QMessageAuthenticationCode::hash(msg,
@@ -183,10 +187,10 @@ bool Cipher::isSupported(const QByteArray &method)
 bool Cipher::isSupported(const std::string &method)
 {
 #ifndef USE_BOTAN2
-    if (method.find("ChaCha") != std::string::npos)  return true;
+    if (method.find("chacha20") != std::string::npos)  return true;
 #endif
 
-    if (method.find("RC4") == std::string::npos) {
+    if (method.find("rc4") == std::string::npos) {
         std::unique_ptr<Botan::Keyed_Filter> filter;
         try {
             filter.reset(Botan::get_cipher(method, Botan::ENCRYPTION));

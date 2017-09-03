@@ -28,7 +28,8 @@ using namespace QSS;
 TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    int timeout,
                    const Address &server_addr,
-                   const EncryptorPrivate &ep,
+                   const QByteArray &method,
+                   const QByteArray &password,
                    const bool &is_local,
                    const bool &autoBan,
                    const bool &auth,
@@ -39,10 +40,9 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     isLocal(is_local),
     autoBan(autoBan),
     auth(auth),
-    local(localSocket)
+    local(localSocket),
+    encryptor{new Encryptor(method, password, this)}
 {
-    encryptor = new Encryptor(ep, this);
-
     connect(&remoteAddress, &Address::lookedUp,
             this, &TcpRelay::onDNSResolved);
     connect(&serverAddress, &Address::lookedUp,

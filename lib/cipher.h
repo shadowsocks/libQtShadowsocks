@@ -50,7 +50,15 @@ class QSS_EXPORT Cipher : public QObject
 {
     Q_OBJECT
 public:
-    Cipher(const std::string &method, const std::string &key, const std::string &iv, bool encode, QObject *parent = 0);
+    /**
+     * @brief Cipher
+     * @param method The cipher method name (in Shadowsocks convention)
+     * @param psKey The pre-shared master key
+     * @param iv The initialiser vector, aka nonce
+     * @param encrypt Whether the operation is to encrypt, otherwise it's to decrypt
+     * @param parent The parent QObject pointer
+     */
+    Cipher(const std::string &method, const std::string &psKey, const std::string &iv, bool encrypt, QObject *parent = 0);
     Cipher(Cipher &&) = default;
     ~Cipher();
 
@@ -83,13 +91,29 @@ public:
 
     static const int AUTH_LEN;
 
-    /*
-     * Generates a vector of random characters of given length
+    /**
+     * @brief randomIv Generates a vector of random characters of given length
+     * @param length
+     * @return
      */
     static std::string randomIv(int length);
+
+    /**
+     * @brief randomIv An overloaded function to generate randomised IV for given cipher method
+     * @param method The Shadowsocks cipher method name
+     * @return
+     */
+    static std::string randomIv(const std::string& method);
+
     static std::string md5Hash(const std::string &in);
 
+    /**
+     * @brief isSupported
+     * @param method The cipher method name in Shadowsocks convention
+     * @return True if it's supported, false otherwise
+     */
     static bool isSupported(const std::string &method);
+
     static std::vector<std::string> supportedMethods();
 
     /*
