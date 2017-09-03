@@ -11,18 +11,20 @@ const QByteArray Encryptor_T::testData = QByteArray("Hello Shadowsocks");
 
 void Encryptor_T::selfTestEncryptDecrypt()
 {
-    EncryptorPrivate ep("aes-128-cfb", "test");
-    Encryptor encryptor(ep);
-    Encryptor decryptor(ep);
+    QByteArray method("aes-128-cfb");
+    QByteArray password("test");
+    Encryptor encryptor(method, password);
+    Encryptor decryptor(method, password);
 
     QCOMPARE(decryptor.decrypt(encryptor.encrypt(testData)), testData);
 }
 
 void Encryptor_T::testChunkAuth()
 {
-    EncryptorPrivate ep("aes-128-cfb", "test");
-    Encryptor encryptor(ep);
-    Encryptor decryptor(ep);
+    QByteArray method("aes-128-cfb");
+    QByteArray password("test");
+    Encryptor encryptor(method, password);
+    Encryptor decryptor(method, password);
     // This is to make decryptor has the same IV as encryptor does
     decryptor.decrypt(encryptor.encrypt(testData));
 
@@ -39,9 +41,10 @@ void Encryptor_T::testChunkAuth()
 
 void Encryptor_T::testIncompleteChunkAuth()
 {
-    EncryptorPrivate ep("aes-128-cfb", "test");
-    Encryptor encryptor(ep);
-    Encryptor decryptor(ep);
+    QByteArray method("aes-128-cfb");
+    QByteArray password("test");
+    Encryptor encryptor(method, password);
+    Encryptor decryptor(method, password);
     // This is to make decryptor has the same IV as encryptor does
     decryptor.decrypt(encryptor.encrypt(testData));
 

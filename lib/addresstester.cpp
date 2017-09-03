@@ -25,7 +25,6 @@
  */
 
 #include "addresstester.h"
-#include "encryptorprivate.h"
 #include "encryptor.h"
 #include "common.h"
 
@@ -100,8 +99,7 @@ void AddressTester::onConnected()
     timer.stop();
     emit lagTestFinished(time.msecsTo(QTime::currentTime()));
     if (testingConnectivity) {
-        EncryptorPrivate ep(encryptionMethod, encryptionPassword);
-        Encryptor encryptor(ep);
+        Encryptor encryptor(encryptionMethod.toUtf8(), encryptionPassword.toUtf8());
         /*
          * A http request to Google to test connectivity
          * The payload is dumped from

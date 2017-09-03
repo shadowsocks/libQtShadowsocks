@@ -6,7 +6,7 @@ using namespace QSS;
 
 ChaCha_T::ChaCha_T()
 {
-    key = Cipher::randomIv(32);
+    key = QByteArray::fromStdString(Cipher::randomIv(32));
 }
 
 void ChaCha_T::testChaCha(const QByteArray &iv)
@@ -22,13 +22,13 @@ void ChaCha_T::testChaCha(const QByteArray &iv)
 
 void ChaCha_T::test8ByteIV()
 {
-    QByteArray iv  = Cipher::randomIv(8);
+    QByteArray iv = QByteArray::fromStdString(Cipher::randomIv(8));
     testChaCha(iv);
 }
 
 void ChaCha_T::test12ByteIV()
 {
-    QByteArray iv  = Cipher::randomIv(12);
+    QByteArray iv = QByteArray::fromStdString(Cipher::randomIv(12));
     testChaCha(iv);
 }
 

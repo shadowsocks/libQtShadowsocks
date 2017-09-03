@@ -25,7 +25,6 @@
 
 #include <QTcpServer>
 #include "address.h"
-#include "encryptorprivate.h"
 #include "export.h"
 #include "tcprelay.h"
 
@@ -35,11 +34,12 @@ class QSS_EXPORT TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    TcpServer(const EncryptorPrivate &ep,
-              const int &timeout,
-              const bool &is_local,
-              const bool &auto_ban,
-              const bool &auth,
+    TcpServer(const QByteArray& method,
+              const QByteArray& password,
+              int timeout,
+              bool is_local,
+              bool auto_ban,
+              bool auth,
               const Address &serverAddress,
               QObject *parent = nullptr);
     ~TcpServer();
@@ -58,12 +58,13 @@ protected:
     void incomingConnection(qintptr handler) Q_DECL_OVERRIDE;
 
 private:
-    const bool &isLocal;
-    const bool &autoBan;
-    const bool &auth;
-    const Address &serverAddress;
-    const int &timeout;
-    const EncryptorPrivate &ep;
+    const QByteArray method;
+    const QByteArray password;
+    const bool isLocal;
+    const bool autoBan;
+    const bool auth;
+    const Address serverAddress;
+    const int timeout;
 
     QList<TcpRelay*> conList;
     QList<QThread*> threadList;

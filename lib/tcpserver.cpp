@@ -27,20 +27,22 @@
 
 using namespace QSS;
 
-TcpServer::TcpServer(const EncryptorPrivate &ep,
-                     const int &timeout,
-                     const bool &is_local,
-                     const bool &auto_ban,
-                     const bool &auth,
+TcpServer::TcpServer(const QByteArray &method,
+                     const QByteArray &password,
+                     int timeout,
+                     bool is_local,
+                     bool auto_ban,
+                     bool auth,
                      const Address &serverAddress,
                      QObject *parent) :
     QTcpServer(parent),
+    method(method),
+    password(password),
     isLocal(is_local),
     autoBan(auto_ban),
     auth(auth),
     serverAddress(serverAddress),
     timeout(timeout),
-    ep(ep),
     workerThreadID(0)
 {
     totalWorkers = std::thread::hardware_concurrency();
@@ -80,7 +82,8 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     TcpRelay *con = new TcpRelay(localSocket,
                                  timeout * 1000,
                                  serverAddress,
-                                 ep,
+                                 method,
+                                 password,
                                  isLocal,
                                  autoBan,
                                  auth);

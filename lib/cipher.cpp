@@ -26,6 +26,7 @@
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
 #include <botan/pipe.h>
+#include <botan/md5.h>
 
 #ifdef USE_BOTAN2
 #include <botan/hkdf.h>
@@ -48,31 +49,23 @@ typedef Botan::SecureVector<Botan::byte> SecureByteArray;
 #define DataOfSecureByteArray(sba) sba.begin()
 #endif
 
-Cipher::Cipher(const QByteArray &method,
-               const QByteArray &key,
-               const QByteArray &iv,
-               bool encode,
+Cipher::Cipher(const std::string &method,
+               const std::string &psKey,
+               const std::string &iv,
+               bool encrypt,
                QObject *parent) :
     QObject(parent),
-    pipe(nullptr),
-    rc4(nullptr),
-    chacha(nullptr),
-    key(key),
+    key(psKey),
     iv(iv),
     cipherInfo(cipherInfoMap.at(method))
-#ifdef USE_BOTAN2
-  , msgHashFunc(nullptr),
-    msgAuthCode(nullptr),
-    kdf(nullptr)
-#endif
 {
-    if (method.contains("RC4")) {
-        rc4 = new RC4(key, iv, this);
+    if (method.find("rc4") != std::string::npos) {
+        rc4.reset(new RC4(QByteArray::fromStdString(key), QByteArray::fromStdString(iv)));
         return;
     }
 #ifndef USE_BOTAN2
-    else if (method.contains("ChaCha")) {
-        chacha = new ChaCha(key, iv, this);
+    else if (method.find("chacha20") != std::string::npos) {
+        chacha.reset(new ChaCha(QByteArray::fromStdString(key), QByteArray::fromStdString(iv)));
         return;
     }
 #endif
@@ -80,24 +73,23 @@ Cipher::Cipher(const QByteArray &method,
 #ifdef USE_BOTAN2
         if (cipherInfoMap.at(method).type == CipherType::AEAD) {
             // Initialises necessary class members for AEAD ciphers
-            msgHashFunc = new Botan::SHA_160(); // SHA1
-            msgAuthCode = new Botan::HMAC(msgHashFunc);
-            kdf = new Botan::HKDF(msgAuthCode);
+            msgHashFunc.reset(new Botan::SHA_160()); // SHA1
+            msgAuthCode.reset(new Botan::HMAC(msgHashFunc.get()));
+            kdf.reset(new Botan::HKDF(msgAuthCode.get()));
         }
 #endif
 
-        std::string str(method.constData(), method.length());
         Botan::SymmetricKey _key(
-                    reinterpret_cast<const Botan::byte *>(key.constData()),
+                    reinterpret_cast<const Botan::byte *>(key.data()),
                     key.size());
         Botan::InitializationVector _iv(
-                    reinterpret_cast<const Botan::byte *>(iv.constData()),
+                    reinterpret_cast<const Botan::byte *>(iv.data()),
                     iv.size());
-        Botan::Keyed_Filter *filter = Botan::get_cipher(str, _key, _iv,
-                    encode ? Botan::ENCRYPTION : Botan::DECRYPTION);
+        Botan::Keyed_Filter *filter = Botan::get_cipher(cipherInfo.internalName, _key, _iv,
+                    encrypt ? Botan::ENCRYPTION : Botan::DECRYPTION);
         // Botan::pipe will take control over filter
         // we shouldn't deallocate filter externally
-        pipe = new Botan::Pipe(filter);
+        pipe.reset(new Botan::Pipe(filter));
     } catch(const Botan::Exception &e) {
         qFatal("%s\n", e.what());
     }
@@ -105,15 +97,9 @@ Cipher::Cipher(const QByteArray &method,
 
 Cipher::~Cipher()
 {
-    if (pipe)   delete pipe;
-#if USE_BOTAN2
-    if (kdf)    delete kdf;
-    if (msgAuthCode)    delete msgAuthCode;
-    if (msgHashFunc)    delete msgHashFunc;
-#endif
 }
 
-const std::map<QByteArray, Cipher::CipherInfo> Cipher::cipherInfoMap = {
+const std::map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap = {
     {"aes-128-cfb", {"AES-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
     {"aes-192-cfb", {"AES-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
     {"aes-256-cfb", {"AES-256/CFB", 32, 16, Cipher::CipherType::STREAM}},
@@ -141,41 +127,43 @@ const std::map<QByteArray, Cipher::CipherInfo> Cipher::cipherInfoMap = {
 const std::string Cipher::kdfLabel = {"ss-subkey"};
 const int Cipher::AUTH_LEN = 10;
 
-QByteArray Cipher::update(const QByteArray &data)
+std::string Cipher::update(const std::string &data)
 {
     if (chacha) {
-        return chacha->update(data);
+        return chacha->update(QByteArray::fromStdString(data)).toStdString();
     } else if (rc4) {
-        return rc4->update(data);
+        return rc4->update(QByteArray::fromStdString(data)).toStdString();
     } else if (pipe) {
         pipe->process_msg(reinterpret_cast<const Botan::byte *>
-                          (data.constData()), data.size());
+                          (data.data()), data.size());
         SecureByteArray c = pipe->read_all(Botan::Pipe::LAST_MESSAGE);
-        QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(c)),
-                       c.size());
-        return out;
+        return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(c)),
+                           c.size());
     } else {
         throw std::runtime_error("Underlying ciphers are all uninitialised!");
     }
 }
 
-const QByteArray &Cipher::getIV() const
+const std::string &Cipher::getIV() const
 {
     return iv;
 }
 
-QByteArray Cipher::randomIv(int length)
+std::string Cipher::randomIv(int length)
 {
     //directly return empty byte array if no need to genenrate iv
     if (length == 0) {
-        return QByteArray();
+        return std::string();
     }
 
     Botan::AutoSeeded_RNG rng;
-    QByteArray out;
-    out.resize(length);
-    rng.randomize(reinterpret_cast<Botan::byte *>(out.data()), length);
-    return out;
+    SecureByteArray out = rng.random_vec(length);
+    return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(out)), out.size());
+}
+
+std::string Cipher::randomIv(const std::string &method)
+{
+    return randomIv(cipherInfoMap.at(method).ivLen);
 }
 
 QByteArray Cipher::hmacSha1(const QByteArray &key, const QByteArray &msg)
@@ -185,22 +173,28 @@ QByteArray Cipher::hmacSha1(const QByteArray &key, const QByteArray &msg)
                                        QCryptographicHash::Sha1).left(AUTH_LEN);
 }
 
-QByteArray Cipher::md5Hash(const QByteArray &in)
+std::string Cipher::md5Hash(const std::string &in)
 {
-    return QCryptographicHash::hash(in, QCryptographicHash::Md5);
+    Botan::MD5 md5;
+    SecureByteArray result = md5.process(in);
+    return std::string(reinterpret_cast<const char*>(DataOfSecureByteArray(result)), result.size());
 }
 
 bool Cipher::isSupported(const QByteArray &method)
 {
+    return Cipher::isSupported(method.toStdString());
+}
+
+bool Cipher::isSupported(const std::string &method)
+{
 #ifndef USE_BOTAN2
-    if (method.contains("ChaCha"))  return true;
+    if (method.find("chacha20") != std::string::npos)  return true;
 #endif
 
-    if (!method.contains("RC4")) {
-        std::string str(method.constData(), method.length());
+    if (method.find("rc4") == std::string::npos) {
         std::unique_ptr<Botan::Keyed_Filter> filter;
         try {
-            filter.reset(Botan::get_cipher(str, Botan::ENCRYPTION));
+            filter.reset(Botan::get_cipher(method, Botan::ENCRYPTION));
         } catch (Botan::Exception &e) {
             qDebug("%s\n", e.what());
             return false;
@@ -209,9 +203,9 @@ bool Cipher::isSupported(const QByteArray &method)
     return true;
 }
 
-QList<QByteArray> Cipher::getSupportedMethodList()
+std::vector<std::string> Cipher::supportedMethods()
 {
-    QList<QByteArray> supportedMethods;
+    std::vector<std::string> supportedMethods;
     for (auto& cipher : Cipher::cipherInfoMap) {
         if (Cipher::isSupported(cipher.second.internalName)) {
             supportedMethods.push_back(cipher.first);
@@ -220,18 +214,26 @@ QList<QByteArray> Cipher::getSupportedMethodList()
     return supportedMethods;
 }
 
+QList<QByteArray> Cipher::getSupportedMethodList()
+{
+    QList<QByteArray> out;
+    std::vector<std::string> supportedMethods = Cipher::supportedMethods();
+    std::transform(supportedMethods.begin(), supportedMethods.end(),
+                   std::back_inserter(out), QByteArray::fromStdString);
+    return out;
+}
+
 #ifdef USE_BOTAN2
 /*
  * Derives per-session subkey from the master key and IV, which is required
  * for Shadowsocks AEAD ciphers
  */
-QByteArray Cipher::deriveSubkey()
+std::string Cipher::deriveSubkey() const
 {
     Q_ASSERT(kdf);
-    std::string salt = randomIv(cipherInfo.saltLen).toStdString();
+    std::string salt = randomIv(cipherInfo.saltLen);
     SecureByteArray skey = kdf->derive_key(cipherInfo.keyLen, reinterpret_cast<const uint8_t*>(key.data()), key.length(), salt, kdfLabel);
-    QByteArray out(reinterpret_cast<const char *>(DataOfSecureByteArray(skey)),
-                   skey.size());
-    return out;
+    return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(skey)),
+                       skey.size());
 }
 #endif

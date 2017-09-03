@@ -28,8 +28,12 @@
 
 using namespace QSS;
 
-Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
+Controller::Controller(const Profile &_profile,
+                       bool is_local,
+                       bool auto_ban,
+                       QObject *parent) :
     QObject(parent),
+    profile(_profile),
     valid(true),
     isLocal(is_local),
     autoBan(auto_ban)
@@ -40,7 +44,21 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
         qCritical("%s", e.what());
     }
 
-    tcpServer = new TcpServer(ep, profile.timeout,
+    /*
+     * the default QHostAddress constructor will construct "::" as AnyIPv6
+     * we explicitly use Any to enable dual stack
+     * which is the case in other shadowsocks ports
+     */
+    if (profile.server == "::") {
+        serverAddress = Address(QHostAddress::Any, profile.server_port);
+    } else {
+        serverAddress = Address(profile.server, profile.server_port);
+        serverAddress.lookUp();
+    }
+
+    tcpServer = new TcpServer(profile.method.toUtf8(),
+                              profile.password.toUtf8(),
+                              profile.timeout,
                               isLocal,
                               autoBan,
                               profile.auth,
@@ -49,7 +67,8 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
 
     //FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
     tcpServer->setMaxPendingConnections(FD_SETSIZE);
-    udpRelay = new UdpRelay(ep,
+    udpRelay = new UdpRelay(profile.method.toUtf8(),
+                            profile.password.toUtf8(),
                             isLocal,
                             autoBan,
                             profile.auth,
@@ -77,61 +96,12 @@ Controller::Controller(bool is_local, bool auto_ban, QObject *parent) :
             this, &Controller::onServerAddressLookedUp);
 }
 
-Controller::Controller(const Profile &_profile,
-                       bool is_local,
-                       bool auto_ban,
-                       QObject *parent) :
-    Controller(is_local, auto_ban, parent)
-{
-    setup(_profile);
-}
-
 Controller::~Controller()
 {
     if (tcpServer->isListening()) {
         stop();
     }
     Botan::LibraryInitializer::deinitialize();
-}
-
-bool Controller::setup(const Profile &p)
-{
-    valid = true;
-    profile = p;
-
-    /*
-     * the default QHostAddress constructor will construct "::" as AnyIPv6
-     * we explicitly use Any to enable dual stack
-     * which is the case in other shadowsocks ports
-     */
-    if (p.server == "::") {
-        serverAddress = Address(QHostAddress::Any, p.server_port);
-    } else {
-        serverAddress = Address(p.server, p.server_port);
-        serverAddress.lookUp();
-    }
-
-    emit info("Initialising ciphers...");
-    ep = EncryptorPrivate(profile.method, profile.password);
-    if (ep.isValid()) {
-        emit info(QString(ep.getInternalMethodName()) + " (" + profile.method
-                  + ") initialised.");
-    } else {
-        emit info("Initialisation failed.");
-        valid = false;
-    }
-
-    if (httpProxy->isListening()) {
-        httpProxy->close();
-    }
-    if (tcpServer->isListening()) {
-        tcpServer->close();
-    }
-    if (udpRelay->isListening()) {
-        udpRelay->close();
-    }
-
-    return valid;
 }
 
 bool Controller::start()

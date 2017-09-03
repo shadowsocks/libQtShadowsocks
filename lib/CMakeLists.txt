@@ -9,7 +9,6 @@ set(SOURCE
     common.cpp
     controller.cpp
     encryptor.cpp
-    encryptorprivate.cpp
     rc4.cpp
     tcprelay.cpp
     udprelay.cpp
@@ -29,7 +28,6 @@ set(HEADERS
     common.h
     controller.h
     encryptor.h
-    encryptorprivate.h
     export.h
     httpproxy.h
     profile.h

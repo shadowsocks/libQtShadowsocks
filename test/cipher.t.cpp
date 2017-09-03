@@ -28,9 +28,9 @@ void Cipher_T::testHmacSha1()
 
 void Cipher_T::testMd5Hash()
 {
-    QByteArray in("abc");
-    QCOMPARE(Cipher::md5Hash(in), QByteArray::fromHex("900150983CD24FB0D6963F7D28E17F72"));
+    std::string in("abc");
+    QCOMPARE(Cipher::md5Hash(in), QByteArray::fromHex("900150983CD24FB0D6963F7D28E17F72").toStdString());
 
-    in = QByteArray("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
-    QCOMPARE(Cipher::md5Hash(in), QByteArray::fromHex("8215EF0796A20BCAAAE116D3876C664A"));
+    in = std::string("abcdbcdecdefdefgefghfghighijhijkijkljklmklmnlmnomnopnopq");
+    QCOMPARE(Cipher::md5Hash(in), QByteArray::fromHex("8215EF0796A20BCAAAE116D3876C664A").toStdString());
 }

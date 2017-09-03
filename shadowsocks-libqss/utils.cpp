@@ -7,8 +7,7 @@ void Utils::testSpeed(const QString &method, quint32 data_size_mb)
 {
     static const QByteArray test(1024 * 32, '#');//32KB
     quint32 loops = 32 * data_size_mb;
-    QSS::EncryptorPrivate ep(method, "barfoo!");
-    QSS::Encryptor enc(ep);
+    QSS::Encryptor enc(method.toUtf8(), "barfoo!");
 
     QTime startTime = QTime::currentTime();
 

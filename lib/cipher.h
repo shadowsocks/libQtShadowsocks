@@ -31,6 +31,7 @@
 
 #include <array>
 #include <map>
+#include <memory>
 #include <QObject>
 #include "rc4.h"
 #include "chacha.h"
@@ -49,12 +50,20 @@ class QSS_EXPORT Cipher : public QObject
 {
     Q_OBJECT
 public:
-    Cipher(const QByteArray &method, const QByteArray &key, const QByteArray &iv, bool encode, QObject *parent = 0);
+    /**
+     * @brief Cipher
+     * @param method The cipher method name (in Shadowsocks convention)
+     * @param psKey The pre-shared master key
+     * @param iv The initialiser vector, aka nonce
+     * @param encrypt Whether the operation is to encrypt, otherwise it's to decrypt
+     * @param parent The parent QObject pointer
+     */
+    Cipher(const std::string &method, const std::string &psKey, const std::string &iv, bool encrypt, QObject *parent = 0);
     Cipher(Cipher &&) = default;
     ~Cipher();
 
-    QByteArray update(const QByteArray &data);
-    const QByteArray &getIV() const;
+    std::string update(const std::string &data);
+    const std::string &getIV() const;
 
     enum CipherType {
         STREAM,
@@ -62,7 +71,7 @@ public:
     };
 
     struct CipherInfo {
-        QByteArray internalName; // internal implementation name
+        std::string internalName; // internal implementation name in Botan
         int keyLen;
         int ivLen;
         CipherType type;
@@ -73,7 +82,7 @@ public:
     /*
      * The key of this map is the encryption method (shadowsocks convention)
      */
-    static const std::map<QByteArray, CipherInfo> cipherInfoMap;
+    static const std::map<std::string, CipherInfo> cipherInfoMap;
 
     /*
      * The label/info string used for key derivation function
@@ -82,33 +91,59 @@ public:
 
     static const int AUTH_LEN;
 
-    /*
-     * Generates a vector of random characters of given length
+    /**
+     * @brief randomIv Generates a vector of random characters of given length
+     * @param length
+     * @return
      */
-    static QByteArray randomIv(int length);
+    static std::string randomIv(int length);
 
-    static QByteArray hmacSha1(const QByteArray &key, const QByteArray &msg);
-    static QByteArray md5Hash(const QByteArray &in);
+    /**
+     * @brief randomIv An overloaded function to generate randomised IV for given cipher method
+     * @param method The Shadowsocks cipher method name
+     * @return
+     */
+    static std::string randomIv(const std::string& method);
+
+    static std::string md5Hash(const std::string &in);
+
+    /**
+     * @brief isSupported
+     * @param method The cipher method name in Shadowsocks convention
+     * @return True if it's supported, false otherwise
+     */
+    static bool isSupported(const std::string &method);
+
+    static std::vector<std::string> supportedMethods();
+
+    /*
+     * These methods are deprecated because alternatives are provided using
+     * STL types
+     */
     static bool isSupported(const QByteArray &method);
-
     static QList<QByteArray> getSupportedMethodList();
 
+    /*
+     * OTA is deprecated, these methods will be removed in future releases
+     */
+    static QByteArray hmacSha1(const QByteArray &key, const QByteArray &msg);
+
 private:
-    Botan::Pipe *pipe;
-    RC4 *rc4;
-    ChaCha *chacha;
-    const QByteArray key; // preshared key
-    const QByteArray iv; // nonce
+    std::unique_ptr<Botan::Pipe> pipe;
+    std::unique_ptr<RC4> rc4;
+    std::unique_ptr<ChaCha> chacha;
+    const std::string key; // preshared key
+    const std::string iv; // nonce
     const CipherInfo cipherInfo;
 
 #ifdef USE_BOTAN2
     // AEAD support needs Botan-2 library
 
-    Botan::HashFunction *msgHashFunc;
-    Botan::MessageAuthenticationCode *msgAuthCode;
-    Botan::KDF *kdf;
+    std::unique_ptr<Botan::HashFunction> msgHashFunc;
+    std::unique_ptr<Botan::MessageAuthenticationCode> msgAuthCode;
+    std::unique_ptr<Botan::KDF> kdf;
 
-    QByteArray deriveSubkey();
+    std::string deriveSubkey() const;
 #endif
 };
 
