@@ -65,7 +65,7 @@ Cipher::Cipher(const std::string &method,
     }
 #ifndef USE_BOTAN2
     else if (method.find("chacha20") != std::string::npos) {
-        chacha.reset(new ChaCha(QByteArray::fromStdString(key), QByteArray::fromStdString(iv)));
+        chacha.reset(new ChaCha(key, iv));
         return;
     }
 #endif
@@ -130,7 +130,7 @@ const int Cipher::AUTH_LEN = 10;
 std::string Cipher::update(const std::string &data)
 {
     if (chacha) {
-        return chacha->update(QByteArray::fromStdString(data)).toStdString();
+        return chacha->update(data.data(), data.size());
     } else if (rc4) {
         return rc4->update(QByteArray::fromStdString(data)).toStdString();
     } else if (pipe) {

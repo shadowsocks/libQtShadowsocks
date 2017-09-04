@@ -3,7 +3,7 @@
  *
  * This class is partly ported from Botan::ChaCha
  *
- * Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -25,34 +25,31 @@
 #ifndef CHACHA_H
 #define CHACHA_H
 
-#include <QObject>
-#include <QVector>
+#include <string>
+#include <vector>
 
 namespace QSS {
 
-class ChaCha : public QObject
+class ChaCha
 {
-    Q_OBJECT
 public:
     /*
      * Key length must be 32 (16 is dropped)
      * IV length must be 8 or 12
      */
-    ChaCha(const QByteArray &_key,
-           const QByteArray &_iv,
-           QObject *parent = 0);
+    ChaCha(const std::string &_key,
+           const std::string &_iv);
 
-public slots:
     //encrypt (or decrypt, same process for ChaCha algorithm) a byte array.
-    QByteArray update(const QByteArray &input);
+    std::string update(const char *input, size_t length);
 
 private:
-    QVector<quint32> m_state;
-    QVector<unsigned char> m_buffer;
-    quint32 m_position;
+    std::vector<uint32_t> m_state;
+    std::vector<unsigned char> m_buffer;
+    uint32_t m_position;
 
     void chacha();
-    void setIV(const QByteArray &_iv);
+    void setIV(const std::string &_iv);
 };
 
 }

@@ -15,8 +15,8 @@ private Q_SLOTS:
     void referenceTest();
 
 private:
-    QByteArray key;
-    void testChaCha(const QByteArray &iv);
+    std::string key;
+    void testChaCha(const std::string &iv);
 };
 
 #endif // CHACHA_T_H

@@ -6,43 +6,45 @@ using namespace QSS;
 
 ChaCha_T::ChaCha_T()
 {
-    key = QByteArray::fromStdString(Cipher::randomIv(32));
+    key = Cipher::randomIv(32);
 }
 
-void ChaCha_T::testChaCha(const QByteArray &iv)
+void ChaCha_T::testChaCha(const std::string &iv)
 {
     ChaCha chacha(key, iv);
     ChaCha decryptor(key, iv);
-    QByteArray testString1("barfoo!");
-    QCOMPARE(decryptor.update(chacha.update(testString1)), testString1);
+    std::string testString1("barfoo!");
+    std::string intermed = chacha.update(testString1.data(), testString1.size());
+    QCOMPARE(decryptor.update(intermed.data(), intermed.size()), testString1);
 
-    QByteArray testString2("$ is cheaper than £");
-    QCOMPARE(decryptor.update(chacha.update(testString2)), testString2);
+    std::string testString2("$ is cheaper than £");
+    intermed = chacha.update(testString2.data(), testString2.size());
+    QCOMPARE(decryptor.update(intermed.data(), intermed.size()), testString2);
 }
 
 void ChaCha_T::test8ByteIV()
 {
-    QByteArray iv = QByteArray::fromStdString(Cipher::randomIv(8));
-    testChaCha(iv);
+    testChaCha(Cipher::randomIv(8));
 }
 
 void ChaCha_T::test12ByteIV()
 {
-    QByteArray iv = QByteArray::fromStdString(Cipher::randomIv(12));
-    testChaCha(iv);
+    testChaCha(Cipher::randomIv(12));
 }
 
 void ChaCha_T::referenceTest()
 {
     // Test original ChaCha20 (96-byte IV)
-    QByteArray testKey(32, 0);
-    QByteArray testIv(8, 0);
-    QByteArray testData(9, '\0');
+    std::string testKey(32, 0);
+    std::string testIv(8, 0);
+    std::string testData(9, '\0');
     ChaCha chacha(testKey, testIv);
-    QCOMPARE(chacha.update(testData), QByteArray::fromHex("76b8e0ada0f13d9040"));
+    QCOMPARE(chacha.update(testData.data(), testData.size()),
+             QByteArray::fromHex("76b8e0ada0f13d9040").toStdString());
 
     // Test ChaCha20-IETF
-    QByteArray testIv_ietf(12, 0);
+    std::string testIv_ietf(12, 0);
     ChaCha chacha_ietf(testKey, testIv_ietf);
-    QCOMPARE(chacha_ietf.update(testData), QByteArray::fromHex("76b8e0ada0f13d9040"));
+    QCOMPARE(chacha_ietf.update(testData.data(), testData.size()),
+             QByteArray::fromHex("76b8e0ada0f13d9040").toStdString());
 }
