@@ -111,17 +111,18 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
-    if (listenSocket.pendingDatagramSize() > RemoteRecvSize) {
+    const size_t packetSize = listenSocket.pendingDatagramSize();
+    if (packetSize > RemoteRecvSize) {
         emit info("[UDP] Datagram is too large. discarded.");
         return;
     }
 
-    QByteArray data;
-    data.resize(listenSocket.pendingDatagramSize());
+    std::string data;
+    data.reserve(packetSize);
     QHostAddress r_addr;
     quint16 r_port;
-    qint64 readSize = listenSocket.readDatagram(data.data(),
-                                                RemoteRecvSize,
+    qint64 readSize = listenSocket.readDatagram(&data[0],
+                                                packetSize,
                                                 &r_addr,
                                                 &r_port);
     emit bytesRead(readSize);
@@ -131,7 +132,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
             emit info("[UDP] Drop a message since frag is not 0");
             return;
         }
-        data.remove(0, 3);
+        data = data.substr(3);
     } else {
         if (autoBan && Common::isAddressBanned(r_addr)) {
             emit debug(QString("[UDP] A banned IP %1 "
@@ -139,13 +140,13 @@ void UdpRelay::onServerUdpSocketReadyRead()
                        .arg(r_addr.toString()));
             return;
         }
-        data = encryptor->decryptAll(data);
+        data = encryptor->decryptAll(QByteArray::fromStdString(data)).toStdString();
     }
 
     Address destAddr, remoteAddr(r_addr, r_port);//remote == client
     int header_length = 0;
     bool at_auth = false;
-    Common::parseHeader(data, destAddr, header_length, at_auth);
+    Common::parseHeader(QByteArray::fromStdString(data), destAddr, header_length, at_auth);
     if (header_length == 0) {
         emit info("[UDP] Can't parse header. "
                   "Wrong encryption method or password?");
@@ -184,13 +185,12 @@ void UdpRelay::onServerUdpSocketReadyRead()
              */
             encryptor->addHeaderAuth(data);
         }
-        data = encryptor->encryptAll(data);
+        data = encryptor->encryptAll(QByteArray::fromStdString(data)).toStdString();
         destAddr = serverAddress;
     } else {
         if (auth || at_auth) {
-            if (!encryptor->verifyHeaderAuth(data,
-                                             data.length() - Cipher::AUTH_LEN))
-            {
+            if (!encryptor->verifyHeaderAuth(data.data(),
+                                             data.length() - Cipher::AUTH_LEN)) {
                 emit info("[UDP] One-time message authentication "
                           "for header failed.");
                 if (autoBan) {
@@ -199,14 +199,14 @@ void UdpRelay::onServerUdpSocketReadyRead()
                 return;
             }
         }
-        data = data.mid(header_length,
+        data = data.substr(header_length,
                         data.length() - header_length - Cipher::AUTH_LEN);
     }
 
     if (!destAddr.isIPValid()) {//TODO async dns
         destAddr.blockingLookUp();
     }
-    client->writeDatagram(data, destAddr.getFirstIP(), destAddr.getPort());
+    client->writeDatagram(data.data(), data.size(), destAddr.getFirstIP(), destAddr.getPort());
 }
 
 void UdpRelay::onClientUdpSocketReadyRead()

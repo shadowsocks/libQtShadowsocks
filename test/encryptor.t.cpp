@@ -3,11 +3,13 @@
 
 using namespace QSS;
 
+namespace {
+const std::string testData = std::string("Hello Shadowsocks");
+}
+
 Encryptor_T::Encryptor_T()
 {
 }
-
-const QByteArray Encryptor_T::testData = QByteArray("Hello Shadowsocks");
 
 void Encryptor_T::selfTestEncryptDecrypt()
 {
@@ -28,7 +30,7 @@ void Encryptor_T::testChunkAuth()
     // This is to make decryptor has the same IV as encryptor does
     decryptor.decrypt(encryptor.encrypt(testData));
 
-    QByteArray hashed = testData;
+    std::string hashed = testData;
     encryptor.addChunkAuth(hashed);
     QVERIFY(decryptor.verifyExtractChunkAuth(hashed));
     QCOMPARE(hashed, testData);
@@ -48,15 +50,15 @@ void Encryptor_T::testIncompleteChunkAuth()
     // This is to make decryptor has the same IV as encryptor does
     decryptor.decrypt(encryptor.encrypt(testData));
 
-    QByteArray hashed1 = testData;
-    QByteArray hashed2 = testData;
+    std::string hashed1 = testData;
+    std::string hashed2 = testData;
     encryptor.addChunkAuth(hashed1);
     encryptor.addChunkAuth(hashed2);
 
     // Divide two "hashed" into three parts
-    QByteArray first = hashed1.mid(0, 20);
-    QByteArray second = hashed1.mid(20) + hashed2.mid(0, 20);
-    QByteArray third = hashed2.mid(20);
+    std::string first = hashed1.substr(0, 20);
+    std::string second = hashed1.substr(20) + hashed2.substr(0, 20);
+    std::string third = hashed2.substr(20);
 
     QVERIFY(decryptor.verifyExtractChunkAuth(first));
     QVERIFY(decryptor.verifyExtractChunkAuth(second));

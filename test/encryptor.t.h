@@ -13,9 +13,6 @@ private Q_SLOTS:
     void selfTestEncryptDecrypt();
     void testChunkAuth();
     void testIncompleteChunkAuth();
-
-private:
-    static const QByteArray testData;
 };
 
 #endif // ENCRYPTOR_T_H

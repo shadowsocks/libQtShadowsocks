@@ -105,7 +105,7 @@ void TcpRelay::close()
     emit finished();
 }
 
-void TcpRelay::handleStageAddr(QByteArray &data)
+void TcpRelay::handleStageAddr(std::string &data)
 {
     if (isLocal) {
         int cmd = static_cast<int>(data.at(1));
@@ -119,7 +119,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
             stage = UDP_ASSOC;
             return;
         } else if (cmd == 1) {//CMD_CONNECT
-            data = data.mid(3);
+            data = data.substr(3);
         } else {
             emit info("Unknown command " + QString::number(cmd));
             close();
@@ -128,7 +128,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
     }
 
     int header_length = 0;
-    Common::parseHeader(data, remoteAddress, header_length, auth);
+    Common::parseHeader(QByteArray::fromStdString(data), remoteAddress, header_length, auth);
     if (header_length == 0) {
         emit info("Can't parse header. Wrong encryption method or password?");
         if (!isLocal && autoBan) {
@@ -153,9 +153,9 @@ void TcpRelay::handleStageAddr(QByteArray &data)
         if (auth) {
             char atyp = data[0];
             data[0] = (atyp | Common::ONETIMEAUTH_FLAG);
-            if (data.length() > header_length) {
-                QByteArray header = data.left(header_length);
-                QByteArray chunk = data.mid(header_length);
+            if (data.size() > header_length) {
+                std::string header = data.substr(0, header_length);
+                std::string chunk = data.substr(header_length);
                 encryptor->addHeaderAuth(header);
                 encryptor->addChunkAuth(chunk);
                 data = header + chunk;
@@ -163,11 +163,12 @@ void TcpRelay::handleStageAddr(QByteArray &data)
                 encryptor->addHeaderAuth(data);
             }
         }
-        dataToWrite.append(encryptor->encrypt(data));
+        std::string toWrite = encryptor->encrypt(data);
+        dataToWrite += toWrite;
         serverAddress.lookUp();
     } else {
         if (auth) {
-            if (!encryptor->verifyHeaderAuth(data, header_length)) {
+            if (!encryptor->verifyHeaderAuth(data.data(), header_length)) {
                 emit info("One-time message authentication for header failed.");
                 if (autoBan) {
                     Common::banAddress(local->peerAddress());
@@ -179,8 +180,8 @@ void TcpRelay::handleStageAddr(QByteArray &data)
             }
         }
 
-        if (data.length() > header_length) {
-            data.remove(0, header_length);
+        if (data.size() > header_length) {
+            data = data.substr(header_length);
             if (auth) {
                 if (!encryptor->verifyExtractChunkAuth(data)) {
                     emit info("Data chunk hash authentication failed.");
@@ -191,7 +192,7 @@ void TcpRelay::handleStageAddr(QByteArray &data)
                     return;
                 }
             }
-            dataToWrite.append(data);
+            dataToWrite += data;
         }
         remoteAddress.lookUp();
     }
@@ -221,19 +222,19 @@ void TcpRelay::onDNSResolved(const bool success, const QString errStr)
     }
 }
 
-bool TcpRelay::writeToRemote(const QByteArray &data)
+bool TcpRelay::writeToRemote(const char *data, size_t length)
 {
-    return remote->write(data) != -1;
+    return remote->write(data, length) != -1;
 }
 
 void TcpRelay::onRemoteConnected()
 {
     emit latencyAvailable(startTime.msecsTo(QTime::currentTime()));
     stage = STREAM;
-    if (!dataToWrite.isEmpty()) {
-        writeToRemote(dataToWrite);
+    if (!dataToWrite.empty()) {
+        writeToRemote(dataToWrite.data(), dataToWrite.size());
+        dataToWrite.clear();
     }
-    dataToWrite.clear();
 }
 
 void TcpRelay::onRemoteTcpSocketError()
@@ -249,9 +250,10 @@ void TcpRelay::onRemoteTcpSocketError()
 
 void TcpRelay::onLocalTcpSocketReadyRead()
 {
-    QByteArray data = local->readAll();
+    const QByteArray _data = local->readAll();
+    std::string data(_data.data(), _data.size());
 
-    if (data.isEmpty()) {
+    if (data.empty()) {
         emit info("Local received empty data.");
         close();
         return;
@@ -259,7 +261,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
 
     if (!isLocal) {
         data = encryptor->decrypt(data);
-        if (data.isEmpty()) {
+        if (data.empty()) {
             emit debug("Data is empty after decryption.");
             return;
         }
@@ -279,11 +281,11 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 }
                 close();
                 return;
-            } else if (data.isEmpty()) {
+            } else if (data.empty()) {
                 return;
             }
         }
-        writeToRemote(data);
+        writeToRemote(data.data(), data.size());
     } else if (isLocal && stage == INIT) {
         static const char reject_data [] = { 0, 91 };
         static const char accept_data [] = { 5, 0 };
@@ -314,7 +316,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
                 return;
             }
         }
-        dataToWrite.append(data);
+        dataToWrite += data;
     } else if ((isLocal && stage == ADDR) || (!isLocal && stage == INIT)) {
         handleStageAddr(data);
     }
@@ -322,15 +324,16 @@ void TcpRelay::onLocalTcpSocketReadyRead()
 
 void TcpRelay::onRemoteTcpSocketReadyRead()
 {
-    QByteArray buf = remote->readAll();
-    if (buf.isEmpty()) {
+    QByteArray _buf = remote->readAll();
+    std::string buf(_buf.data(), _buf.size());
+    if (buf.empty()) {
         emit info("Remote received empty data.");
         close();
         return;
     }
     emit bytesRead(buf.size());
     buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
-    local->write(buf);
+    local->write(buf.data(), buf.size());
 }
 
 void TcpRelay::onTimeout()

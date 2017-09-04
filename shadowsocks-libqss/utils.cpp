@@ -5,7 +5,7 @@
 
 void Utils::testSpeed(const QString &method, quint32 data_size_mb)
 {
-    static const QByteArray test(1024 * 32, '#');//32KB
+    const std::string test(1024 * 32, '#');//32KB
     quint32 loops = 32 * data_size_mb;
     QSS::Encryptor enc(method.toUtf8(), "barfoo!");
 

@@ -50,30 +50,30 @@ public:
               const QByteArray& password,
               QObject *parent = 0);
 
-    QByteArray decrypt(const QByteArray &);
-    QByteArray encrypt(const QByteArray &);
+    std::string decrypt(const std::string &);
+    std::string encrypt(const std::string &);
     QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
     QByteArray encryptAll(const QByteArray &);
     void reset();
-    void addHeaderAuth(QByteArray &headerData) const;
+    void addHeaderAuth(std::string &headerData) const;
     void addHeaderAuth(QByteArray &data, const int &headerLen) const;
-    void addChunkAuth(QByteArray &data);
+    void addChunkAuth(std::string &data);
 
-    bool verifyHeaderAuth(const QByteArray &data, const int &headerLen) const;
+    bool verifyHeaderAuth(const char *data, const int &headerLen) const;
 
     /*
      * data will be overwritten by extracted data which can be sent to
      * downstream
      * @return the hash verification result
      */
-    bool verifyExtractChunkAuth(QByteArray &data);
+    bool verifyExtractChunkAuth(std::string &data);
 
 private:
     std::string method;
     std::string password;
     std::string enCipherIV;
     //incomplete data chunk from verifyExtractChunkAuth function
-    QByteArray incompleteChunk;
+    std::string incompleteChunk;
     quint32 chunkId;
 
     std::string deCipherIV() const;

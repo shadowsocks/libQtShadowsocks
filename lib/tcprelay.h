@@ -70,7 +70,7 @@ private:
     STAGE stage;
     Address remoteAddress;
     Address serverAddress;
-    QByteArray dataToWrite;
+    std::string dataToWrite;
     const bool &isLocal;
     const bool &autoBan;
     bool auth;
@@ -81,8 +81,8 @@ private:
     QTime startTime;
     Encryptor *encryptor;
 
-    void handleStageAddr(QByteArray&);
-    bool writeToRemote(const QByteArray &);
+    void handleStageAddr(std::string &);
+    bool writeToRemote(const char *data, size_t length);
 
 private slots:
     void onDNSResolved(const bool success, const QString errStr);
