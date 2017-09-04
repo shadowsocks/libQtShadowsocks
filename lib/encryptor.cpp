@@ -145,16 +145,14 @@ std::string Encryptor::deCipherIV() const
 
 void Encryptor::addHeaderAuth(QByteArray &headerData) const
 {
-    QByteArray key = QByteArray::fromStdString(enCipherIV + password);
-    QByteArray authCode = Cipher::hmacSha1(key, headerData);
-    headerData.append(authCode);
+    std::string authCode = Cipher::hmacSha1(enCipherIV + password, headerData.toStdString());
+    headerData.append(authCode.data(), authCode.size());
 }
 
 void Encryptor::addHeaderAuth(QByteArray &data, const int &headerLen) const
 {
-    QByteArray key = QByteArray::fromStdString(enCipherIV + password);
-    QByteArray authCode = Cipher::hmacSha1(key, data.left(headerLen));
-    data.insert(headerLen, authCode);
+    std::string authCode = Cipher::hmacSha1(enCipherIV + password, data.left(headerLen).toStdString());
+    data.insert(headerLen, authCode.data(), authCode.size());
 }
 
 void Encryptor::addChunkAuth(QByteArray &data)
@@ -162,19 +160,19 @@ void Encryptor::addChunkAuth(QByteArray &data)
     char counter[4];
     qToBigEndian(chunkId, reinterpret_cast<uchar*>(counter));
     chunkId++;
-    QByteArray key = QByteArray::fromStdString(enCipherIV + std::string(counter, 4));
-    QByteArray authCode = Cipher::hmacSha1(key, data);
+    std::string key = enCipherIV + std::string(counter, 4);
+    std::string authCode = Cipher::hmacSha1(key, data.toStdString());
     quint16 len = static_cast<quint16>(data.length());
-    QByteArray len_c(2, 0);
-    qToBigEndian(len, reinterpret_cast<uchar*>(len_c.data()));
-    data.prepend(len_c + authCode);
+    char len_c[2];
+    qToBigEndian(len, reinterpret_cast<uchar*>(len_c));
+    data.prepend(authCode.data(), authCode.size());
+    data.prepend(len_c, 2);
 }
 
 bool Encryptor::verifyHeaderAuth(const QByteArray &data, const int &headerLen) const
 {
-    QByteArray key = QByteArray::fromStdString(deCipherIV() + password);
-    return Cipher::hmacSha1(key, data.left(headerLen))
-            == data.mid(headerLen, Cipher::AUTH_LEN);
+    return Cipher::hmacSha1(deCipherIV() + password, data.left(headerLen).toStdString()).compare(
+            data.mid(headerLen, Cipher::AUTH_LEN).data()) == 0;
 }
 
 bool Encryptor::verifyExtractChunkAuth(QByteArray &data)
@@ -194,14 +192,11 @@ bool Encryptor::verifyExtractChunkAuth(QByteArray &data)
         char counter[4];
         qToBigEndian(chunkId, reinterpret_cast<uchar*>(counter));
         chunkId++;
-        QByteArray key = QByteArray::fromStdString(deCipherIV() + std::string(counter, 4));
-        QByteArray chunk = data.mid(pos + 2 + Cipher::AUTH_LEN, len);
-        verified &= (
-                    Cipher::hmacSha1(key, chunk)
-                    == data.mid(pos + 2, Cipher::AUTH_LEN)
-                    );
+        std::string key = deCipherIV() + std::string(counter, 4);
+        std::string chunk = data.mid(pos + 2 + Cipher::AUTH_LEN, len).toStdString();
+        verified &= (Cipher::hmacSha1(key, chunk).compare(data.mid(pos + 2, Cipher::AUTH_LEN).data()) == 0);
         if (verified) {
-            result.append(chunk);
+            result.append(chunk.data(), chunk.size());
             pos += (2 + Cipher::AUTH_LEN + len);
         } else {
             break;

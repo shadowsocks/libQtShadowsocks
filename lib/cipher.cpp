@@ -166,11 +166,12 @@ std::string Cipher::randomIv(const std::string &method)
     return randomIv(cipherInfoMap.at(method).ivLen);
 }
 
-QByteArray Cipher::hmacSha1(const QByteArray &key, const QByteArray &msg)
+std::string Cipher::hmacSha1(const std::string &key, const std::string &msg)
 {
-    return QMessageAuthenticationCode::hash(msg,
-                                       key,
-                                       QCryptographicHash::Sha1).left(AUTH_LEN);
+    QByteArray result = QMessageAuthenticationCode::hash(QByteArray(msg.data(), msg.size()),
+                                           QByteArray(key.data(), key.size()),
+                                           QCryptographicHash::Sha1).left(AUTH_LEN);
+    return std::string(result.data(), result.size());
 }
 
 std::string Cipher::md5Hash(const std::string &in)

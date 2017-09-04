@@ -126,7 +126,7 @@ public:
     /*
      * OTA is deprecated, these methods will be removed in future releases
      */
-    static QByteArray hmacSha1(const QByteArray &key, const QByteArray &msg);
+    static std::string hmacSha1(const std::string &key, const std::string &msg);
 
 private:
     std::unique_ptr<Botan::Pipe> pipe;

@@ -9,21 +9,21 @@ Cipher_T::Cipher_T()
 
 void Cipher_T::testHmacSha1()
 {
-    QByteArray key = QByteArray::fromHex("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b");
-    QByteArray data("Hi There");
-    QByteArray digest =
-            QByteArray::fromHex("b617318655057264e28bc0b6fb378c8ef146be00");
-    QCOMPARE(Cipher::hmacSha1(key, data), digest.left(10));
+    std::string key = QByteArray::fromHex("0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b").toStdString();
+    std::string data("Hi There");
+    std::string digest =
+            QByteArray::fromHex("b617318655057264e28bc0b6fb378c8ef146be00").toStdString();
+    QCOMPARE(Cipher::hmacSha1(key, data), digest.substr(0, 10));
 
-    key = QByteArray("Jefe");
-    data = QByteArray("what do ya want for nothing?");
-    digest = QByteArray::fromHex("effcdf6ae5eb2fa2d27416d5f184df9c259a7c79");
-    QCOMPARE(Cipher::hmacSha1(key, data), digest.left(10));
+    key = "Jefe";
+    data = "what do ya want for nothing?";
+    digest = QByteArray::fromHex("effcdf6ae5eb2fa2d27416d5f184df9c259a7c79").toStdString();
+    QCOMPARE(Cipher::hmacSha1(key, data), digest.substr(0, 10));
 
-    key = QByteArray::fromHex("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-    data = QByteArray(50, 0xdd);
-    digest = QByteArray::fromHex("125d7342b9ac11cd91a39af48aa17b4f63f175d3");
-    QCOMPARE(Cipher::hmacSha1(key, data), digest.left(10));
+    key = QByteArray::fromHex("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa").toStdString();
+    data = QByteArray(50, 0xdd).toStdString();
+    digest = QByteArray::fromHex("125d7342b9ac11cd91a39af48aa17b4f63f175d3").toStdString();
+    QCOMPARE(Cipher::hmacSha1(key, data), digest.substr(0, 10));
 }
 
 void Cipher_T::testMd5Hash()
