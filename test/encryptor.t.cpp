@@ -13,8 +13,8 @@ Encryptor_T::Encryptor_T()
 
 void Encryptor_T::selfTestEncryptDecrypt()
 {
-    QByteArray method("aes-128-cfb");
-    QByteArray password("test");
+    std::string method("aes-128-cfb");
+    std::string password("test");
     Encryptor encryptor(method, password);
     Encryptor decryptor(method, password);
 
@@ -23,8 +23,8 @@ void Encryptor_T::selfTestEncryptDecrypt()
 
 void Encryptor_T::testChunkAuth()
 {
-    QByteArray method("aes-128-cfb");
-    QByteArray password("test");
+    std::string method("aes-128-cfb");
+    std::string password("test");
     Encryptor encryptor(method, password);
     Encryptor decryptor(method, password);
     // This is to make decryptor has the same IV as encryptor does
@@ -43,8 +43,8 @@ void Encryptor_T::testChunkAuth()
 
 void Encryptor_T::testIncompleteChunkAuth()
 {
-    QByteArray method("aes-128-cfb");
-    QByteArray password("test");
+    std::string method("aes-128-cfb");
+    std::string password("test");
     Encryptor encryptor(method, password);
     Encryptor decryptor(method, password);
     // This is to make decryptor has the same IV as encryptor does

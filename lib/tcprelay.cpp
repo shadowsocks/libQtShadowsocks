@@ -41,7 +41,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     autoBan(autoBan),
     auth(auth),
     local(localSocket),
-    encryptor{new Encryptor(method, password, this)}
+    encryptor{new Encryptor(method.toStdString(), password.toStdString(), this)}
 {
     connect(&remoteAddress, &Address::lookedUp,
             this, &TcpRelay::onDNSResolved);

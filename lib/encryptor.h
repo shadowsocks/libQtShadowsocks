@@ -46,17 +46,19 @@ public:
      * @param password The preshared password
      * @param parent The parent QObject
      */
-    Encryptor(const QByteArray& method,
-              const QByteArray& password,
+    Encryptor(const std::string& method,
+              const std::string& password,
               QObject *parent = 0);
 
     std::string decrypt(const std::string &);
     std::string encrypt(const std::string &);
-    QByteArray decryptAll(const QByteArray &);//(de)encryptAll is for updreplay
-    QByteArray encryptAll(const QByteArray &);
+
+    std::string decryptAll(const std::string &);//(de)encryptAll is for updreplay
+    std::string encryptAll(const std::string &);
+
     void reset();
     void addHeaderAuth(std::string &headerData) const;
-    void addHeaderAuth(QByteArray &data, const int &headerLen) const;
+    void addHeaderAuth(std::string &data, const int &headerLen) const;
     void addChunkAuth(std::string &data);
 
     bool verifyHeaderAuth(const char *data, const int &headerLen) const;

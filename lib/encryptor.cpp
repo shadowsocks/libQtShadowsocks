@@ -53,12 +53,12 @@ std::string evpBytesToKey(const std::string& method, const std::string &password
 
 }
 
-Encryptor::Encryptor(const QByteArray& method,
-                     const QByteArray& password,
+Encryptor::Encryptor(const std::string &method,
+                     const std::string &password,
                      QObject *parent) :
     QObject(parent),
-    method(method.toStdString()),
-    password(evpBytesToKey(this->method, password.toStdString())),
+    method(method),
+    password(evpBytesToKey(method, password)),
     chunkId(0),
     enCipher(nullptr),
     deCipher(nullptr)
@@ -109,7 +109,7 @@ std::string Encryptor::decrypt(const std::string &in)
     return out;
 }
 
-QByteArray Encryptor::encryptAll(const QByteArray &in)
+std::string Encryptor::encryptAll(const std::string &in)
 {
     if (enCipher) {
         enCipher->deleteLater();
@@ -117,21 +117,21 @@ QByteArray Encryptor::encryptAll(const QByteArray &in)
     std::string iv = enCipherIV;
     enCipherIV = Cipher::randomIv(method);
     enCipher = new Cipher(method, password, iv, true, this);
-    return QByteArray::fromStdString(iv + enCipher->update(in.toStdString()));
+    return iv + enCipher->update(in);
 }
 
-QByteArray Encryptor::decryptAll(const QByteArray &in)
+std::string Encryptor::decryptAll(const std::string &in)
 {
     if (deCipher) {
         deCipher->deleteLater();
     }
     int ivLen = Cipher::cipherInfoMap.at(method).ivLen;
-    std::string iv = in.mid(0, ivLen).toStdString();
+    std::string iv = in.substr(0, ivLen);
     if (iv.size() != ivLen) {
-        return QByteArray();
+        return std::string();
     }
     deCipher = new Cipher(method, password, iv, false, this);
-    return QByteArray::fromStdString(deCipher->update(in.mid(Cipher::cipherInfoMap.at(method).ivLen).toStdString()));
+    return deCipher->update(in.substr(Cipher::cipherInfoMap.at(method).ivLen));
 }
 
 std::string Encryptor::deCipherIV() const
@@ -149,9 +149,9 @@ void Encryptor::addHeaderAuth(std::string &headerData) const
     headerData.append(authCode);
 }
 
-void Encryptor::addHeaderAuth(QByteArray &data, const int &headerLen) const
+void Encryptor::addHeaderAuth(std::string &data, const int &headerLen) const
 {
-    std::string authCode = Cipher::hmacSha1(enCipherIV + password, data.left(headerLen).toStdString());
+    std::string authCode = Cipher::hmacSha1(enCipherIV + password, data.substr(0, headerLen));
     data.insert(headerLen, authCode.data(), authCode.size());
 }
 

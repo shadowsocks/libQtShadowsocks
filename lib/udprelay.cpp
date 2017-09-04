@@ -38,7 +38,7 @@ UdpRelay::UdpRelay(const QByteArray &method,
     isLocal(is_local),
     autoBan(auto_ban),
     auth(auth),
-    encryptor{new Encryptor(method, password, this)}
+    encryptor{new Encryptor(method.toStdString(), password.toStdString(), this)}
 {
     // To make sure datagram doesn't exceed remote server's maximum, we can
     // limit how many bytes we take from local socket at a time. This is due
@@ -118,7 +118,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
     }
 
     std::string data;
-    data.reserve(packetSize);
+    data.resize(packetSize);
     QHostAddress r_addr;
     quint16 r_port;
     qint64 readSize = listenSocket.readDatagram(&data[0],
@@ -140,7 +140,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
                        .arg(r_addr.toString()));
             return;
         }
-        data = encryptor->decryptAll(QByteArray::fromStdString(data)).toStdString();
+        data = encryptor->decryptAll(data);
     }
 
     Address destAddr, remoteAddr(r_addr, r_port);//remote == client
@@ -185,7 +185,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
              */
             encryptor->addHeaderAuth(data);
         }
-        data = encryptor->encryptAll(QByteArray::fromStdString(data)).toStdString();
+        data = encryptor->encryptAll(data);
         destAddr = serverAddress;
     } else {
         if (auth || at_auth) {
@@ -217,39 +217,41 @@ void UdpRelay::onClientUdpSocketReadyRead()
         return;
     }
 
-    if (sock->pendingDatagramSize() > RemoteRecvSize) {
+    const size_t packetSize = sock->pendingDatagramSize();
+    if (packetSize > RemoteRecvSize) {
         emit info("[UDP] Datagram is too large. Discarded.");
         return;
     }
 
-    QByteArray data;
-    data.resize(sock->pendingDatagramSize());
+    std::string data;
+    data.resize(packetSize);
     QHostAddress r_addr;
     quint16 r_port;
-    sock->readDatagram(data.data(), RemoteRecvSize, &r_addr, &r_port);
+    sock->readDatagram(&data[0], packetSize, &r_addr, &r_port);
 
-    QByteArray response;
+    std::string response;
     if (isLocal) {
         data = encryptor->decryptAll(data);
         Address destAddr;
         int header_length = 0;
         bool _auth;
 
-        Common::parseHeader(data, destAddr, header_length, _auth);
+        Common::parseHeader(QByteArray::fromStdString(data), destAddr, header_length, _auth);
         if (header_length == 0) {
             emit info("[UDP] Can't parse header. "
                       "Wrong encryption method or password?");
             return;
         }
-        response = QByteArray(3, static_cast<char>(0)) + data;
+        response = std::string(3, static_cast<char>(0)) + data;
     } else {
-        data.prepend(Common::packAddress(r_addr, r_port));
+        data = Common::packAddress(r_addr, r_port).toStdString() + data;
         response = encryptor->encryptAll(data);
     }
 
     Address clientAddress = cache.key(sock);
     if (clientAddress.getPort() != 0) {
-        listenSocket.writeDatagram(response,
+        listenSocket.writeDatagram(response.data(),
+                                   response.size(),
                                    clientAddress.getFirstIP(),
                                    clientAddress.getPort());
     } else {

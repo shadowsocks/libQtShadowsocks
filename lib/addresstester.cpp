@@ -99,7 +99,7 @@ void AddressTester::onConnected()
     timer.stop();
     emit lagTestFinished(time.msecsTo(QTime::currentTime()));
     if (testingConnectivity) {
-        Encryptor encryptor(encryptionMethod.toUtf8(), encryptionPassword.toUtf8());
+        Encryptor encryptor(encryptionMethod.toUtf8().toStdString(), encryptionPassword.toUtf8().toStdString());
         /*
          * A http request to Google to test connectivity
          * The payload is dumped from
