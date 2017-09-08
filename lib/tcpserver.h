@@ -34,8 +34,8 @@ class QSS_EXPORT TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    TcpServer(const QByteArray& method,
-              const QByteArray& password,
+    TcpServer(const std::string& method,
+              const std::string& password,
               int timeout,
               bool is_local,
               bool auto_ban,
@@ -58,8 +58,8 @@ protected:
     void incomingConnection(qintptr handler) Q_DECL_OVERRIDE;
 
 private:
-    const QByteArray method;
-    const QByteArray password;
+    const std::string method;
+    const std::string password;
     const bool isLocal;
     const bool autoBan;
     const bool auth;

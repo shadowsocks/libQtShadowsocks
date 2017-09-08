@@ -27,14 +27,14 @@
 
 using namespace QSS;
 
-Address::Address(const QString &a, const quint16 &p, QObject *parent) :
+Address::Address(const std::string &a, uint16_t p, QObject *parent) :
     QObject(parent)
 {
     data.second = p;
     setAddress(a);
 }
 
-Address::Address(const QHostAddress &ip, const quint16 &p, QObject *parent) :
+Address::Address(const QHostAddress &ip, uint16_t p, QObject *parent) :
     QObject(parent)
 {
     data.second = p;
@@ -47,7 +47,7 @@ Address::Address(const Address &o) :
     *this = o;
 }
 
-QString Address::getAddress() const
+const std::string& Address::getAddress() const
 {
     return data.first;
 }
@@ -71,7 +71,7 @@ bool Address::isIPValid() const
     return !ipAddrList.isEmpty();
 }
 
-quint16 Address::getPort() const
+uint16_t Address::getPort() const
 {
     return data.second;
 }
@@ -81,7 +81,7 @@ void Address::lookUp()
     if (isIPValid()) {
         emit lookedUp(true, QString());
     } else {
-        QHostInfo::lookupHost(data.first,
+        QHostInfo::lookupHost(QString::fromStdString(data.first),
                               this,
                               SLOT(onLookUpFinished(QHostInfo)));
     }
@@ -93,15 +93,15 @@ void Address::blockingLookUp()
         return;
     }
 
-    QHostInfo result = QHostInfo::fromName(data.first);
+    QHostInfo result = QHostInfo::fromName(QString::fromStdString(data.first));
     ipAddrList = result.addresses();
 }
 
-void Address::setAddress(const QString &a)
+void Address::setAddress(const std::string &a)
 {
-    data.first = a.trimmed();
+    data.first = a;//TODO: trim
     ipAddrList.clear();
-    QHostAddress ipAddress(a);
+    QHostAddress ipAddress(QString::fromStdString(a));
     if (!ipAddress.isNull()) {
         ipAddrList.append(ipAddress);
     }
@@ -111,17 +111,17 @@ void Address::setIPAddress(const QHostAddress &ip)
 {
     ipAddrList.clear();
     ipAddrList.append(ip);
-    data.first = ip.toString();
+    data.first = ip.toString().toStdString();
 }
 
-void Address::setPort(const quint16 &p)
+void Address::setPort(const uint16_t &p)
 {
     data.second = p;
 }
 
 Address::ATYP Address::addressType() const
 {
-    QHostAddress ipAddress(data.first);
+    QHostAddress ipAddress(QString::fromStdString(data.first));
     if (ipAddress.isNull()) {//it's a domain if it can't be parsed
         return HOST;
     } else if (ipAddress.protocol() == QAbstractSocket::IPv4Protocol) {
@@ -131,9 +131,9 @@ Address::ATYP Address::addressType() const
     }
 }
 
-QString Address::toString() const
+std::string Address::toString() const
 {
-    return QString("%1:%2").arg(data.first).arg(QString::number(data.second));
+    return data.first + ":" + std::to_string(data.second);
 }
 
 Address &Address::operator= (const Address &o)

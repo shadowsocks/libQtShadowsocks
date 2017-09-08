@@ -28,8 +28,8 @@ using namespace QSS;
 TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    int timeout,
                    const Address &server_addr,
-                   const QByteArray &method,
-                   const QByteArray &password,
+                   const std::string &method,
+                   const std::string &password,
                    const bool &is_local,
                    const bool &autoBan,
                    const bool &auth,
@@ -41,7 +41,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     autoBan(autoBan),
     auth(auth),
     local(localSocket),
-    encryptor{new Encryptor(method.toStdString(), password.toStdString(), this)}
+    encryptor{new Encryptor(method, password, this)}
 {
     connect(&remoteAddress, &Address::lookedUp,
             this, &TcpRelay::onDNSResolved);
@@ -139,7 +139,7 @@ void TcpRelay::handleStageAddr(std::string &data)
     }
 
     emit info(QString("Connecting %1:%2 from %3:%4")
-              .arg(remoteAddress.getAddress())
+              .arg(QString::fromStdString(remoteAddress.getAddress()))
               .arg(remoteAddress.getPort())
               .arg(local->peerAddress().toString())
               .arg(local->peerPort()));

@@ -66,8 +66,8 @@ void AddressTester::startLagTest(int timeout)
     connectToServer(timeout);
 }
 
-void AddressTester::startConnectivityTest(const QString &method,
-                                          const QString &password,
+void AddressTester::startConnectivityTest(const std::string &method,
+                                          const std::string &password,
                                           bool one_time_auth,
                                           int timeout)
 {
@@ -99,7 +99,7 @@ void AddressTester::onConnected()
     timer.stop();
     emit lagTestFinished(time.msecsTo(QTime::currentTime()));
     if (testingConnectivity) {
-        Encryptor encryptor(encryptionMethod.toUtf8().toStdString(), encryptionPassword.toUtf8().toStdString());
+        Encryptor encryptor(encryptionMethod, encryptionPassword);
         /*
          * A http request to Google to test connectivity
          * The payload is dumped from

@@ -8,43 +8,49 @@ Profile_T::Profile_T()
 void Profile_T::testConstructorEmpty()
 {
     QSS::Profile p;
-    QVERIFY(p.server.isEmpty());
-    QCOMPARE(QString("127.0.0.1"), p.local_address);
-    QVERIFY(p.method.isEmpty());
-    QVERIFY(p.password.isEmpty());
-    QCOMPARE(quint16(8388), p.server_port);
-    QCOMPARE(quint16(1080), p.local_port);
-    QCOMPARE(600, p.timeout);
-    QVERIFY(!p.auth);
-    QVERIFY(!p.debug);
-    QVERIFY(!p.http_proxy);
+    QVERIFY(p.serverAddress().empty());
+    QCOMPARE(std::string("127.0.0.1"), p.localAddress());
+    QVERIFY(p.method().empty());
+    QVERIFY(p.password().empty());
+    QCOMPARE(uint16_t(0), p.serverPort());
+    QCOMPARE(uint16_t(0), p.localPort());
+    QCOMPARE(600, p.timeout());
+    QVERIFY(!p.otaEnabled());
+    QVERIFY(!p.debug());
+    QVERIFY(!p.httpProxy());
 }
 
-void Profile_T::testConstructorURI()
+void Profile_T::testFromUri()
 {
     // ss://bf-cfb-auth:test@192.168.100.1:8888
-    QSS::Profile p("ss://YmYtY2ZiLWF1dGg6dGVzdEAxOTIuMTY4LjEwMC4xOjg4ODg#Tést");
-    QCOMPARE(QString("Tést"), p.nameTag);
-    QCOMPARE(QString("192.168.100.1"), p.server);
-    QCOMPARE(QString("127.0.0.1"), p.local_address);
-    QCOMPARE(QString("bf-cfb"), p.method);
-    QCOMPARE(QString("test"), p.password);
-    QCOMPARE(quint16(8888), p.server_port);
-    QCOMPARE(quint16(1080), p.local_port);
-    QCOMPARE(600, p.timeout);
-    QVERIFY(p.auth);
-    QVERIFY(!p.debug);
-    QVERIFY(!p.http_proxy);
+    QSS::Profile p = QSS::Profile::fromUri("ss://YmYtY2ZiLWF1dGg6dGVzdEAxOTIuMTY4LjEwMC4xOjg4ODg#Tést");
+    QCOMPARE(std::string("Tést"), p.name());
+    QCOMPARE(std::string("192.168.100.1"), p.serverAddress());
+    QCOMPARE(std::string("bf-cfb"), p.method());
+    QCOMPARE(std::string("test"), p.password());
+    QCOMPARE(uint16_t(8888), p.serverPort());
+    QVERIFY(p.otaEnabled());
 }
 
-void Profile_T::testToURI()
+void Profile_T::testFromUriSip002()
+{
+    QSS::Profile p = QSS::Profile::fromUri("ss://cmM0LW1kNTpwYXNzd2Q=@192.168.100.1:8888/?plugin=obfs-local%3Bobfs%3Dhttp#Example2");
+    QCOMPARE(std::string("Example2"), p.name());
+    QCOMPARE(std::string("192.168.100.1"), p.serverAddress());
+    QCOMPARE(std::string("rc4-md5"), p.method());
+    QCOMPARE(std::string("passwd"), p.password());
+    QCOMPARE(uint16_t(8888), p.serverPort());
+    QVERIFY(!p.otaEnabled());
+}
+
+void Profile_T::testToUri()
 {
     QSS::Profile p;
-    p.nameTag = "Tést";
-    p.method = "bf-cfb";
-    p.password = "test";
-    p.server = "192.168.100.1";
-    p.server_port = 8888;
-    p.auth = false;
-    QCOMPARE(QByteArray("ss://YmYtY2ZiOnRlc3RAMTkyLjE2OC4xMDAuMTo4ODg4#Tést"), p.toURI());
+    p.setName("Tést");
+    p.setMethod("bf-cfb");
+    p.setPassword("test");
+    p.setServerAddress("192.168.100.1");
+    p.setServerPort(8888);
+    p.disableOta();
+    QCOMPARE(std::string("ss://YmYtY2ZiOnRlc3RAMTkyLjE2OC4xMDAuMTo4ODg4#Tést"), p.toUri());
 }

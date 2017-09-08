@@ -38,19 +38,19 @@ class QSS_EXPORT Address : public QObject
 {
     Q_OBJECT
 public:
-    explicit Address(const QString &a = QString(),
-                     const quint16 &p = 0,
+    explicit Address(const std::string &a = std::string(),
+                     uint16_t p = 0,
                      QObject *parent = 0);
 
     Address(const QHostAddress &ip,
-            const quint16 &p,
+            uint16_t p,
             QObject *parent = 0);
 
     Address(const Address &o);
     //force the generation of default move constructor
     Address(Address &&) = default;
 
-    QString getAddress() const;
+    const std::string &getAddress() const;
 
     /*
      * Because the ipAddrList might include both IPv4 and IPv6 addresses
@@ -70,7 +70,7 @@ public:
     QHostAddress getFirstIP() const;
 
     bool isIPValid() const;
-    quint16 getPort() const;
+    uint16_t getPort() const;
 
     /*
      * lookedUp signal will pass if it's successful
@@ -81,15 +81,15 @@ public:
     void lookUp();
     void blockingLookUp();
 
-    void setAddress(const QString &);
+    void setAddress(const std::string &);
     void setIPAddress(const QHostAddress &);
-    void setPort(const quint16 &);
+    void setPort(const uint16_t &);
 
     enum ATYP { IPV4 = 1, IPV6 = 4, HOST = 3 };
 
     ATYP addressType() const;
 
-    QString toString() const;
+    std::string toString() const;
 
     Address& operator= (const Address &o);
 
@@ -103,18 +103,18 @@ public:
 
     friend inline QDataStream& operator<< (QDataStream &os,
                                            const Address &addr) {
-        return os << addr.toString();
+        return os << QString::fromStdString(addr.toString());
     }
 
     friend inline QDebug& operator<< (QDebug &os, const Address &addr) {
-        return os << addr.toString();
+        return os << QString::fromStdString(addr.toString());
     }
 
 signals:
     void lookedUp(const bool success, const QString errStr);
 
 private:
-    QPair<QString, quint16> data;//first: address string; second: port
+    std::pair<std::string, uint16_t> data;//first: address string; second: port
     QList<QHostAddress> ipAddrList;
 
 private slots:

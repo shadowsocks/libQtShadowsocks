@@ -37,8 +37,9 @@ public:
 
 private Q_SLOTS:
     void testConstructorEmpty();
-    void testConstructorURI();
-    void testToURI();
+    void testFromUri();
+    void testFromUriSip002();
+    void testToUri();
 };
 
 #endif // PROFILE_T_H

@@ -57,8 +57,8 @@ public:
      * Don't call the same AddressTester instance's startConnectivityTest()
      * and startLagTest() at the same time!
      */
-    void startConnectivityTest(const QString& method,
-                               const QString& password,
+    void startConnectivityTest(const std::string &method,
+                               const std::string &password,
                                bool one_time_auth,
                                int timeout = 3000);
 
@@ -82,8 +82,8 @@ private:
     QTimer timer;
     bool testingConnectivity;
 
-    QString encryptionMethod;
-    QString encryptionPassword;
+    std::string encryptionMethod;
+    std::string encryptionPassword;
     bool oneTimeAuth;
 
     void connectToServer(int timeout);

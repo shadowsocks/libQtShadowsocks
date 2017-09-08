@@ -27,8 +27,8 @@
 
 using namespace QSS;
 
-TcpServer::TcpServer(const QByteArray &method,
-                     const QByteArray &password,
+TcpServer::TcpServer(const std::string &method,
+                     const std::string &password,
                      int timeout,
                      bool is_local,
                      bool auto_ban,

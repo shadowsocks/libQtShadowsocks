@@ -23,6 +23,7 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <iostream>
 #include "client.h"
 
 Client::Client(QObject *parent) :
@@ -48,15 +49,17 @@ bool Client::readConfig(const QString &file)
 
     QJsonDocument confJson = QJsonDocument::fromJson(confArray);
     QJsonObject confObj = confJson.object();
-    profile.local_address = confObj["local_address"].toString();
-    profile.local_port = confObj["local_port"].toInt();
-    profile.method = confObj["method"].toString();
-    profile.password = confObj["password"].toString();
-    profile.server = confObj["server"].toString();
-    profile.server_port = confObj["server_port"].toInt();
-    profile.timeout = confObj["timeout"].toInt();
-    profile.http_proxy = confObj["http_proxy"].toBool();
-    profile.auth = confObj["auth"].toBool();
+    profile.setLocalAddress(confObj["local_address"].toString().toStdString());
+    profile.setLocalPort(confObj["local_port"].toInt());
+    profile.setMethod(confObj["method"].toString().toStdString());
+    profile.setPassword(confObj["password"].toString().toStdString());
+    profile.setServerAddress(confObj["server"].toString().toStdString());
+    profile.setServerPort(confObj["server_port"].toInt());
+    profile.setTimeout(confObj["timeout"].toInt());
+    profile.setHttpProxy(confObj["http_proxy"].toBool());
+    if (confObj["auth"].toBool()) {
+        profile.enableOta();
+    }
 
     return true;
 }
@@ -72,16 +75,20 @@ void Client::setup(const QString &remote_addr,
                    const bool debug,
                    const bool auth)
 {
-    profile.server = remote_addr;
-    profile.server_port = remote_port.toInt();
-    profile.local_address = local_addr;
-    profile.local_port = local_port.toInt();
-    profile.password = password;
-    profile.method = method;
-    profile.timeout = timeout.toInt();
-    profile.http_proxy = http_proxy;
-    profile.debug = debug;
-    profile.auth = auth;
+    profile.setServerAddress(remote_addr.toStdString());
+    profile.setServerPort(remote_port.toInt());
+    profile.setLocalAddress(local_addr.toStdString());
+    profile.setLocalPort(local_port.toInt());
+    profile.setPassword(password.toStdString());
+    profile.setMethod(method.toStdString());
+    profile.setTimeout(timeout.toInt());
+    profile.setHttpProxy(http_proxy);
+    if (debug) {
+        profile.enableDebug();
+    }
+    if (auth) {
+        profile.enableOta();
+    }
 }
 
 void Client::setAutoBan(bool ban)
@@ -91,22 +98,30 @@ void Client::setAutoBan(bool ban)
 
 void Client::setDebug(bool debug)
 {
-    profile.debug = debug;
+    if (debug) {
+        profile.enableDebug();
+    } else {
+        profile.disableDebug();
+    }
 }
 
 void Client::setHttpMode(bool http)
 {
-    profile.http_proxy = http;
+    profile.setHttpProxy(http);
 }
 
 void Client::setAuth(bool auth)
 {
-    profile.auth = auth;
+    if (auth) {
+        profile.enableOta();
+    } else {
+        profile.disableOta();
+    }
 }
 
 bool Client::start(bool _server)
 {
-    if (profile.debug) {
+    if (profile.debug()) {
         if (!headerTest()) {
             QSS::Common::qOut << "Header test failed" << endl;
             return false;
@@ -118,12 +133,12 @@ bool Client::start(bool _server)
     }
     lc = new QSS::Controller(profile, !_server, autoBan, this);
     connect (lc, &QSS::Controller::info, this, &Client::logHandler);
-    if (profile.debug) {
+    if (profile.debug()) {
         connect(lc, &QSS::Controller::debug, this, &Client::logHandler);
     }
 
     if (!_server) {
-        QSS::Address server(profile.server, profile.server_port);
+        QSS::Address server(profile.serverAddress(), profile.serverPort());
         server.blockingLookUp();
         QSS::AddressTester *tester =
                 new QSS::AddressTester(server.getFirstIP(),
@@ -135,9 +150,9 @@ bool Client::start(bool _server)
                 [] (const QString& error) {
             QSS::Common::qOut << "Connectivity testing error: " << error << endl;
         });
-        tester->startConnectivityTest(profile.method,
-                                      profile.password,
-                                      profile.auth);
+        tester->startConnectivityTest(profile.method(),
+                                      profile.password(),
+                                      profile.otaEnabled());
     }
 
     return lc->start();
@@ -155,17 +170,17 @@ bool Client::headerTest()
     QSS::Common::parseHeader(packed, test_res, length, unused_auth);
     bool success = (test_v6 == test_res);
     if (!success) {
-        QSS::Common::qOut << test_v6.toString() << " --> "
-                          << test_res.toString() << endl;
+        std::cout << test_v6.toString() << " --> "
+                  << test_res.toString() << std::endl;
     }
     packed = QSS::Common::packAddress(test_addr, test_port);
     QSS::Common::parseHeader(packed, test_res, length, unused_auth);
     bool success2 = ((test_res.getFirstIP() == test_addr)
                  && (test_res.getPort() == test_port));
     if (!success2) {
-        QSS::Common::qOut << test_addr.toString().toLocal8Bit()
-                          << ":" << test_port << " --> "
-                          << test_res.toString() << endl;
+        std::cout << test_addr.toString().toStdString()
+                  << ":" << test_port << " --> "
+                  << test_res.toString() << std::endl;
     }
     return success & success2;
 }
@@ -177,7 +192,7 @@ void Client::logHandler(const QString &log)
 
 QString Client::getMethod() const
 {
-    return profile.method;
+    return QString::fromStdString(profile.method());
 }
 
 void Client::onConnectivityResultArrived(bool c)

@@ -23,43 +23,66 @@
 #ifndef PROFILE_H
 #define PROFILE_H
 
-#include <QString>
-#include <QByteArray>
+#include <string>
+#include <cstdint>
 
 namespace QSS {
 
-struct Profile {
-    QString nameTag;// Profile "name" or "remark"
-    QString server;
-    QString local_address;
-    QString method;
-    QString password;
-    quint16 server_port;
-    quint16 local_port;
-    int timeout;
+struct ProfilePrivate;
 
-    /*
-     * Set http_proxy to true then the local will serve as HTTP proxy server.
-     * Because the HttpProxy is a second-level proxy, the actual process is to
-     * use a random available port as SOCKS5 and then set HttpProxy listen on
-     * the local port and forward traffics via SOCKS5 proxy.
-     * It's false by default.
-     */
-    bool http_proxy;
-    bool debug;//turn on debug output or not
-    bool auth;
-
+class Profile {
+public:
     Profile();
 
-    /*
-     * Construct Profile using ss:// URI
-     * Please check https://shadowsocks.org/en/config/quick-guide.html for more
-     * details. Undefined behaviour if uri is invalid.
-     */
-    Profile(QByteArray uri);
+    ~Profile();
 
-    // Encode profile as a ss:// URI
-    QByteArray toURI();
+    const std::string& name() const;
+    const std::string& method() const;
+    const std::string& password() const;
+    const std::string& serverAddress() const;
+    const std::string& localAddress() const;
+    uint16_t serverPort() const;
+    uint16_t localPort() const;
+    int timeout() const;
+    bool httpProxy() const;
+    bool debug() const;
+    bool otaEnabled() const;
+
+    std::string toUri() const;
+
+    void setName(const std::string& name);
+    void setMethod(const std::string& method);
+    void setPassword(const std::string& password);
+    void setServerAddress(const std::string& server);
+    void setLocalAddress(const std::string& local);
+    void setServerPort(uint16_t);
+    void setLocalPort(uint16_t);
+    void setTimeout(int);
+    void setHttpProxy(bool);
+    void enableDebug();
+    void disableDebug();
+    void enableOta();
+    void disableOta();
+
+    // Both the original schema and the SIP002 are supported by this function
+    static Profile fromUri(const std::string&);
+
+private:
+    ProfilePrivate *const d_private; // For future extension (to keep ABI compatible)
+
+    /**
+     * Essential data are stored directly as members in this class
+     * Don't remove or change any these members, which would break ABI compatiblity
+     */
+    std::string d_name;
+    std::string d_method;
+    std::string d_password;
+    std::string d_serverAddress;
+    std::string d_localAddress;
+    uint16_t d_serverPort;
+    uint16_t d_localPort;
+    int d_timeout;
+    bool d_debug;
 };
 
 }

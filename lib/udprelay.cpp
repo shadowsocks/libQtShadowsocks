@@ -26,8 +26,8 @@
 
 using namespace QSS;
 
-UdpRelay::UdpRelay(const QByteArray &method,
-                   const QByteArray &password,
+UdpRelay::UdpRelay(const std::string &method,
+                   const std::string &password,
                    const bool &is_local,
                    const bool &auto_ban,
                    const bool &auth,
@@ -38,7 +38,7 @@ UdpRelay::UdpRelay(const QByteArray &method,
     isLocal(is_local),
     autoBan(auto_ban),
     auth(auth),
-    encryptor{new Encryptor(method.toStdString(), password.toStdString(), this)}
+    encryptor{new Encryptor(method, password, this)}
 {
     // To make sure datagram doesn't exceed remote server's maximum, we can
     // limit how many bytes we take from local socket at a time. This is due

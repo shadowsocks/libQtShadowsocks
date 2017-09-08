@@ -49,29 +49,29 @@ Controller::Controller(const Profile &_profile,
      * we explicitly use Any to enable dual stack
      * which is the case in other shadowsocks ports
      */
-    if (profile.server == "::") {
-        serverAddress = Address(QHostAddress::Any, profile.server_port);
+    if (profile.serverAddress() == "::") {
+        serverAddress = Address(QHostAddress::Any, profile.serverPort());
     } else {
-        serverAddress = Address(profile.server, profile.server_port);
+        serverAddress = Address(profile.serverAddress(), profile.serverPort());
         serverAddress.lookUp();
     }
 
-    tcpServer = new TcpServer(profile.method.toUtf8(),
-                              profile.password.toUtf8(),
-                              profile.timeout,
+    tcpServer = new TcpServer(profile.method(),
+                              profile.password(),
+                              profile.timeout(),
                               isLocal,
                               autoBan,
-                              profile.auth,
+                              profile.otaEnabled(),
                               serverAddress,
                               this);
 
     //FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
     tcpServer->setMaxPendingConnections(FD_SETSIZE);
-    udpRelay = new UdpRelay(profile.method.toUtf8(),
-                            profile.password.toUtf8(),
+    udpRelay = new UdpRelay(profile.method(),
+                            profile.password(),
                             isLocal,
                             autoBan,
-                            profile.auth,
+                            profile.otaEnabled(),
                             serverAddress,
                             this);
     httpProxy = new HttpProxy(this);
@@ -116,17 +116,17 @@ bool Controller::start()
     QString sstr("TCP server listen at port ");
     if (isLocal) {
         emit info("Running in local mode.");
-        sstr.append(QString::number(profile.local_port));
+        sstr.append(QString::number(profile.localPort()));
         listen_ret = tcpServer->listen(
                     getLocalAddr(),
-                    profile.http_proxy ? 0 : profile.local_port);
+                    profile.httpProxy() ? 0 : profile.localPort());
         if (listen_ret) {
-            listen_ret = udpRelay->listen(getLocalAddr(), profile.local_port);
-            if (profile.http_proxy && listen_ret) {
+            listen_ret = udpRelay->listen(getLocalAddr(), profile.localPort());
+            if (profile.httpProxy() && listen_ret) {
                 emit info("SOCKS5 port is "
                           + QString::number(tcpServer->serverPort()));
                 if (httpProxy->httpListen(getLocalAddr(),
-                                          profile.local_port,
+                                          profile.localPort(),
                                           tcpServer->serverPort())) {
                     emit info("Running as a HTTP proxy server");
                 } else {
@@ -137,19 +137,19 @@ bool Controller::start()
         }
     } else {
         emit info("Running in server mode.");
-        sstr.append(QString::number(profile.server_port));
+        sstr.append(QString::number(profile.serverPort()));
         listen_ret = tcpServer->listen(serverAddress.getFirstIP(),
-                                       profile.server_port);
+                                       profile.serverPort());
         if (listen_ret) {
             listen_ret = udpRelay->listen(serverAddress.getFirstIP(),
-                                       profile.server_port);
+                                       profile.serverPort());
         }
     }
 
     if (listen_ret) {
         emit info(sstr);
         emit runningStateChanged(true);
-        if (profile.auth) {
+        if (profile.otaEnabled()) {
             emit info("One-time message authentication is enabled.");
         }
     } else {
@@ -170,13 +170,13 @@ void Controller::stop()
 
 QHostAddress Controller::getLocalAddr()
 {
-    QHostAddress addr(profile.local_address);
+    QHostAddress addr(QString::fromStdString(profile.localAddress()));
     if (!addr.isNull()) {
         return addr;
     } else {
-        emit info("Can't get address from "
-                  + profile.local_address.toLocal8Bit()
-                  + ". Using localhost instead.");
+        emit info("Can't get address from " +
+                  QString::fromStdString(profile.localAddress()) +
+                  ". Using localhost instead.");
         return QHostAddress::LocalHost;
     }
 }

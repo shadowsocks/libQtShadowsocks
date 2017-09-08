@@ -48,7 +48,7 @@ QByteArray Common::packAddress(const Address &addr, bool auth)
 
     Address::ATYP type = addr.addressType();
     if (type == Address::HOST) {
-        QByteArray address_str = addr.getAddress().toLocal8Bit();
+        QByteArray address_str = QByteArray::fromStdString(addr.getAddress());
         //can't be longer than 255
         addr_bin.append(static_cast<char>(address_str.length()));
         addr_bin += address_str;
@@ -109,7 +109,7 @@ void Common::parseHeader(const QByteArray &data,
                 dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>
                                             (data.data() + 2 + addrlen))
                              );
-                dest.setAddress(QString(data.mid(2, addrlen)));
+                dest.setAddress(data.mid(2, addrlen).toStdString());
                 header_length = 4 + addrlen;
             }
         }
