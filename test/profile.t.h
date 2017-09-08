@@ -40,6 +40,7 @@ private Q_SLOTS:
     void testFromUri();
     void testFromUriSip002();
     void testToUri();
+    void testToUriSip002();
 };
 
 #endif // PROFILE_T_H

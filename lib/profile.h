@@ -49,6 +49,7 @@ public:
     bool otaEnabled() const;
 
     std::string toUri() const;
+    std::string toUriSip002() const;
 
     void setName(const std::string& name);
     void setMethod(const std::string& method);

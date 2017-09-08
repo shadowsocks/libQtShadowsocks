@@ -54,3 +54,14 @@ void Profile_T::testToUri()
     p.disableOta();
     QCOMPARE(std::string("ss://YmYtY2ZiOnRlc3RAMTkyLjE2OC4xMDAuMTo4ODg4#Tést"), p.toUri());
 }
+
+void Profile_T::testToUriSip002()
+{
+    QSS::Profile p;
+    p.setName("Example");
+    p.setServerAddress("192.168.100.1");
+    p.setMethod("rc4-md5");
+    p.setPassword("passwd");
+    p.setServerPort(8888);
+    QCOMPARE(std::string("ss://cmM0LW1kNTpwYXNzd2Q=@192.168.100.1:8888#Example"), p.toUriSip002());
+}

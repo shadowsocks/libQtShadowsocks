@@ -219,12 +219,19 @@ Profile Profile::fromUri(const std::string& ssUri)
 
 std::string Profile::toUri() const
 {
-    std::string ssUri = d_method + (otaEnabled() ? "-auth" : "") + ":" + d_password + "@" + d_serverAddress + ":" + std::to_string(d_serverPort);
-    QByteArray uri = QByteArray(ssUri.data(), ssUri.length()).toBase64(QByteArray::Base64Option::OmitTrailingEquals);
+    std::string ssUri = method() + (otaEnabled() ? "-auth" : "") + ":" + password() + "@" + serverAddress() + ":" + std::to_string(serverPort());
+    QByteArray uri = QByteArray(ssUri.data()).toBase64(QByteArray::Base64Option::OmitTrailingEquals);
     uri.prepend("ss://");
     uri.append("#");
     uri.append(d_name.data(), d_name.length());
     return std::string(uri.data(), uri.length());
+}
+
+std::string Profile::toUriSip002() const
+{
+    std::string plainUserInfo = method() + (otaEnabled() ? "-auth" : "") + ":" + password();
+    std::string userinfo(QByteArray(plainUserInfo.data()).toBase64(QByteArray::Base64Option::Base64UrlEncoding).data());
+    return "ss://" + userinfo + "@" + serverAddress() + ":" + std::to_string(serverPort()) + "#" + name();
 }
 
 }
