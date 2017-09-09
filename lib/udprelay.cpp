@@ -146,7 +146,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
     Address destAddr, remoteAddr(r_addr, r_port);//remote == client
     int header_length = 0;
     bool at_auth = false;
-    Common::parseHeader(QByteArray::fromStdString(data), destAddr, header_length, at_auth);
+    Common::parseHeader(data, destAddr, header_length, at_auth);
     if (header_length == 0) {
         emit info("[UDP] Can't parse header. "
                   "Wrong encryption method or password?");
@@ -236,7 +236,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
         int header_length = 0;
         bool _auth;
 
-        Common::parseHeader(QByteArray::fromStdString(data), destAddr, header_length, _auth);
+        Common::parseHeader(data, destAddr, header_length, _auth);
         if (header_length == 0) {
             emit info("[UDP] Can't parse header. "
                       "Wrong encryption method or password?");
@@ -244,7 +244,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
         }
         response = std::string(3, static_cast<char>(0)) + data;
     } else {
-        data = Common::packAddress(r_addr, r_port).toStdString() + data;
+        data = Common::packAddress(r_addr, r_port) + data;
         response = encryptor->encryptAll(data);
     }
 

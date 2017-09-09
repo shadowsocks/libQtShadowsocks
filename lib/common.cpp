@@ -31,68 +31,67 @@ using namespace QSS;
 QTextStream Common::qOut(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
 QVector<QHostAddress> Common::bannedAddressVector;
 QMutex Common::bannedAddressMutex;
-const quint8 Common::ADDRESS_MASK = 0b00001111;//0xf
-const quint8 Common::ONETIMEAUTH_FLAG = 0b00010000;//0x10
+const uint8_t Common::ADDRESS_MASK = 0b00001111;//0xf
+const uint8_t Common::ONETIMEAUTH_FLAG = 0b00010000;//0x10
 
-const QByteArray Common::version()
+const char* Common::version()
 {
     return QSS_VERSION;
 }
 
 //pack a shadowsocks header
-QByteArray Common::packAddress(const Address &addr, bool auth)
+std::string Common::packAddress(const Address &addr, bool auth)
 {
-    QByteArray addr_bin, port_ns;
-    port_ns.resize(2);
-    qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(port_ns.data()));
+    std::string portNs(2, '\0');
+    qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(&portNs[0]));
 
-    Address::ATYP type = addr.addressType();
+    std::string addrBin;
+    const Address::ATYP type = addr.addressType();
     if (type == Address::HOST) {
-        QByteArray address_str = QByteArray::fromStdString(addr.getAddress());
+        const std::string& addressString = addr.getAddress();
         //can't be longer than 255
-        addr_bin.append(static_cast<char>(address_str.length()));
-        addr_bin += address_str;
+        addrBin = static_cast<char>(addressString.length()) + addressString;
     } else if (type == Address::IPV4) {
-        quint32 ipv4_addr = qToBigEndian(addr.getFirstIP().toIPv4Address());
-        addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
+        uint32_t ipv4Address = qToBigEndian(addr.getFirstIP().toIPv4Address());
+        addrBin = std::string(reinterpret_cast<char*>(&ipv4Address), 4);
     } else {
         //Q_IPV6ADDR is a 16-unsigned-char struct (big endian)
-        Q_IPV6ADDR ipv6_addr = addr.getFirstIP().toIPv6Address();
-        addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
+        Q_IPV6ADDR ipv6Address = addr.getFirstIP().toIPv6Address();
+        addrBin = std::string(reinterpret_cast<char*>(ipv6Address.c), 16);
     }
 
-    char type_c = static_cast<char>(type);
+    char typeChar = static_cast<char>(type);
     if (auth) {
-        type_c |= ONETIMEAUTH_FLAG;
+        typeChar |= ONETIMEAUTH_FLAG;
     }
 
-    return type_c + addr_bin + port_ns;
+    return typeChar + addrBin + portNs;
 }
 
-QByteArray Common::packAddress(const QHostAddress &addr,
-                               const quint16 &port,
-                               bool auth)
+std::string Common::packAddress(const QHostAddress &addr,
+                                const quint16 &port,
+                                bool auth)
 {
-    QByteArray addr_bin, port_ns;
-    char type_c;
-    port_ns.resize(2);
-    qToBigEndian(port, reinterpret_cast<uchar*>(port_ns.data()));
+    std::string addrBin;
+    char typeChar;
+    std::string portNs(2, '\0');
+    qToBigEndian(port, reinterpret_cast<uchar*>(&portNs[0]));
     if (addr.protocol() == QAbstractSocket::IPv4Protocol) {
-        quint32 ipv4_addr = qToBigEndian(addr.toIPv4Address());
-        type_c = static_cast<char>(Address::IPV4);
-        addr_bin = QByteArray(reinterpret_cast<char*>(&ipv4_addr), 4);
+        uint32_t ipv4Address = qToBigEndian(addr.toIPv4Address());
+        typeChar = static_cast<char>(Address::IPV4);
+        addrBin = std::string(reinterpret_cast<char*>(&ipv4Address), 4);
     } else {
-        type_c = static_cast<char>(Address::IPV6);
-        Q_IPV6ADDR ipv6_addr = addr.toIPv6Address();
-        addr_bin = QByteArray(reinterpret_cast<char*>(ipv6_addr.c), 16);
+        typeChar = static_cast<char>(Address::IPV6);
+        Q_IPV6ADDR ipv6Address = addr.toIPv6Address();
+        addrBin = std::string(reinterpret_cast<char*>(ipv6Address.c), 16);
     }
     if (auth) {
-        type_c |= ONETIMEAUTH_FLAG;
+        typeChar |= ONETIMEAUTH_FLAG;
     }
-    return type_c + addr_bin + port_ns;
+    return typeChar + addrBin + portNs;
 }
 
-void Common::parseHeader(const QByteArray &data,
+void Common::parseHeader(const std::string &data,
                          Address &dest,
                          int &header_length,
                          bool &authFlag)
@@ -109,7 +108,7 @@ void Common::parseHeader(const QByteArray &data,
                 dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>
                                             (data.data() + 2 + addrlen))
                              );
-                dest.setAddress(data.mid(2, addrlen).toStdString());
+                dest.setAddress(data.substr(2, addrlen));
                 header_length = 4 + addrlen;
             }
         }

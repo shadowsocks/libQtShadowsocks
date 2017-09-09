@@ -43,8 +43,8 @@ public:
      * The socks_port is local socks proxy server port
      */
     bool httpListen(const QHostAddress &http_addr,
-                    quint16 http_port,
-                    quint16 socks_port);
+                    uint16_t http_port,
+                    uint16_t socks_port);
 
 signals:
     void info(const QString &);

@@ -27,33 +27,30 @@
 #ifndef RC4_H
 #define RC4_H
 
-#include <QObject>
-#include <QVector>
+#include <vector>
+#include <string>
 
 namespace QSS {
 
-class RC4 : public QObject
+class RC4
 {
-    Q_OBJECT
 public:
     // non-skip
     // This class implements so-called RC4-MD5 cipher instead of original RC4
     // _iv is not allowed to be empty!
-    RC4(const QByteArray &_key,
-        const QByteArray &_iv,
-        QObject *parent = 0);
+    RC4(const std::string &_key,
+        const std::string &_iv);
 
-public slots:
-    QByteArray update(const QByteArray &input);
+    std::string update(const std::string &input);
 
 private:
     void generate();
 
-    quint32 position;
+    uint32_t position;
     unsigned char x;
     unsigned char y;
-    QVector<unsigned char> state;
-    QVector<unsigned char> buffer;
+    std::vector<unsigned char> state;
+    std::vector<unsigned char> buffer;
 };
 
 }

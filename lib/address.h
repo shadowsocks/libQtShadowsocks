@@ -28,7 +28,6 @@
 #include <QString>
 #include <QHostAddress>
 #include <QHostInfo>
-#include <QPair>
 #include <QObject>
 #include "export.h"
 

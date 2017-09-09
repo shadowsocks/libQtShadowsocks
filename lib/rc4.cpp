@@ -26,22 +26,21 @@
 
 using namespace QSS;
 
-RC4::RC4(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
-    QObject(parent),
+RC4::RC4(const std::string &_key, const std::string &_iv) :
     position(0), x(0), y(0)
 {
-    Q_ASSERT(!_iv.isEmpty());
+    Q_ASSERT(!_iv.empty());
     state.resize(256);
     buffer.resize(4096);//4096 is the "BOTAN_DEFAULT_BUFFER_SIZE"
 
-    QByteArray realKey = QByteArray::fromStdString(Cipher::md5Hash(QByteArray(_key + _iv).toStdString()));
+    std::string realKey = Cipher::md5Hash(_key + _iv);
     realKey.resize(_key.size());
-    unsigned char *key = reinterpret_cast<unsigned char *>(realKey.data());
+    const unsigned char *key = reinterpret_cast<const unsigned char *>(realKey.data());
 
-    for (quint32 i = 0; i < 256; ++i) {
+    for (uint32_t i = 0; i < 256; ++i) {
         state[i] = static_cast<unsigned char>(i);
     }
-    for (quint32 i = 0, state_index = 0; i < 256; ++i) {
+    for (uint32_t i = 0, state_index = 0; i < 256; ++i) {
         state_index = (state_index + key[i % realKey.length()] + state[i])
                     % 256;
         std::swap(state[i], state[state_index]);
@@ -49,17 +48,17 @@ RC4::RC4(const QByteArray &_key, const QByteArray &_iv, QObject *parent) :
     generate();
 }
 
-QByteArray RC4::update(const QByteArray &input)
+std::string RC4::update(const std::string &input)
 {
-    quint32 length = input.length();
-    QByteArray output;
+    size_t length = input.length();
+    std::string output;
     output.resize(length);
     const unsigned char *in =
-            reinterpret_cast<const unsigned char*>(input.constData());
+            reinterpret_cast<const unsigned char*>(input.data());
     unsigned char *out =
-            reinterpret_cast<unsigned char*>(output.data());
+            reinterpret_cast<unsigned char*>(&output[0]);
 
-    for (quint32 delta = 4096 - position;
+    for (uint16_t delta = 4096 - position;
          length >= delta;
          delta = 4096 - position) {//4096 == buffer.size()
         Common::exclusive_or(buffer.data() + position, in, out, delta);

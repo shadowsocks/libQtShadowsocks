@@ -162,7 +162,7 @@ void Encryptor::addChunkAuth(std::string &data)
     chunkId++;
     std::string key = enCipherIV + std::string(counter, 4);
     std::string authCode = Cipher::hmacSha1(key, data);
-    quint16 len = static_cast<quint16>(data.size());
+    uint16_t len = static_cast<uint16_t>(data.size());
     char len_c[2];
     qToBigEndian(len, reinterpret_cast<uchar*>(len_c));
     data = std::string(len_c, 2) + authCode + data;
@@ -182,7 +182,7 @@ bool Encryptor::verifyExtractChunkAuth(std::string &data)
     incompleteChunk.clear();
     for (int pos = 0; pos < data.size(); ) {
         const char *dataPtr = data.data() + pos;
-        quint16 len = qFromBigEndian(*reinterpret_cast<const quint16*>(dataPtr));
+        uint16_t len = qFromBigEndian(*reinterpret_cast<const uint16_t*>(dataPtr));
         if (data.size() - pos - 2 - Cipher::AUTH_LEN < len) {
             incompleteChunk = std::string(dataPtr, data.size() - pos);
             break;

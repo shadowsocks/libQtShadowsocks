@@ -31,7 +31,7 @@
 using namespace QSS;
 
 AddressTester::AddressTester(const QHostAddress &_address,
-                             const quint16 &_port,
+                             const uint16_t &_port,
                              QObject *parent) :
     QObject(parent),
     address(_address),
@@ -108,12 +108,13 @@ void AddressTester::onConnected()
          * TODO: find a better way to check connectivity
          */
         std::string dest =
-                Common::packAddress(Address("www.google.com", 80), oneTimeAuth).toStdString();
-        std::string payload =
-                QByteArray::fromHex("474554202f20485454502f312e310d0a486f73743a"
-                                    "207777772e676f6f676c652e636f6d0d0a55736572"
-                                    "2d4167656e743a206375726c2f372e34332e300d0a"
-                                    "4163636570743a202a2f2a0d0a0d0a").toStdString();
+                Common::packAddress(Address("www.google.com", 80), oneTimeAuth);
+        static const QByteArray expected = QByteArray::fromHex(
+                        "474554202f20485454502f312e310d0a486f73743a"
+                        "207777772e676f6f676c652e636f6d0d0a55736572"
+                        "2d4167656e743a206375726c2f372e34332e300d0a"
+                        "4163636570743a202a2f2a0d0a0d0a");
+        std::string payload(expected.data(), expected.length());
         if (oneTimeAuth) {
             encryptor.addHeaderAuth(dest);
             encryptor.addChunkAuth(payload);

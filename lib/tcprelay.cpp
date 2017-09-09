@@ -112,10 +112,10 @@ void TcpRelay::handleStageAddr(std::string &data)
         if (cmd == 3) {//CMD_UDP_ASSOCIATE
             emit debug("UDP associate");
             static const char header_data [] = { 5, 0, 0 };
-            static const QByteArray header(header_data, 3);
             QHostAddress addr = local->localAddress();
             quint16 port = local->localPort();
-            local->write(header + Common::packAddress(addr, port));
+            std::string toWrite = std::string(header_data, 3) + Common::packAddress(addr, port);
+            local->write(toWrite.data(), toWrite.length());
             stage = UDP_ASSOC;
             return;
         } else if (cmd == 1) {//CMD_CONNECT
@@ -128,7 +128,7 @@ void TcpRelay::handleStageAddr(std::string &data)
     }
 
     int header_length = 0;
-    Common::parseHeader(QByteArray::fromStdString(data), remoteAddress, header_length, auth);
+    Common::parseHeader(data, remoteAddress, header_length, auth);
     if (header_length == 0) {
         emit info("Can't parse header. Wrong encryption method or password?");
         if (!isLocal && autoBan) {

@@ -34,8 +34,8 @@ HttpProxy::HttpProxy(QObject *parent) : QTcpServer(parent)
 }
 
 bool HttpProxy::httpListen(const QHostAddress &http_addr,
-                           quint16 http_port,
-                           quint16 socks_port)
+                           uint16_t http_port,
+                           uint16_t socks_port)
 {
     upstreamProxy = QNetworkProxy(QNetworkProxy::Socks5Proxy,
                                   "127.0.0.1",

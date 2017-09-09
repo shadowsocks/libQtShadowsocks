@@ -39,7 +39,7 @@ class QSS_EXPORT AddressTester : public QObject
     Q_OBJECT
 public:
     AddressTester(const QHostAddress &server_address,
-                  const quint16 &server_port,
+                  const uint16_t &server_port,
                   QObject *parent = 0);
 
     static const int LAG_TIMEOUT = -1;
@@ -76,7 +76,7 @@ public slots:
 
 private:
     QHostAddress address;
-    quint16 port;
+    uint16_t port;
     QTime time;
     QTcpSocket socket;
     QTimer timer;

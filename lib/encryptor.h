@@ -76,7 +76,7 @@ private:
     std::string enCipherIV;
     //incomplete data chunk from verifyExtractChunkAuth function
     std::string incompleteChunk;
-    quint32 chunkId;
+    uint32_t chunkId;
 
     std::string deCipherIV() const;
 

@@ -60,7 +60,7 @@ Cipher::Cipher(const std::string &method,
     cipherInfo(cipherInfoMap.at(method))
 {
     if (method.find("rc4") != std::string::npos) {
-        rc4.reset(new RC4(QByteArray::fromStdString(key), QByteArray::fromStdString(iv)));
+        rc4.reset(new RC4(key, iv));
         return;
     }
 #ifndef USE_BOTAN2
@@ -132,7 +132,7 @@ std::string Cipher::update(const std::string &data)
     if (chacha) {
         return chacha->update(data.data(), data.size());
     } else if (rc4) {
-        return rc4->update(QByteArray::fromStdString(data)).toStdString();
+        return rc4->update(data);
     } else if (pipe) {
         pipe->process_msg(reinterpret_cast<const Botan::byte *>
                           (data.data()), data.size());

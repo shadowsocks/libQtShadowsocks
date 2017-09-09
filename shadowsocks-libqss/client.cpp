@@ -166,7 +166,7 @@ bool Client::headerTest()
     QHostAddress test_addr_v6("2001:0db8:85a3:0000:0000:8a2e:1010:2020");
     quint16 test_port = 56;
     QSS::Address test_res, test_v6(test_addr_v6, test_port);
-    QByteArray packed = QSS::Common::packAddress(test_v6);
+    std::string packed = QSS::Common::packAddress(test_v6);
     QSS::Common::parseHeader(packed, test_res, length, unused_auth);
     bool success = (test_v6 == test_res);
     if (!success) {

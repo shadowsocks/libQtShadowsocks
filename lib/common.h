@@ -23,7 +23,6 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-#include <QByteArray>
 #include <QHostAddress>
 #include <QVector>
 #include <QMutex>
@@ -33,13 +32,13 @@ namespace QSS {
 
 namespace Common {
 
-QSS_EXPORT const QByteArray version();
-QSS_EXPORT QByteArray packAddress(const Address &addr, bool auth = false);
+QSS_EXPORT const char* version();
+QSS_EXPORT std::string packAddress(const Address &addr, bool auth = false);
 //this will never use ADDRTYPE_HOST because addr is an IP address
-QSS_EXPORT QByteArray packAddress(const QHostAddress &addr,
-                                  const quint16 &port,
-                                  bool auth = false);
-QSS_EXPORT void parseHeader(const QByteArray &data,
+QSS_EXPORT std::string packAddress(const QHostAddress &addr,
+                                   const uint16_t &port,
+                                   bool auth = false);
+QSS_EXPORT void parseHeader(const std::string &data,
                             Address &addr,
                             int &length,
                             bool &authFlag);
@@ -48,7 +47,7 @@ QSS_EXPORT int randomNumber(int max, int min = 0);
 QSS_EXPORT void exclusive_or(unsigned char *ks,
                              const unsigned char *in,
                              unsigned char *out,
-                             quint32 length);
+                             uint32_t length);
 QSS_EXPORT void banAddress(const QHostAddress &addr);
 QSS_EXPORT bool isAddressBanned(const QHostAddress &addr);
 
@@ -56,8 +55,8 @@ extern QTextStream qOut;
 extern QVector<QHostAddress> bannedAddressVector;
 extern QMutex bannedAddressMutex;
 
-extern const quint8 ADDRESS_MASK;
-extern const quint8 ONETIMEAUTH_FLAG;
+extern const uint8_t ADDRESS_MASK;
+extern const uint8_t ONETIMEAUTH_FLAG;
 }
 
 }
