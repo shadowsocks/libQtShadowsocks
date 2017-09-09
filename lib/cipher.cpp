@@ -140,7 +140,7 @@ std::string Cipher::update(const std::string &data)
         return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(c)),
                            c.size());
     } else {
-        throw std::runtime_error("Underlying ciphers are all uninitialised!");
+        throw std::logic_error("Underlying ciphers are all uninitialised!");
     }
 }
 
