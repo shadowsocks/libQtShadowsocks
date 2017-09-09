@@ -49,7 +49,7 @@ public:
     void setDebug(bool debug);
     void setHttpMode(bool http);
     void setAuth(bool auth);
-    QString getMethod() const;
+    std::string getMethod() const;
 
 public slots:
     bool start(bool _server = false);

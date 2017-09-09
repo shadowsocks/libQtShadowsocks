@@ -181,11 +181,6 @@ std::string Cipher::md5Hash(const std::string &in)
     return std::string(reinterpret_cast<const char*>(DataOfSecureByteArray(result)), result.size());
 }
 
-bool Cipher::isSupported(const QByteArray &method)
-{
-    return Cipher::isSupported(method.toStdString());
-}
-
 bool Cipher::isSupported(const std::string &method)
 {
 #ifndef USE_BOTAN2
@@ -213,15 +208,6 @@ std::vector<std::string> Cipher::supportedMethods()
         }
     }
     return supportedMethods;
-}
-
-QList<QByteArray> Cipher::getSupportedMethodList()
-{
-    QList<QByteArray> out;
-    std::vector<std::string> supportedMethods = Cipher::supportedMethods();
-    std::transform(supportedMethods.begin(), supportedMethods.end(),
-                   std::back_inserter(out), QByteArray::fromStdString);
-    return out;
 }
 
 #ifdef USE_BOTAN2

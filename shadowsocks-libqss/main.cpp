@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
     }
 
     if (parser.isSet(testSpeed)) {
-        if (c.getMethod().isEmpty()) {
+        if (c.getMethod().empty()) {
             std::printf("Testing all encryption methods...\n");
             Utils::testSpeed(100);
         } else {

@@ -117,13 +117,6 @@ public:
     static std::vector<std::string> supportedMethods();
 
     /*
-     * These methods are deprecated because alternatives are provided using
-     * STL types
-     */
-    static bool isSupported(const QByteArray &method);
-    static QList<QByteArray> getSupportedMethodList();
-
-    /*
      * OTA is deprecated, these methods will be removed in future releases
      */
     static std::string hmacSha1(const std::string &key, const std::string &msg);

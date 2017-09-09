@@ -190,9 +190,9 @@ void Client::logHandler(const QString &log)
     QSS::Common::qOut << log << endl;
 }
 
-QString Client::getMethod() const
+std::string Client::getMethod() const
 {
-    return QString::fromStdString(profile.method());
+    return profile.method();
 }
 
 void Client::onConnectivityResultArrived(bool c)
