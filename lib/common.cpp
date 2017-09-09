@@ -24,6 +24,7 @@
 #include <QHostInfo>
 #include <QtEndian>
 #include <random>
+#include <sstream>
 #include "common.h"
 
 using namespace QSS;
@@ -174,4 +175,10 @@ bool Common::isAddressBanned(const QHostAddress &addr)
     bool banned = bannedAddressVector.contains(addr);
     bannedAddressMutex.unlock();
     return banned;
+}
+
+std::string Common::stringFromHex(const std::string& hex)
+{
+    QByteArray res = QByteArray::fromHex(QByteArray(hex.data(), hex.length()));
+    return std::string(res.data(), res.length());
 }

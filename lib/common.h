@@ -51,6 +51,8 @@ QSS_EXPORT void exclusive_or(unsigned char *ks,
 QSS_EXPORT void banAddress(const QHostAddress &addr);
 QSS_EXPORT bool isAddressBanned(const QHostAddress &addr);
 
+QSS_EXPORT std::string stringFromHex(const std::string&);
+
 extern QTextStream qOut;
 extern QVector<QHostAddress> bannedAddressVector;
 extern QMutex bannedAddressMutex;
