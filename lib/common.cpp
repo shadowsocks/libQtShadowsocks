@@ -22,18 +22,18 @@
 
 #include "common.h"
 #include "address.h"
-#include <QMutex>
 #include <QHostInfo>
 #include <QtEndian>
-#include <vector>
+#include <mutex>
 #include <random>
+#include <vector>
 #include <sstream>
 
 using namespace QSS;
 
 namespace {
-std::vector<QHostAddress> bannedAddressVector;
-QMutex bannedAddressMutex;
+std::vector<QHostAddress> bannedAddresses;
+std::mutex bannedAddressMutex;
 }
 
 const uint8_t Common::ADDRESS_MASK = 0b00001111;//0xf
@@ -169,15 +169,15 @@ void Common::exclusive_or(unsigned char *ks,
 void Common::banAddress(const QHostAddress &addr)
 {
     bannedAddressMutex.lock();
-    bannedAddressVector.push_back(addr);
+    bannedAddresses.push_back(addr);
     bannedAddressMutex.unlock();
 }
 
 bool Common::isAddressBanned(const QHostAddress &addr)
 {
     bannedAddressMutex.lock();
-    bool banned = bannedAddressVector.end() !=
-            std::find(bannedAddressVector.begin(), bannedAddressVector.end(), addr);
+    bool banned = (bannedAddresses.end() !=
+            std::find(bannedAddresses.begin(), bannedAddresses.end(), addr));
     bannedAddressMutex.unlock();
     return banned;
 }
