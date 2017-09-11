@@ -36,12 +36,11 @@ bool Client::readConfig(const QString &file)
 {
     QFile c(file);
     if (!c.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        QSS::Common::qOut << "can't open config file " << file << endl;
+        std::cout << "can't open config file " << file.toStdString() << std::endl;
         return false;
     }
     if (!c.isReadable()) {
-        QSS::Common::qOut << "config file " << file
-                          << " is not readable!" << endl;
+        std::cout << "config file " << file.toStdString() << " is not readable!" << std::endl;
         return false;
     }
     QByteArray confArray = c.readAll();
@@ -123,7 +122,7 @@ bool Client::start(bool _server)
 {
     if (profile.debug()) {
         if (!headerTest()) {
-            QSS::Common::qOut << "Header test failed" << endl;
+            std::cout << "Header test failed" << std::endl;
             return false;
         }
     }
@@ -148,7 +147,7 @@ bool Client::start(bool _server)
                 this, &Client::onConnectivityResultArrived);
         connect(tester, &QSS::AddressTester::testErrorString,
                 [] (const QString& error) {
-            QSS::Common::qOut << "Connectivity testing error: " << error << endl;
+            std::cout << "Connectivity testing error: " << error.toStdString() << std::endl;
         });
         tester->startConnectivityTest(profile.method(),
                                       profile.password(),
@@ -187,7 +186,7 @@ bool Client::headerTest()
 
 void Client::logHandler(const QString &log)
 {
-    QSS::Common::qOut << log << endl;
+    std::cout << log.toStdString() << std::endl;
 }
 
 std::string Client::getMethod() const
@@ -198,11 +197,11 @@ std::string Client::getMethod() const
 void Client::onConnectivityResultArrived(bool c)
 {
     if (c) {
-        QSS::Common::qOut << "The shadowsocks connection is okay." << endl;
+        std::cout << "The shadowsocks connection is okay." << std::endl;
     } else {
-        QSS::Common::qOut << "Destination is not reachable. "
-                             "Please check your network and firewall settings. "
-                             "And make sure the profile is correct."
-                          << endl;
+        std::cout << "Destination is not reachable. "
+                     "Please check your network and firewall settings. "
+                     "And make sure the profile is correct."
+                  << std::endl;
     }
 }

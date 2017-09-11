@@ -25,6 +25,7 @@
  */
 
 #include "addresstester.h"
+#include "address.h"
 #include "encryptor.h"
 #include "common.h"
 

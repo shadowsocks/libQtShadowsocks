@@ -24,11 +24,11 @@
 #define COMMON_H
 
 #include <QHostAddress>
-#include <QVector>
-#include <QMutex>
-#include "address.h"
+#include "export.h"
 
 namespace QSS {
+
+class Address;
 
 namespace Common {
 
@@ -52,10 +52,6 @@ QSS_EXPORT void banAddress(const QHostAddress &addr);
 QSS_EXPORT bool isAddressBanned(const QHostAddress &addr);
 
 QSS_EXPORT std::string stringFromHex(const std::string&);
-
-extern QTextStream qOut;
-extern QVector<QHostAddress> bannedAddressVector;
-extern QMutex bannedAddressMutex;
 
 extern const uint8_t ADDRESS_MASK;
 extern const uint8_t ONETIMEAUTH_FLAG;

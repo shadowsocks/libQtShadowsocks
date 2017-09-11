@@ -20,18 +20,22 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include <QTextStream>
+#include "common.h"
+#include "address.h"
+#include <QMutex>
 #include <QHostInfo>
 #include <QtEndian>
+#include <vector>
 #include <random>
 #include <sstream>
-#include "common.h"
 
 using namespace QSS;
 
-QTextStream Common::qOut(stdout, QIODevice::WriteOnly | QIODevice::Unbuffered);
-QVector<QHostAddress> Common::bannedAddressVector;
-QMutex Common::bannedAddressMutex;
+namespace {
+std::vector<QHostAddress> bannedAddressVector;
+QMutex bannedAddressMutex;
+}
+
 const uint8_t Common::ADDRESS_MASK = 0b00001111;//0xf
 const uint8_t Common::ONETIMEAUTH_FLAG = 0b00010000;//0x10
 
@@ -165,14 +169,15 @@ void Common::exclusive_or(unsigned char *ks,
 void Common::banAddress(const QHostAddress &addr)
 {
     bannedAddressMutex.lock();
-    bannedAddressVector.append(addr);
+    bannedAddressVector.push_back(addr);
     bannedAddressMutex.unlock();
 }
 
 bool Common::isAddressBanned(const QHostAddress &addr)
 {
     bannedAddressMutex.lock();
-    bool banned = bannedAddressVector.contains(addr);
+    bool banned = bannedAddressVector.end() !=
+            std::find(bannedAddressVector.begin(), bannedAddressVector.end(), addr);
     bannedAddressMutex.unlock();
     return banned;
 }
