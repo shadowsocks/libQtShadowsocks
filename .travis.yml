@@ -19,6 +19,6 @@ branches:
 script:
   # Build
   - mkdir build && cd build
-  - cmake ..
+  - cmake .. -DQt5_DIR="/opt/qt55/lib/cmake/Qt5"
   - make
 
