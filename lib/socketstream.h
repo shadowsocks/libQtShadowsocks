@@ -42,9 +42,6 @@ public:
                  QAbstractSocket *b,
                  QObject *parent = 0);
 
-signals:
-    void info(const QString &);
-
 private:
     QAbstractSocket *as;
     QAbstractSocket *bs;

@@ -46,12 +46,6 @@ public:
     ~Controller();
 
 signals:
-    /*
-     * You need to connect both signals if you need both debug-level and info-level logs
-     */
-    void info(const QString &);//only general information
-    void debug(const QString &);//only verbose
-
     // Connect this signal to get notified when running state is changed
     void runningStateChanged(bool);
 

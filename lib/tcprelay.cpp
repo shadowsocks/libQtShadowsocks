@@ -22,6 +22,7 @@
 
 #include "tcprelay.h"
 #include "common.h"
+#include <QDebug>
 
 using namespace QSS;
 
@@ -110,7 +111,7 @@ void TcpRelay::handleStageAddr(std::string &data)
     if (isLocal) {
         int cmd = static_cast<int>(data.at(1));
         if (cmd == 3) {//CMD_UDP_ASSOCIATE
-            emit debug("UDP associate");
+            qDebug("UDP associate");
             static const char header_data [] = { 5, 0, 0 };
             QHostAddress addr = local->localAddress();
             quint16 port = local->localPort();
@@ -121,7 +122,7 @@ void TcpRelay::handleStageAddr(std::string &data)
         } else if (cmd == 1) {//CMD_CONNECT
             data = data.substr(3);
         } else {
-            emit info("Unknown command " + QString::number(cmd));
+            qCritical("Unknown command %d", cmd);
             close();
             return;
         }
@@ -130,7 +131,7 @@ void TcpRelay::handleStageAddr(std::string &data)
     int header_length = 0;
     Common::parseHeader(data, remoteAddress, header_length, auth);
     if (header_length == 0) {
-        emit info("Can't parse header. Wrong encryption method or password?");
+        qCritical("Can't parse header. Wrong encryption method or password?");
         if (!isLocal && autoBan) {
             Common::banAddress(local->peerAddress());
         }
@@ -138,11 +139,9 @@ void TcpRelay::handleStageAddr(std::string &data)
         return;
     }
 
-    emit info(QString("Connecting %1:%2 from %3:%4")
-              .arg(QString::fromStdString(remoteAddress.getAddress()))
-              .arg(remoteAddress.getPort())
-              .arg(local->peerAddress().toString())
-              .arg(local->peerPort()));
+    QDebug(QtMsgType::QtInfoMsg) << "Connecting " << remoteAddress
+                                 << " from " << local->peerAddress().toString()
+                                 << ":" << local->peerPort();
 
     stage = DNS;
     if (isLocal) {
@@ -169,7 +168,7 @@ void TcpRelay::handleStageAddr(std::string &data)
     } else {
         if (auth) {
             if (!encryptor->verifyHeaderAuth(data.data(), header_length)) {
-                emit info("One-time message authentication for header failed.");
+                qCritical("One-time message authentication for header failed.");
                 if (autoBan) {
                     Common::banAddress(local->peerAddress());
                 }
@@ -184,7 +183,7 @@ void TcpRelay::handleStageAddr(std::string &data)
             data = data.substr(header_length);
             if (auth) {
                 if (!encryptor->verifyExtractChunkAuth(data)) {
-                    emit info("Data chunk hash authentication failed.");
+                    qCritical("Data chunk hash authentication failed.");
                     if (autoBan) {
                         Common::banAddress(local->peerAddress());
                     }
@@ -202,14 +201,14 @@ void TcpRelay::onLocalTcpSocketError()
 {
     //it's not an "error" if remote host closed a connection
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {
-        emit info("Local socket error: " + local->errorString());
+        QDebug(QtMsgType::QtWarningMsg) << "Local socket error: " << local->errorString();
     } else {
-        emit debug("Local socket debug: " + local->errorString());
+        QDebug(QtMsgType::QtInfoMsg) << "Local socket info: " << local->errorString();
     }
     close();
 }
 
-void TcpRelay::onDNSResolved(const bool success, const QString errStr)
+void TcpRelay::onDNSResolved(const bool success, const QString &errStr)
 {
     if (success) {
         stage = CONNECTING;
@@ -217,7 +216,7 @@ void TcpRelay::onDNSResolved(const bool success, const QString errStr)
         startTime = QTime::currentTime();
         remote->connectToHost(addr->getFirstIP(), addr->getPort());
     } else {
-        emit info("DNS resolve failed: " + errStr);
+        QDebug(QtMsgType::QtCriticalMsg) << "DNS resolve failed: " << errStr;
         close();
     }
 }
@@ -241,9 +240,9 @@ void TcpRelay::onRemoteTcpSocketError()
 {
     //it's not an "error" if remote host closed a connection
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {
-        emit info("Remote socket error: " + remote->errorString());
+        QDebug(QtMsgType::QtWarningMsg) << "Remote socket error: " << remote->errorString();
     } else {
-        emit debug("Remote socket debug: " + remote->errorString());
+        QDebug(QtMsgType::QtInfoMsg) << "Remote socket info: " << remote->errorString();
     }
     close();
 }
@@ -254,7 +253,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     std::string data(_data.data(), _data.size());
 
     if (data.empty()) {
-        emit info("Local received empty data.");
+        qCritical("Local received empty data.");
         close();
         return;
     }
@@ -262,7 +261,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     if (!isLocal) {
         data = encryptor->decrypt(data);
         if (data.empty()) {
-            emit debug("Data is empty after decryption.");
+            qCritical("Data is empty after decryption.");
             return;
         }
     }
@@ -275,7 +274,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
             data = encryptor->encrypt(data);
         } else if (auth) {
             if (!encryptor->verifyExtractChunkAuth(data)) {
-                emit info("Data chunk hash authentication failed.");
+                qCritical("Data chunk hash authentication failed.");
                 if (autoBan) {
                     Common::banAddress(local->peerAddress());
                 }
@@ -292,7 +291,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         static const QByteArray reject(reject_data, 2);
         static const QByteArray accept(accept_data, 2);
         if (data[0] != char(5)) {
-            emit info("An invalid socket connection was rejected. "
+            qCritical("An invalid socket connection was rejected. "
                       "Please make sure the connection type is SOCKS5.");
             local->write(reject);
         } else {
@@ -308,7 +307,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
             data = encryptor->encrypt(data);
         } else if (auth) {
             if (!encryptor->verifyExtractChunkAuth(data)) {
-                emit info("Data chunk hash authentication failed.");
+                qCritical("Data chunk hash authentication failed.");
                 if (autoBan) {
                     Common::banAddress(local->peerAddress());
                 }
@@ -327,7 +326,7 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
     QByteArray _buf = remote->readAll();
     std::string buf(_buf.data(), _buf.size());
     if (buf.empty()) {
-        emit info("Remote received empty data.");
+        qWarning("Remote received empty data.");
         close();
         return;
     }
@@ -338,6 +337,6 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
 
 void TcpRelay::onTimeout()
 {
-    emit info("TCP connection timeout.");
+    qInfo("TCP connection timeout.");
     close();
 }

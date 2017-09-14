@@ -48,8 +48,6 @@ public:
     void close();
 
 signals:
-    void debug(const QString &);
-    void info(const QString &);
     void bytesRead(const qint64 &);
     void bytesSend(const qint64 &);
     void latencyAvailable(const int &);

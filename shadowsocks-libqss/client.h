@@ -61,7 +61,6 @@ private:
     bool headerTest();
 
 private slots:
-    void logHandler(const QString &);
     void onConnectivityResultArrived(bool);
 };
 

@@ -49,9 +49,6 @@ public:
     enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
 
 signals:
-    void debug(const QString &);
-    void info(const QString &);
-
     /*
      * Count only remote socket's traffic
      * Either in local or server mode, the remote socket is used to communicate
@@ -85,7 +82,7 @@ private:
     bool writeToRemote(const char *data, size_t length);
 
 private slots:
-    void onDNSResolved(const bool success, const QString errStr);
+    void onDNSResolved(const bool success, const QString& errStr);
     void onRemoteConnected();
     void onRemoteTcpSocketError();
     void onRemoteTcpSocketReadyRead();

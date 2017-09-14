@@ -131,10 +131,6 @@ bool Client::start(bool _server)
         lc->deleteLater();
     }
     lc = new QSS::Controller(profile, !_server, autoBan, this);
-    connect (lc, &QSS::Controller::info, this, &Client::logHandler);
-    if (profile.debug()) {
-        connect(lc, &QSS::Controller::debug, this, &Client::logHandler);
-    }
 
     if (!_server) {
         QSS::Address server(profile.serverAddress(), profile.serverPort());
@@ -182,11 +178,6 @@ bool Client::headerTest()
                   << test_res.toString() << std::endl;
     }
     return success & success2;
-}
-
-void Client::logHandler(const QString &log)
-{
-    std::cout << log.toStdString() << std::endl;
 }
 
 std::string Client::getMethod() const

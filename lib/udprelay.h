@@ -54,9 +54,6 @@ public slots:
     void close();
 
 signals:
-    void debug(const QString &);
-    void info(const QString &);
-
     /*
      * The same situation here.
      * We only count "listen" socket's read and written bytes

@@ -92,28 +92,26 @@ void UdpRelay::onSocketError()
 {
     QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
     if (!sock) {
-        emit info("Fatal. A false object calling onSocketError.");
+        qFatal("Fatal. A false object calling onSocketError.");
         return;
     }
     if (sock == &listenSocket) {
-        emit info("[UDP] server socket error " + sock->errorString());
+        QDebug(QtMsgType::QtCriticalMsg) << "[UDP] server socket error " << sock->errorString();
     } else {
-        emit info("[UDP] client socket error " + sock->errorString());
+        QDebug(QtMsgType::QtCriticalMsg) << "[UDP] client socket error " << sock->errorString();
     }
 }
 
 void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 {
-    QString stateChanged("Listen UDP socket state changed to ");
-    QDebug(&stateChanged) << s;
-    emit debug(stateChanged);
+    QDebug(QtMsgType::QtDebugMsg) << "Listen UDP socket state changed to " << s;
 }
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
     const size_t packetSize = listenSocket.pendingDatagramSize();
     if (packetSize > RemoteRecvSize) {
-        emit info("[UDP] Datagram is too large. discarded.");
+        qWarning("[UDP] Datagram is too large. discarded.");
         return;
     }
 
@@ -129,15 +127,14 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     if (isLocal) {
         if (static_cast<int>(data[2]) != 0) {
-            emit info("[UDP] Drop a message since frag is not 0");
+            qWarning("[UDP] Drop a message since frag is not 0");
             return;
         }
         data = data.substr(3);
     } else {
         if (autoBan && Common::isAddressBanned(r_addr)) {
-            emit debug(QString("[UDP] A banned IP %1 "
-                               "attempted to access this server")
-                       .arg(r_addr.toString()));
+            QDebug(QtMsgType::QtInfoMsg) << "[UDP] A banned IP " << r_addr
+                                         << " attempted to access this server";
             return;
         }
         data = encryptor->decryptAll(data);
@@ -148,8 +145,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
     bool at_auth = false;
     Common::parseHeader(data, destAddr, header_length, at_auth);
     if (header_length == 0) {
-        emit info("[UDP] Can't parse header. "
-                  "Wrong encryption method or password?");
+        qCritical("[UDP] Can't parse header. Wrong encryption method or password?");
         if (!isLocal && autoBan) {
             Common::banAddress(r_addr);
         }
@@ -157,7 +153,6 @@ void UdpRelay::onServerUdpSocketReadyRead()
     }
 
     QUdpSocket *client = cache.value(remoteAddr, nullptr);
-    QString dbg;
     if (!client) {
         client = new QUdpSocket(this);
         client->setReadBufferSize(RemoteRecvSize);
@@ -167,11 +162,10 @@ void UdpRelay::onServerUdpSocketReadyRead()
                 this, &UdpRelay::onClientUdpSocketReadyRead);
         connect(client, &QUdpSocket::disconnected,
                 this, &UdpRelay::onClientDisconnected);
-        QDebug(&dbg) << "[UDP] cache miss:" << destAddr << "<->" << remoteAddr;
+        QDebug(QtMsgType::QtDebugMsg) << "[UDP] cache miss:" << destAddr << "<->" << remoteAddr;
     } else {
-        QDebug(&dbg) << "[UDP] cache hit:" << destAddr << "<->" << remoteAddr;
+        QDebug(QtMsgType::QtDebugMsg) << "[UDP] cache hit:" << destAddr << "<->" << remoteAddr;
     }
-    emit debug(dbg);
 
     if (isLocal) {
         if (auth || at_auth) {
@@ -191,8 +185,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
         if (auth || at_auth) {
             if (!encryptor->verifyHeaderAuth(data.data(),
                                              data.length() - Cipher::AUTH_LEN)) {
-                emit info("[UDP] One-time message authentication "
-                          "for header failed.");
+                qCritical("[UDP] One-time message authentication for header failed.");
                 if (autoBan) {
                     Common::banAddress(r_addr);
                 }
@@ -213,13 +206,13 @@ void UdpRelay::onClientUdpSocketReadyRead()
 {
     QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
     if (!sock) {
-        emit info("Fatal. A false object calling onClientUdpSocketReadyRead.");
+        qFatal("Fatal. A false object calling onClientUdpSocketReadyRead.");
         return;
     }
 
     const size_t packetSize = sock->pendingDatagramSize();
     if (packetSize > RemoteRecvSize) {
-        emit info("[UDP] Datagram is too large. Discarded.");
+        qWarning("[UDP] Datagram is too large. Discarded.");
         return;
     }
 
@@ -238,7 +231,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
 
         Common::parseHeader(data, destAddr, header_length, _auth);
         if (header_length == 0) {
-            emit info("[UDP] Can't parse header. "
+            qCritical("[UDP] Can't parse header. "
                       "Wrong encryption method or password?");
             return;
         }
@@ -255,7 +248,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
                                    clientAddress.getFirstIP(),
                                    clientAddress.getPort());
     } else {
-        emit debug("[UDP] Drop a packet from somewhere else we know.");
+        qDebug("[UDP] Drop a packet from somewhere else we know.");
     }
 }
 
@@ -263,10 +256,10 @@ void UdpRelay::onClientDisconnected()
 {
     QUdpSocket *client = qobject_cast<QUdpSocket *>(sender());
     if (!client) {
-        emit info("Fatal. A false object calling onClientDisconnected.");
+        qFatal("Fatal. A false object calling onClientDisconnected.");
         return;
     }
     cache.remove(cache.key(client));
     client->deleteLater();
-    emit debug("[UDP] A client connection is disconnected and destroyed.");
+    qDebug("[UDP] A client connection is disconnected and destroyed.");
 }

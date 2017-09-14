@@ -46,9 +46,6 @@ public:
                     uint16_t http_port,
                     uint16_t socks_port);
 
-signals:
-    void info(const QString &);
-
 protected:
     void incomingConnection(qintptr handle);
 

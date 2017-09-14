@@ -23,6 +23,7 @@
 #include <QHostInfo>
 #include <QTcpSocket>
 #include <botan/init.h>
+#include <QDebug>
 #include "controller.h"
 #include "encryptor.h"
 
@@ -78,19 +79,13 @@ Controller::Controller(const Profile &_profile,
 
     connect(tcpServer, &TcpServer::acceptError,
             this, &Controller::onTcpServerError);
-    connect(tcpServer, &TcpServer::info, this, &Controller::info);
-    connect(tcpServer, &TcpServer::debug, this, &Controller::debug);
     connect(tcpServer, &TcpServer::bytesRead, this, &Controller::onBytesRead);
     connect(tcpServer, &TcpServer::bytesSend, this, &Controller::onBytesSend);
     connect(tcpServer, &TcpServer::latencyAvailable,
             this, &Controller::tcpLatencyAvailable);
 
-    connect(udpRelay, &UdpRelay::info, this, &Controller::info);
-    connect(udpRelay, &UdpRelay::debug, this, &Controller::debug);
     connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead);
     connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend);
-
-    connect(httpProxy, &HttpProxy::info, this, &Controller::info);
 
     connect(&serverAddress, &Address::lookedUp,
             this, &Controller::onServerAddressLookedUp);
@@ -107,7 +102,7 @@ Controller::~Controller()
 bool Controller::start()
 {
     if (!valid) {
-        emit info("Controller is not valid. Maybe improper setup?");
+        qCritical("Controller is not valid. Maybe improper setup?");
         return false;
     }
 
@@ -115,7 +110,7 @@ bool Controller::start()
 
     QString sstr("TCP server listen at port ");
     if (isLocal) {
-        emit info("Running in local mode.");
+        qInfo("Running in local mode.");
         sstr.append(QString::number(profile.localPort()));
         listen_ret = tcpServer->listen(
                     getLocalAddr(),
@@ -123,20 +118,20 @@ bool Controller::start()
         if (listen_ret) {
             listen_ret = udpRelay->listen(getLocalAddr(), profile.localPort());
             if (profile.httpProxy() && listen_ret) {
-                emit info("SOCKS5 port is "
-                          + QString::number(tcpServer->serverPort()));
+                QDebug(QtMsgType::QtInfoMsg) << "SOCKS5 port is "
+                                             << tcpServer->serverPort();
                 if (httpProxy->httpListen(getLocalAddr(),
                                           profile.localPort(),
                                           tcpServer->serverPort())) {
-                    emit info("Running as a HTTP proxy server");
+                    qInfo("Running as a HTTP proxy server");
                 } else {
-                    emit info("HTTP proxy server listen failed.");
+                    qCritical("HTTP proxy server listen failed.");
                     listen_ret = false;
                 }
             }
         }
     } else {
-        emit info("Running in server mode.");
+        qInfo("Running in server mode.");
         sstr.append(QString::number(profile.serverPort()));
         listen_ret = tcpServer->listen(serverAddress.getFirstIP(),
                                        profile.serverPort());
@@ -147,13 +142,13 @@ bool Controller::start()
     }
 
     if (listen_ret) {
-        emit info(sstr);
+        QDebug(QtMsgType::QtInfoMsg) << sstr;
         emit runningStateChanged(true);
         if (profile.otaEnabled()) {
-            emit info("One-time message authentication is enabled.");
+            qInfo("One-time message authentication is enabled.");
         }
     } else {
-        emit info("TCP server listen failed.");
+        qCritical("TCP server listen failed.");
     }
 
     return listen_ret;
@@ -165,7 +160,7 @@ void Controller::stop()
     tcpServer->close();
     udpRelay->close();
     emit runningStateChanged(false);
-    emit debug("Stopped.");
+    qInfo("Stopped.");
 }
 
 QHostAddress Controller::getLocalAddr()
@@ -174,16 +169,16 @@ QHostAddress Controller::getLocalAddr()
     if (!addr.isNull()) {
         return addr;
     } else {
-        emit info("Can't get address from " +
-                  QString::fromStdString(profile.localAddress()) +
-                  ". Using localhost instead.");
+        QDebug(QtMsgType::QtInfoMsg) << "Can't get address from "
+                                     << QString::fromStdString(profile.localAddress())
+                                     << ". Using localhost instead.";
         return QHostAddress::LocalHost;
     }
 }
 
 void Controller::onTcpServerError(QAbstractSocket::SocketError err)
 {
-    emit info("TCP server error: " + tcpServer->errorString());
+    QDebug(QtMsgType::QtWarningMsg) << "TCP server error: " << tcpServer->errorString();
 
     //can't continue if address is already in use
     if (err == QAbstractSocket::AddressInUseError) {
@@ -212,6 +207,7 @@ void Controller::onBytesSend(const qint64 &s)
 void Controller::onServerAddressLookedUp(const bool success, const QString err)
 {
     if (!success) {
-        emit info("Shadowsocks server DNS lookup failed: " + err);
+        QDebug(QtMsgType::QtWarningMsg) << "Shadowsocks server DNS lookup failed: "
+                                        << err;
     }
 }

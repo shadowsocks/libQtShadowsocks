@@ -61,9 +61,8 @@ void HttpProxy::incomingConnection(qintptr socketDescriptor)
 void HttpProxy::onSocketError(QAbstractSocket::SocketError err)
 {
     if (err != QAbstractSocket::RemoteHostClosedError) {
-        QString errStr("HTTP socket error: ");
-        QDebug(&errStr) << err;
-        emit info(errStr);
+        QDebug(QtMsgType::QtWarningMsg) << "HTTP socket error: "
+                                        << err;
     }
     sender()->deleteLater();
 }
@@ -90,7 +89,8 @@ void HttpProxy::onSocketReadyRead()
     if (method != "CONNECT") {
         QUrl url = QUrl::fromEncoded(address);
         if (!url.isValid()) {
-            emit info("Invalid URL: " + url.toString());
+            QDebug(QtMsgType::QtCriticalMsg) << "Invalid URL: "
+                                            << url;
             socket->disconnectFromHost();
             return;
         }
@@ -164,7 +164,6 @@ void HttpProxy::onProxySocketConnectedHttps()
             stream, &SocketStream::deleteLater);
     connect(proxySocket, &QTcpSocket::disconnected,
             stream, &SocketStream::deleteLater);
-    connect(stream, &SocketStream::info, this, &HttpProxy::info);
     static const QByteArray httpsHeader =
             "HTTP/1.0 200 Connection established\r\n\r\n";
     socket->write(httpsHeader);

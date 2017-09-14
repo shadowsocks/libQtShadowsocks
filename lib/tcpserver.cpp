@@ -23,6 +23,7 @@
 #include "tcpserver.h"
 #include "common.h"
 #include <QThread>
+#include <QDebug>
 #include <thread>
 
 using namespace QSS;
@@ -72,8 +73,8 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     localSocket->setSocketDescriptor(socketDescriptor);
 
     if (!isLocal && autoBan && Common::isAddressBanned(localSocket->peerAddress())) {
-        emit debug(QString("A banned IP %1 attempted to access this server")
-                   .arg(localSocket->peerAddress().toString()));
+        QDebug(QtMsgType::QtInfoMsg) << "A banned IP " << localSocket->peerAddress()
+                                     << " attempted to access this server";
         localSocket->deleteLater();
         return;
     }
@@ -88,8 +89,6 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
                                  autoBan,
                                  auth);
     conList.append(con);
-    connect(con, &TcpRelay::info, this, &TcpServer::info);
-    connect(con, &TcpRelay::debug, this, &TcpServer::debug);
     connect(con, &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
     connect(con, &TcpRelay::latencyAvailable,
