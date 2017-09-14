@@ -6,25 +6,17 @@ addons:
   apt:
     sources:
       - ubuntu-toolchain-r-test
+      - sourceline: 'ppa:hedges/qt5.5'
     packages:
-      - gcc-6
-      - g++-6
       - cmake
+      - qt55base
+      - libbotan1.10-dev
 
 branches:
   only:
     - 'master'
 
-before_install:
-  - sudo apt-get -qq update
-  - sudo apt-get -qq install cmake qt5-default qtbase5-dev libbotan1.10-dev
-
 script:
-  # Export CC and CXX to tell cmake which compiler to use
-  - export CC=/usr/bin/gcc-6
-  - export CXX=/usr/bin/g++-6
-  # Check versions of gcc, g++ and cmake
-  - gcc -v && g++ -v && cmake --version
   # Build
   - mkdir build && cd build
   - cmake ..
