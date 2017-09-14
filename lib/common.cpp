@@ -74,7 +74,7 @@ std::string Common::packAddress(const Address &addr, bool auth)
 }
 
 std::string Common::packAddress(const QHostAddress &addr,
-                                const quint16 &port,
+                                const uint16_t &port,
                                 bool auth)
 {
     std::string addrBin;
@@ -108,9 +108,9 @@ void Common::parseHeader(const std::string &data,
 
     if (addrtype == Address::HOST) {
         if (data.length() > 2) {
-            quint8 addrlen = static_cast<quint8>(data[1]);
+            uint8_t addrlen = static_cast<uint8_t>(data[1]);
             if (data.size() >= 2 + addrlen) {
-                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const uint16_t *>
                                             (data.data() + 2 + addrlen))
                              );
                 dest.setAddress(data.substr(2, addrlen));
@@ -119,13 +119,13 @@ void Common::parseHeader(const std::string &data,
         }
     } else if (addrtype == Address::IPV4) {
         if (data.length() >= 7) {
-            QHostAddress addr(qFromBigEndian(*reinterpret_cast<const quint32 *>
+            QHostAddress addr(qFromBigEndian(*reinterpret_cast<const uint32_t *>
                                              (data.data() + 1))
                               );
             if (!addr.isNull()) {
                 header_length = 7;
                 dest.setIPAddress(addr);
-                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const uint16_t *>
                                             (data.data() + 5))
                              );
             }
@@ -138,7 +138,7 @@ void Common::parseHeader(const std::string &data,
             if (!addr.isNull()) {
                 header_length = 19;
                 dest.setIPAddress(addr);
-                dest.setPort(qFromBigEndian(*reinterpret_cast<const quint16 *>
+                dest.setPort(qFromBigEndian(*reinterpret_cast<const uint16_t *>
                                             (data.data() + 17))
                              );
             }
@@ -157,7 +157,7 @@ int Common::randomNumber(int max, int min)
 void Common::exclusive_or(unsigned char *ks,
                           const unsigned char *in,
                           unsigned char *out,
-                          quint32 length)
+                          uint32_t length)
 {
     unsigned char *end_ks = ks + length;
     do {

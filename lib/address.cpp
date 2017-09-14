@@ -3,7 +3,7 @@
  *
  * communicate with lower-level encrytion library
  *
- * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -54,21 +54,21 @@ const std::string& Address::getAddress() const
 
 QHostAddress Address::getRandomIP() const
 {
-    if (ipAddrList.isEmpty()) {
+    if (ipAddrList.empty()) {
         return QHostAddress();
     } else {
-        return ipAddrList.at(Common::randomNumber(ipAddrList.count()));
+        return ipAddrList.at(Common::randomNumber(ipAddrList.size()));
     }
 }
 
 QHostAddress Address::getFirstIP() const
 {
-    return ipAddrList.isEmpty() ? QHostAddress() : ipAddrList.first();
+    return ipAddrList.empty() ? QHostAddress() : ipAddrList.front();
 }
 
 bool Address::isIPValid() const
 {
-    return !ipAddrList.isEmpty();
+    return !ipAddrList.empty();
 }
 
 uint16_t Address::getPort() const
@@ -94,7 +94,7 @@ void Address::blockingLookUp()
     }
 
     QHostInfo result = QHostInfo::fromName(QString::fromStdString(data.first));
-    ipAddrList = result.addresses();
+    ipAddrList = result.addresses().toVector().toStdVector();
 }
 
 void Address::setAddress(const std::string &a)
@@ -103,18 +103,18 @@ void Address::setAddress(const std::string &a)
     ipAddrList.clear();
     QHostAddress ipAddress(QString::fromStdString(a));
     if (!ipAddress.isNull()) {
-        ipAddrList.append(ipAddress);
+        ipAddrList.push_back(ipAddress);
     }
 }
 
 void Address::setIPAddress(const QHostAddress &ip)
 {
     ipAddrList.clear();
-    ipAddrList.append(ip);
+    ipAddrList.push_back(ip);
     data.first = ip.toString().toStdString();
 }
 
-void Address::setPort(const uint16_t &p)
+void Address::setPort(uint16_t p)
 {
     data.second = p;
 }
@@ -148,7 +148,7 @@ void Address::onLookUpFinished(const QHostInfo &host)
     if (host.error() != QHostInfo::NoError) {
         emit lookedUp(false, host.errorString());
     } else {
-        ipAddrList = host.addresses();
+        ipAddrList = host.addresses().toVector().toStdVector();
         emit lookedUp(true, QString());
     }
 }

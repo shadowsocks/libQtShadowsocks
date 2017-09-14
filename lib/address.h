@@ -29,6 +29,7 @@
 #include <QHostAddress>
 #include <QHostInfo>
 #include <QObject>
+#include <vector>
 #include "export.h"
 
 namespace QSS {
@@ -82,7 +83,7 @@ public:
 
     void setAddress(const std::string &);
     void setIPAddress(const QHostAddress &);
-    void setPort(const uint16_t &);
+    void setPort(uint16_t);
 
     enum ATYP { IPV4 = 1, IPV6 = 4, HOST = 3 };
 
@@ -110,11 +111,11 @@ public:
     }
 
 signals:
-    void lookedUp(const bool success, const QString errStr);
+    void lookedUp(const bool success, const QString& errStr);
 
 private:
     std::pair<std::string, uint16_t> data;//first: address string; second: port
-    QList<QHostAddress> ipAddrList;
+    std::vector<QHostAddress> ipAddrList;
 
 private slots:
     void onLookUpFinished(const QHostInfo &host);

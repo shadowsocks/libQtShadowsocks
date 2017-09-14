@@ -83,7 +83,7 @@ void HttpProxy::onSocketReadyRead()
     QByteArray version = entries.value(2);
 
     QString host;
-    quint16 port;
+    uint16_t port;
     QString key;
 
     if (method != "CONNECT") {

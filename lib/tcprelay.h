@@ -54,15 +54,15 @@ signals:
      * Either in local or server mode, the remote socket is used to communicate
      * with other-side shadowsocks instance (a local or a server)
      */
-    void bytesRead(const qint64 &);
-    void bytesSend(const qint64 &);
+    void bytesRead(uint64_t);
+    void bytesSend(uint64_t);
 
     //time used for remote to connect to the host (msec)
-    void latencyAvailable(const int &);
+    void latencyAvailable(int);
     void finished();
 
 private:
-    static const qint64 RemoteRecvSize = 65536;
+    static const int64_t RemoteRecvSize = 65536;
 
     STAGE stage;
     Address remoteAddress;

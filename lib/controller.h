@@ -23,9 +23,7 @@
 #ifndef CONTROLLER_H
 #define CONTROLLER_H
 
-#include <QByteArray>
 #include <QHostAddress>
-#include <QList>
 #include <QObject>
 #include "tcpserver.h"
 #include "export.h"
@@ -50,22 +48,22 @@ signals:
     void runningStateChanged(bool);
 
     // These two signals pass any new bytes read or sent
-    void newBytesReceived(const quint64 &);
-    void newBytesSent(const quint64 &);
+    void newBytesReceived(uint64_t);
+    void newBytesSent(uint64_t);
 
     /*
      * These two signals pass accumulated bytes read or sent so far
      * (aka total in this session)
      */
-    void bytesReceivedChanged(const qint64 &);
-    void bytesSentChanged(const qint64 &);
+    void bytesReceivedChanged(uint64_t);
+    void bytesSentChanged(uint64_t);
 
     /*
      * Time used to connect to remote host (msec)
      * remote host means shadowsocks server if this controller is in local mode,
      * or the address the client is accessing if it's in server mode.
      */
-    void tcpLatencyAvailable(const int &);
+    void tcpLatencyAvailable(int);
 
 public slots:
     bool start(); // Return true if start successfully, otherwise return false
@@ -73,8 +71,8 @@ public slots:
 
 protected:
     // The total bytes recevied or sent by/from all TCP and UDP connections.
-    qint64 bytesReceived;
-    qint64 bytesSent;
+    uint64_t bytesReceived;
+    uint64_t bytesSent;
 
     Profile profile;
     Address serverAddress;
@@ -93,9 +91,9 @@ protected:
 
 protected slots:
     void onTcpServerError(QAbstractSocket::SocketError err);
-    void onBytesRead(const qint64 &);
-    void onBytesSend(const qint64 &);
-    void onServerAddressLookedUp(const bool success, const QString err);
+    void onBytesRead(uint64_t);
+    void onBytesSend(uint64_t);
+    void onServerAddressLookedUp(const bool success, const QString& err);
 };
 
 }

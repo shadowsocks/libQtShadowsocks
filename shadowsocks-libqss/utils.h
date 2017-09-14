@@ -28,8 +28,8 @@ class Utils
 {
 public:
     //test data encrypt/decrypt speed. print result to terminal
-    static void testSpeed(const std::string &method, quint32 data_size_mb);
-    static void testSpeed(quint32 data_size_mb);//test all methods
+    static void testSpeed(const std::string &method, uint32_t data_size_mb);
+    static void testSpeed(uint32_t data_size_mb);//test all methods
 };
 
 #endif // UTILS_H

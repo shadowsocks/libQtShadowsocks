@@ -102,7 +102,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     workerThreadID %= totalWorkers;
 }
 
-bool TcpServer::listen(const QHostAddress &address, quint16 port)
+bool TcpServer::listen(const QHostAddress &address, uint16_t port)
 {
     bool l = QTcpServer::listen(address, port);
     if (l) {

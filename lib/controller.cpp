@@ -186,7 +186,7 @@ void Controller::onTcpServerError(QAbstractSocket::SocketError err)
     }
 }
 
-void Controller::onBytesRead(const qint64 &r)
+void Controller::onBytesRead(uint64_t r)
 {
     if (r != -1) {//-1 means read failed. don't count
         bytesReceived += r;
@@ -195,7 +195,7 @@ void Controller::onBytesRead(const qint64 &r)
     }
 }
 
-void Controller::onBytesSend(const qint64 &s)
+void Controller::onBytesSend(uint64_t s)
 {
     if (s != -1) {//-1 means write failed. don't count
         bytesSent += s;
@@ -204,7 +204,7 @@ void Controller::onBytesSend(const qint64 &s)
     }
 }
 
-void Controller::onServerAddressLookedUp(const bool success, const QString err)
+void Controller::onServerAddressLookedUp(const bool success, const QString &err)
 {
     if (!success) {
         QDebug(QtMsgType::QtWarningMsg) << "Shadowsocks server DNS lookup failed: "

@@ -81,7 +81,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     // To make sure datagram doesn't exceed remote server's maximum, we can
     // limit how many bytes we take from local socket at a time. This is due
     // the overhead introduced by OTA.
-    quint64 localRecvSize = RemoteRecvSize;
+    uint64_t localRecvSize = RemoteRecvSize;
     if (auth && isLocal) {
         localRecvSize -= (Cipher::AUTH_LEN + 2);
     }
@@ -114,7 +114,7 @@ void TcpRelay::handleStageAddr(std::string &data)
             qDebug("UDP associate");
             static const char header_data [] = { 5, 0, 0 };
             QHostAddress addr = local->localAddress();
-            quint16 port = local->localPort();
+            uint16_t port = local->localPort();
             std::string toWrite = std::string(header_data, 3) + Common::packAddress(addr, port);
             local->write(toWrite.data(), toWrite.length());
             stage = UDP_ASSOC;

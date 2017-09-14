@@ -26,7 +26,7 @@
 #include <QObject>
 #include <QUdpSocket>
 #include <QHostAddress>
-#include <QMap>
+#include <map>
 #include "address.h"
 #include "encryptor.h"
 
@@ -38,19 +38,19 @@ class QSS_EXPORT UdpRelay : public QObject
 public:
     UdpRelay(const std::string& method,
              const std::string& password,
-             const bool &is_local,
-             const bool &auto_ban,
-             const bool &auth,
+             const bool is_local,
+             const bool auto_ban,
+             const bool auth,
              const Address &serverAddress,
              QObject *parent = 0);
 
     void setup(const QHostAddress &localAddr,
-               const quint16 &localPort);
+               const uint16_t &localPort);
 
     bool isListening() const;
 
 public slots:
-    bool listen(const QHostAddress& addr, quint16 port);
+    bool listen(const QHostAddress& addr, uint16_t port);
     void close();
 
 signals:
@@ -58,21 +58,21 @@ signals:
      * The same situation here.
      * We only count "listen" socket's read and written bytes
      */
-    void bytesRead(const qint64 &);
-    void bytesSend(const qint64 &);
+    void bytesRead(uint64_t);
+    void bytesSend(uint64_t);
 
 private:
     //64KB, same as shadowsocks-python (udprelay)
-    static const qint64 RemoteRecvSize = 65536;
+    static const int64_t RemoteRecvSize = 65536;
 
-    const Address &serverAddress;
-    const bool &isLocal;
-    const bool &autoBan;
-    const bool &auth;
+    const Address serverAddress;
+    const bool isLocal;
+    const bool autoBan;
+    const bool auth;
     QUdpSocket listenSocket;
     Encryptor *encryptor;
 
-    QMap<Address, QUdpSocket*> cache;
+    std::map<Address, QUdpSocket*> m_cache;
 
 private slots:
     void onSocketError();

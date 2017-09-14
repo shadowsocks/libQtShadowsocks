@@ -26,11 +26,24 @@
 
 using namespace QSS;
 
+namespace {
+template<class KEY, class VALUE>
+KEY findKeyFromMapValue(const std::map<KEY, VALUE>& map, const VALUE& val)
+{
+    for (typename std::map<KEY, VALUE>::const_iterator it = map.begin(); it != map.end(); ++it) {
+        if (it->second == val) {
+            return it->first;
+        }
+    }
+    throw std::out_of_range("Cannot find the key that matches the value");
+}
+}
+
 UdpRelay::UdpRelay(const std::string &method,
                    const std::string &password,
-                   const bool &is_local,
-                   const bool &auto_ban,
-                   const bool &auth,
+                   const bool is_local,
+                   const bool auto_ban,
+                   const bool auth,
                    const Address &serverAddress,
                    QObject *parent) :
     QObject(parent),
@@ -43,7 +56,7 @@ UdpRelay::UdpRelay(const std::string &method,
     // To make sure datagram doesn't exceed remote server's maximum, we can
     // limit how many bytes we take from local socket at a time. This is due
     // the overhead introduced by OTA.
-    quint64 localRecvSize = RemoteRecvSize;
+    uint64_t localRecvSize = RemoteRecvSize;
     if (auth && isLocal) {
         localRecvSize -= (Cipher::AUTH_LEN + 2);
     }
@@ -68,7 +81,7 @@ bool UdpRelay::isListening() const
     return listenSocket.isOpen();
 }
 
-bool UdpRelay::listen(const QHostAddress& addr, quint16 port)
+bool UdpRelay::listen(const QHostAddress& addr, uint16_t port)
 {
     return listenSocket.bind(
               addr,
@@ -81,11 +94,10 @@ void UdpRelay::close()
 {
     listenSocket.close();
     encryptor->reset();
-    QList<QUdpSocket*> cachedSockets = cache.values();
-    for (QUdpSocket* sock : cachedSockets) {
-        sock->deleteLater();
+    for (auto&& cachedSocket : m_cache) {
+        cachedSocket.second->deleteLater();
     }
-    cache.clear();
+    m_cache.clear();
 }
 
 void UdpRelay::onSocketError()
@@ -118,11 +130,11 @@ void UdpRelay::onServerUdpSocketReadyRead()
     std::string data;
     data.resize(packetSize);
     QHostAddress r_addr;
-    quint16 r_port;
-    qint64 readSize = listenSocket.readDatagram(&data[0],
-                                                packetSize,
-                                                &r_addr,
-                                                &r_port);
+    uint16_t r_port;
+    int64_t readSize = listenSocket.readDatagram(&data[0],
+                                                 packetSize,
+                                                 &r_addr,
+                                                 &r_port);
     emit bytesRead(readSize);
 
     if (isLocal) {
@@ -152,12 +164,12 @@ void UdpRelay::onServerUdpSocketReadyRead()
         return;
     }
 
-    QUdpSocket *client = cache.value(remoteAddr, nullptr);
-    if (!client) {
-        client = new QUdpSocket(this);
+    auto clientIt = m_cache.find(remoteAddr);
+    if (clientIt == m_cache.end()) {
+        QUdpSocket *client = new QUdpSocket(this);
         client->setReadBufferSize(RemoteRecvSize);
         client->setSocketOption(QAbstractSocket::LowDelayOption, 1);
-        cache.insert(remoteAddr, client);
+        clientIt = m_cache.insert(clientIt, std::make_pair(remoteAddr, client));
         connect(client, &QUdpSocket::readyRead,
                 this, &UdpRelay::onClientUdpSocketReadyRead);
         connect(client, &QUdpSocket::disconnected,
@@ -199,7 +211,8 @@ void UdpRelay::onServerUdpSocketReadyRead()
     if (!destAddr.isIPValid()) {//TODO async dns
         destAddr.blockingLookUp();
     }
-    client->writeDatagram(data.data(), data.size(), destAddr.getFirstIP(), destAddr.getPort());
+    clientIt->second->writeDatagram(data.data(), data.size(),
+                                    destAddr.getFirstIP(), destAddr.getPort());
 }
 
 void UdpRelay::onClientUdpSocketReadyRead()
@@ -219,7 +232,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
     std::string data;
     data.resize(packetSize);
     QHostAddress r_addr;
-    quint16 r_port;
+    uint16_t r_port;
     sock->readDatagram(&data[0], packetSize, &r_addr, &r_port);
 
     std::string response;
@@ -241,14 +254,19 @@ void UdpRelay::onClientUdpSocketReadyRead()
         response = encryptor->encryptAll(data);
     }
 
-    Address clientAddress = cache.key(sock);
-    if (clientAddress.getPort() != 0) {
-        listenSocket.writeDatagram(response.data(),
-                                   response.size(),
-                                   clientAddress.getFirstIP(),
-                                   clientAddress.getPort());
-    } else {
-        qDebug("[UDP] Drop a packet from somewhere else we know.");
+    try {
+        Address clientAddress = findKeyFromMapValue(m_cache, sock);
+        if (clientAddress.getPort() != 0) {
+            listenSocket.writeDatagram(response.data(),
+                                       response.size(),
+                                       clientAddress.getFirstIP(),
+                                       clientAddress.getPort());
+        } else {
+            qDebug("[UDP] Drop a packet from somewhere else we know.");
+        }
+    } catch (const std::exception& e) {
+        QDebug(QtMsgType::QtDebugMsg) << "Failed to find the address from client socket: "
+                                      << e.what();
     }
 }
 
@@ -259,7 +277,13 @@ void UdpRelay::onClientDisconnected()
         qFatal("Fatal. A false object calling onClientDisconnected.");
         return;
     }
-    cache.remove(cache.key(client));
+    for (auto it = m_cache.begin(); it != m_cache.end();) {
+        if (it->second == client) {
+            it = m_cache.erase(it);
+        } else {
+            ++it;
+        }
+    }
     client->deleteLater();
     qDebug("[UDP] A client connection is disconnected and destroyed.");
 }

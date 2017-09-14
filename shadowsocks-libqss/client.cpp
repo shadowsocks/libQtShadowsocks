@@ -159,7 +159,7 @@ bool Client::headerTest()
     bool unused_auth;
     QHostAddress test_addr("1.2.3.4");
     QHostAddress test_addr_v6("2001:0db8:85a3:0000:0000:8a2e:1010:2020");
-    quint16 test_port = 56;
+    uint16_t test_port = 56;
     QSS::Address test_res, test_v6(test_addr_v6, test_port);
     std::string packed = QSS::Common::packAddress(test_v6);
     QSS::Common::parseHeader(packed, test_res, length, unused_auth);

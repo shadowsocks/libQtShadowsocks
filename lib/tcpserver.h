@@ -44,13 +44,13 @@ public:
               QObject *parent = nullptr);
     ~TcpServer();
 
-    bool listen(const QHostAddress &address, quint16 port);
+    bool listen(const QHostAddress &address, uint16_t port);
     void close();
 
 signals:
-    void bytesRead(const qint64 &);
-    void bytesSend(const qint64 &);
-    void latencyAvailable(const int &);
+    void bytesRead(uint64_t);
+    void bytesSend(uint64_t);
+    void latencyAvailable(int);
 
 protected:
     void incomingConnection(qintptr handler) Q_DECL_OVERRIDE;
@@ -66,8 +66,8 @@ private:
 
     QList<TcpRelay*> conList;
     QList<QThread*> threadList;
-    quint64 workerThreadID;
-    quint64 totalWorkers;
+    uint64_t workerThreadID;
+    uint64_t totalWorkers;
 };
 
 }
