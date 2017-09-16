@@ -73,9 +73,7 @@ Cipher::Cipher(const std::string &method,
 #ifdef USE_BOTAN2
         if (cipherInfoMap.at(method).type == CipherType::AEAD) {
             // Initialises necessary class members for AEAD ciphers
-            msgHashFunc.reset(new Botan::SHA_160()); // SHA1
-            msgAuthCode.reset(new Botan::HMAC(msgHashFunc.get()));
-            kdf.reset(new Botan::HKDF(msgAuthCode.get()));
+            kdf.reset(new Botan::HKDF(new Botan::HMAC(new Botan::SHA_160())));
         }
 #endif
 
@@ -121,7 +119,9 @@ const std::map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap = {
     {"seed-cfb", {"SEED/CFB", 16, 16, Cipher::CipherType::STREAM}},
     {"serpent-256-cfb", {"Serpent/CFB", 32, 16, Cipher::CipherType::STREAM}}
 #ifdef USE_BOTAN2
-   ,{"aes-256-gcm", {"AES-128/GCM", 32, 12, Cipher::CipherType::AEAD, 32, 16}}
+   ,{"aes-128-gcm", {"AES-128/GCM", 16, 12, Cipher::CipherType::AEAD, 16, 16}},
+    {"aes-192-gcm", {"AES-192/GCM", 24, 12, Cipher::CipherType::AEAD, 24, 16}},
+    {"aes-256-gcm", {"AES-256/GCM", 32, 12, Cipher::CipherType::AEAD, 32, 16}}
 #endif
 };
 const std::string Cipher::kdfLabel = {"ss-subkey"};

@@ -131,9 +131,6 @@ private:
 
 #ifdef USE_BOTAN2
     // AEAD support needs Botan-2 library
-
-    std::unique_ptr<Botan::HashFunction> msgHashFunc;
-    std::unique_ptr<Botan::MessageAuthenticationCode> msgAuthCode;
     std::unique_ptr<Botan::KDF> kdf;
 
     std::string deriveSubkey() const;
