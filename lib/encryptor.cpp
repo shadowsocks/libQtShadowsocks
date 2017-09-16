@@ -1,7 +1,7 @@
 /*
  * encryptor.cpp - the source file of Encryptor class
  *
- * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -22,17 +22,17 @@
 
 #include "encryptor.h"
 #include <QtEndian>
+#include <QDebug>
 
 using namespace QSS;
 
 namespace {
-std::string evpBytesToKey(const std::string& method, const std::string &password)
+std::string evpBytesToKey(const Cipher::CipherInfo& cipherInfo, const std::string &password)
 {
     std::vector<std::string> m;
     std::string data;
     int i = 0;
 
-    auto cipherInfo = Cipher::cipherInfoMap.at(method);
     while (m.size() < cipherInfo.keyLen + cipherInfo.ivLen) {
         if (i == 0) {
             data = password;
@@ -57,80 +57,114 @@ Encryptor::Encryptor(const std::string &method,
                      const std::string &password,
                      QObject *parent) :
     QObject(parent),
+    cipherInfo(Cipher::cipherInfoMap.at(method)),
     method(method),
-    password(evpBytesToKey(method, password)),
-    chunkId(0),
-    enCipher(nullptr),
-    deCipher(nullptr)
+    masterKey(evpBytesToKey(cipherInfo, password)),
+    chunkId(0)
 {
-    enCipherIV = Cipher::randomIv(this->method);
 }
 
 void Encryptor::reset()
 {
-    if (enCipher) {
-        enCipher->deleteLater();
-        enCipher = nullptr;
-        enCipherIV = Cipher::randomIv(this->method);
-    }
-    if (deCipher) {
-        deCipher->deleteLater();
-        deCipher = nullptr;
-    }
+    enCipher.reset();
+    deCipher.reset();
     chunkId = 0;
+}
+
+Cipher* Encryptor::initEncipher()
+{
+    salt = Cipher::randomIv(cipherInfo.saltLen);
+    const std::string iv = Cipher::randomIv(method);
+    const std::string key = cipherInfo.type == Cipher::CipherType::AEAD
+                          ? Cipher::deriveAeadSubkey(cipherInfo.keyLen, masterKey, salt) : masterKey;
+    Cipher* cipher = new Cipher(method, key, iv, true);
+    enCipherIV = iv;
+    return cipher;
+}
+
+Cipher* Encryptor::initDecipher(const std::string& in)
+{
+    const std::string iv = cipherInfo.type == Cipher::CipherType::AEAD
+                         ? std::string(cipherInfo.ivLen, static_cast<char>(0)) : in.substr(0, cipherInfo.ivLen);
+    const std::string key = cipherInfo.type == Cipher::CipherType::AEAD
+                          ? Cipher::deriveAeadSubkey(cipherInfo.keyLen, masterKey, in.substr(0, cipherInfo.saltLen)) : masterKey;
+    Cipher* cipher = new Cipher(method, key, iv, false);
+    return cipher;
 }
 
 std::string Encryptor::encrypt(const std::string &in)
 {
-    std::string out;
+    std::string header;
     if (!enCipher) {
-        enCipher = new Cipher(method, password, enCipherIV, true, this);
-        out = enCipherIV + enCipher->update(in);
-    } else {
-        out = enCipher->update(in);
+        enCipher.reset(initEncipher());
+        header = cipherInfo.type == Cipher::CipherType::AEAD ? salt : enCipherIV;
     }
-    return out;
+
+    std::string encrypted;
+#ifdef USE_BOTAN2
+    if (cipherInfo.type == Cipher::CipherType::AEAD) {
+        uint16_t inLen = in.length() & 0x3FFF;
+        if (inLen != in.length()) {
+            incompleteChunk += in.substr(inLen);
+        }
+        std::string length(2, static_cast<char>(0));
+        qToBigEndian(inLen, reinterpret_cast<uint16_t*>(&length[0]));
+        std::string encLength = enCipher->update(length); // length + tag
+        std::string encPayload = enCipher->update(in.substr(0, inLen)); // payload + tag
+        encrypted = encLength + encPayload;
+    } else {
+#endif
+        encrypted = enCipher->update(in);
+#ifdef USE_BOTAN2
+    }
+#endif
+    return header + encrypted;
 }
 
-std::string Encryptor::decrypt(const std::string &in)
+std::string Encryptor::decrypt(std::string in)
 {
     std::string out;
     if (!deCipher) {
-        int ivLen = Cipher::cipherInfoMap.at(method).ivLen;
-        std::string iv = in.substr(0, ivLen);
-        if (iv.size() != ivLen) {
-            return out;
+        deCipher.reset(initDecipher(in));
+        if (cipherInfo.type == Cipher::CipherType::AEAD) {
+            in = in.substr(cipherInfo.saltLen);
+        } else {
+            in = in.substr(cipherInfo.ivLen);
         }
-        deCipher = new Cipher(method, password, iv, false, this);
-        out = deCipher->update(in.substr(ivLen));
-    } else {
-        out = deCipher->update(in);
     }
+
+#ifdef USE_BOTAN2
+    if (cipherInfo.type == Cipher::CipherType::AEAD) {
+        in = incompleteChunk + in;
+        std::string decLength = deCipher->update(in.substr(0, 2 + cipherInfo.tagLen));
+        uint16_t length = qFromBigEndian(*reinterpret_cast<const uint16_t*>(decLength.data()));
+        out = deCipher->update(in.substr(2 + cipherInfo.tagLen, length + cipherInfo.tagLen));
+        incompleteChunk = in.substr(2 + cipherInfo.tagLen + length + cipherInfo.tagLen);
+    } else {
+#endif
+        out = deCipher->update(in);
+#ifdef USE_BOTAN2
+    }
+#endif
     return out;
 }
 
 std::string Encryptor::encryptAll(const std::string &in)
 {
-    if (enCipher) {
-        enCipher->deleteLater();
-    }
     std::string iv = enCipherIV;
     enCipherIV = Cipher::randomIv(method);
-    enCipher = new Cipher(method, password, iv, true, this);
+    enCipher.reset(new Cipher(method, masterKey, iv, true));
     return iv + enCipher->update(in);
 }
 
 std::string Encryptor::decryptAll(const std::string &in)
 {
-    if (deCipher) {
-        deCipher->deleteLater();
-    }
     int ivLen = Cipher::cipherInfoMap.at(method).ivLen;
     std::string iv = in.substr(0, ivLen);
     if (iv.size() != ivLen) {
         return std::string();
     }
-    deCipher = new Cipher(method, password, iv, false, this);
+    deCipher.reset(new Cipher(method, masterKey, iv, false));
     return deCipher->update(in.substr(Cipher::cipherInfoMap.at(method).ivLen));
 }
 
@@ -145,13 +179,13 @@ std::string Encryptor::deCipherIV() const
 
 void Encryptor::addHeaderAuth(std::string &headerData) const
 {
-    std::string authCode = Cipher::hmacSha1(enCipherIV + password, headerData);
+    std::string authCode = Cipher::hmacSha1(enCipherIV + masterKey, headerData);
     headerData.append(authCode);
 }
 
 void Encryptor::addHeaderAuth(std::string &data, const int &headerLen) const
 {
-    std::string authCode = Cipher::hmacSha1(enCipherIV + password, data.substr(0, headerLen));
+    std::string authCode = Cipher::hmacSha1(enCipherIV + masterKey, data.substr(0, headerLen));
     data.insert(headerLen, authCode.data(), authCode.size());
 }
 
@@ -170,7 +204,7 @@ void Encryptor::addChunkAuth(std::string &data)
 
 bool Encryptor::verifyHeaderAuth(const char *data, const int &headerLen) const
 {
-    return Cipher::hmacSha1(deCipherIV() + password, std::string(data, headerLen)).compare(
+    return Cipher::hmacSha1(deCipherIV() + masterKey, std::string(data, headerLen)).compare(
                 std::string(data + headerLen, Cipher::AUTH_LEN)) == 0;
 }
 

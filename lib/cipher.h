@@ -30,35 +30,32 @@
 #define CIPHER_H
 
 #include <array>
-#include <map>
+#include <unordered_map>
 #include <memory>
-#include <QObject>
 #include "rc4.h"
 #include "chacha.h"
 #include "export.h"
 
 namespace Botan {
+class Keyed_Filter;
 class Pipe;
 class KDF;
-class HashFunction;
-class MessageAuthenticationCode;
 }
 
 namespace QSS {
 
-class QSS_EXPORT Cipher : public QObject
+class Cipher
 {
-    Q_OBJECT
 public:
     /**
      * @brief Cipher
      * @param method The cipher method name (in Shadowsocks convention)
-     * @param psKey The pre-shared master key
+     * @param sKey The secret key (dervied per-session for AEAD)
      * @param iv The initialiser vector, aka nonce
      * @param encrypt Whether the operation is to encrypt, otherwise it's to decrypt
      * @param parent The parent QObject pointer
      */
-    Cipher(const std::string &method, const std::string &psKey, const std::string &iv, bool encrypt, QObject *parent = 0);
+    Cipher(const std::string &method, const std::string &sKey, const std::string &iv, bool encrypt);
     Cipher(Cipher &&) = default;
     ~Cipher();
 
@@ -82,7 +79,7 @@ public:
     /*
      * The key of this map is the encryption method (shadowsocks convention)
      */
-    static const std::map<std::string, CipherInfo> cipherInfoMap;
+    static const std::unordered_map<std::string, CipherInfo> cipherInfoMap;
 
     /*
      * The label/info string used for key derivation function
@@ -100,6 +97,7 @@ public:
 
     /**
      * @brief randomIv An overloaded function to generate randomised IV for given cipher method
+     * For AEAD ciphers, this method returns all zeros
      * @param method The Shadowsocks cipher method name
      * @return
      */
@@ -121,20 +119,18 @@ public:
      */
     static std::string hmacSha1(const std::string &key, const std::string &msg);
 
+#ifdef USE_BOTAN2
+    static std::string deriveAeadSubkey(size_t length, const std::string &masterKey, const std::string& salt);
+#endif
+
 private:
+    Botan::Keyed_Filter *filter;
     std::unique_ptr<Botan::Pipe> pipe;
     std::unique_ptr<RC4> rc4;
     std::unique_ptr<ChaCha> chacha;
     const std::string key; // preshared key
-    const std::string iv; // nonce
+    std::string iv; // nonce
     const CipherInfo cipherInfo;
-
-#ifdef USE_BOTAN2
-    // AEAD support needs Botan-2 library
-    std::unique_ptr<Botan::KDF> kdf;
-
-    std::string deriveSubkey() const;
-#endif
 };
 
 }

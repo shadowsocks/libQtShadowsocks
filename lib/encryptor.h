@@ -8,7 +8,7 @@
  * Instead, it should use Cipher class as much as possible.
  * The only exception for this rule is the deprecated TABLE method.
  *
- * Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -31,10 +31,13 @@
 #define ENCRYPTOR_H
 
 #include <QObject>
+#include <memory>
 #include "cipher.h"
 #include "export.h"
 
 namespace QSS {
+
+class Cipher;
 
 class QSS_EXPORT Encryptor : public QObject
 {
@@ -50,7 +53,7 @@ public:
               const std::string& password,
               QObject *parent = 0);
 
-    std::string decrypt(const std::string &);
+    std::string decrypt(std::string);
     std::string encrypt(const std::string &);
 
     std::string decryptAll(const std::string &);//(de)encryptAll is for updreplay
@@ -71,18 +74,24 @@ public:
     bool verifyExtractChunkAuth(std::string &data);
 
 private:
+    const Cipher::CipherInfo cipherInfo;
     std::string method;
-    std::string password;
+    std::string masterKey;
+    std::string salt;
     std::string enCipherIV;
-    //incomplete data chunk from verifyExtractChunkAuth function
+
+    // Incomplete data chunk that is pending
     std::string incompleteChunk;
     uint32_t chunkId;
 
     std::string deCipherIV() const;
 
+    Cipher* initEncipher();
+    Cipher* initDecipher(const std::string& in);
+
 protected:
-    Cipher *enCipher;
-    Cipher *deCipher;
+    std::unique_ptr<Cipher> enCipher;
+    std::unique_ptr<Cipher> deCipher;
 };
 
 }

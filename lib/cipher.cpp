@@ -49,13 +49,26 @@ typedef Botan::SecureVector<Botan::byte> SecureByteArray;
 #define DataOfSecureByteArray(sba) sba.begin()
 #endif
 
+namespace {
+
+// Copied from libsodium's sodium_increment
+void nonceIncrement(unsigned char *n, const size_t nlen)
+{
+    uint_fast16_t c = 1U;
+    for (size_t i = 0U; i < nlen; i++) {
+        c += static_cast<uint_fast16_t>(n[i]);
+        n[i] = static_cast<unsigned char>(c);
+        c >>= 8;
+    }
+}
+
+}
+
 Cipher::Cipher(const std::string &method,
-               const std::string &psKey,
+               const std::string &sKey,
                const std::string &iv,
-               bool encrypt,
-               QObject *parent) :
-    QObject(parent),
-    key(psKey),
+               bool encrypt) :
+    key(sKey),
     iv(iv),
     cipherInfo(cipherInfoMap.at(method))
 {
@@ -70,20 +83,13 @@ Cipher::Cipher(const std::string &method,
     }
 #endif
     try {
-#ifdef USE_BOTAN2
-        if (cipherInfoMap.at(method).type == CipherType::AEAD) {
-            // Initialises necessary class members for AEAD ciphers
-            kdf.reset(new Botan::HKDF(new Botan::HMAC(new Botan::SHA_160())));
-        }
-#endif
-
         Botan::SymmetricKey _key(
                     reinterpret_cast<const Botan::byte *>(key.data()),
                     key.size());
         Botan::InitializationVector _iv(
                     reinterpret_cast<const Botan::byte *>(iv.data()),
                     iv.size());
-        Botan::Keyed_Filter *filter = Botan::get_cipher(cipherInfo.internalName, _key, _iv,
+        filter = Botan::get_cipher(cipherInfo.internalName, _key, _iv,
                     encrypt ? Botan::ENCRYPTION : Botan::DECRYPTION);
         // Botan::pipe will take control over filter
         // we shouldn't deallocate filter externally
@@ -97,7 +103,7 @@ Cipher::~Cipher()
 {
 }
 
-const std::map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap = {
+const std::unordered_map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap = {
     {"aes-128-cfb", {"AES-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
     {"aes-192-cfb", {"AES-192/CFB", 24, 16, Cipher::CipherType::STREAM}},
     {"aes-256-cfb", {"AES-256/CFB", 32, 16, Cipher::CipherType::STREAM}},
@@ -137,6 +143,12 @@ std::string Cipher::update(const std::string &data)
         pipe->process_msg(reinterpret_cast<const Botan::byte *>
                           (data.data()), data.size());
         SecureByteArray c = pipe->read_all(Botan::Pipe::LAST_MESSAGE);
+        if (cipherInfo.type == CipherType::AEAD) {
+            nonceIncrement(reinterpret_cast<unsigned char*>(&iv[0]), iv.length());
+            filter->set_iv(Botan::InitializationVector(
+                               reinterpret_cast<const Botan::byte *>(iv.data()), iv.size()
+                               ));
+        }
         return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(c)),
                            c.size());
     } else {
@@ -163,7 +175,12 @@ std::string Cipher::randomIv(int length)
 
 std::string Cipher::randomIv(const std::string &method)
 {
-    return randomIv(cipherInfoMap.at(method).ivLen);
+    CipherInfo cipherInfo = cipherInfoMap.at(method);
+    if (cipherInfo.type == AEAD) {
+        return std::string(cipherInfo.ivLen, static_cast<char>(0));
+    } else {
+        return randomIv(cipherInfo.ivLen);
+    }
 }
 
 std::string Cipher::hmacSha1(const std::string &key, const std::string &msg)
@@ -212,14 +229,15 @@ std::vector<std::string> Cipher::supportedMethods()
 
 #ifdef USE_BOTAN2
 /*
- * Derives per-session subkey from the master key and IV, which is required
+ * Derives per-session subkey from the master key, which is required
  * for Shadowsocks AEAD ciphers
  */
-std::string Cipher::deriveSubkey() const
+std::string Cipher::deriveAeadSubkey(size_t length, const std::string& masterKey, const std::string& salt)
 {
-    Q_ASSERT(kdf);
-    std::string salt = randomIv(cipherInfo.saltLen);
-    SecureByteArray skey = kdf->derive_key(cipherInfo.keyLen, reinterpret_cast<const uint8_t*>(key.data()), key.length(), salt, kdfLabel);
+    std::unique_ptr<Botan::KDF> kdf;
+    kdf.reset(new Botan::HKDF(new Botan::HMAC(new Botan::SHA_160())));
+    //std::string salt = randomIv(cipherInfo.saltLen);
+    SecureByteArray skey = kdf->derive_key(length, reinterpret_cast<const uint8_t*>(masterKey.data()), masterKey.length(), salt, kdfLabel);
     return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(skey)),
                        skey.size());
 }
