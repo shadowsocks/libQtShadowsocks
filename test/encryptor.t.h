@@ -12,6 +12,7 @@ public:
 private Q_SLOTS:
     void selfTestEncryptDecrypt();
     void testAesGcm();
+    void testAesGcmUdp();
 };
 
 #endif // ENCRYPTOR_T_H

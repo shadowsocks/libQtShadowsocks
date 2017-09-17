@@ -69,29 +69,40 @@ void Encryptor::reset()
     deCipher.reset();
 }
 
-Cipher* Encryptor::initEncipher()
+Cipher* Encryptor::initEncipher(std::string *header)
 {
     const std::string iv = Cipher::randomIv(method);
-    std::string key = masterKey;
+    std::string key;
 #ifdef USE_BOTAN2
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
-        salt = Cipher::randomIv(cipherInfo.saltLen);
+        const std::string salt = Cipher::randomIv(cipherInfo.saltLen);
         key = Cipher::deriveAeadSubkey(cipherInfo.keyLen, masterKey, salt);
+        *header = salt;
+    } else {
+#endif
+        key = masterKey;
+        *header = iv;
+#ifdef USE_BOTAN2
     }
 #endif
     Cipher* cipher = new Cipher(method, key, iv, true);
-    enCipherIV = iv;
     return cipher;
 }
 
-Cipher* Encryptor::initDecipher(const std::string& in)
+Cipher* Encryptor::initDecipher(std::string *inOut)
 {
-    const std::string iv = cipherInfo.type == Cipher::CipherType::AEAD
-                         ? std::string(cipherInfo.ivLen, static_cast<char>(0)) : in.substr(0, cipherInfo.ivLen);
-    std::string key = masterKey;
+    std::string key, iv;
 #ifdef USE_BOTAN2
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
-        key = Cipher::deriveAeadSubkey(cipherInfo.keyLen, masterKey, in.substr(0, cipherInfo.saltLen));
+        iv = std::string(cipherInfo.ivLen, static_cast<char>(0));
+        key = Cipher::deriveAeadSubkey(cipherInfo.keyLen, masterKey, inOut->substr(0, cipherInfo.saltLen));
+        *inOut = inOut->substr(cipherInfo.saltLen);
+    } else {
+#endif
+        iv = inOut->substr(0, cipherInfo.ivLen);
+        key = masterKey;
+        *inOut = inOut->substr(cipherInfo.ivLen);
+#ifdef USE_BOTAN2
     }
 #endif
     Cipher* cipher = new Cipher(method, key, iv, false);
@@ -102,8 +113,7 @@ std::string Encryptor::encrypt(const std::string &in)
 {
     std::string header;
     if (!enCipher) {
-        enCipher.reset(initEncipher());
-        header = cipherInfo.type == Cipher::CipherType::AEAD ? salt : enCipherIV;
+        enCipher.reset(initEncipher(&header));
     }
 
     std::string encrypted;
@@ -131,12 +141,7 @@ std::string Encryptor::decrypt(std::string in)
 {
     std::string out;
     if (!deCipher) {
-        deCipher.reset(initDecipher(in));
-        if (cipherInfo.type == Cipher::CipherType::AEAD) {
-            in = in.substr(cipherInfo.saltLen);
-        } else {
-            in = in.substr(cipherInfo.ivLen);
-        }
+        deCipher.reset(initDecipher(&in));
     }
 
 #ifdef USE_BOTAN2
@@ -157,19 +162,13 @@ std::string Encryptor::decrypt(std::string in)
 
 std::string Encryptor::encryptAll(const std::string &in)
 {
-    std::string iv = enCipherIV;
-    enCipherIV = Cipher::randomIv(method);
-    enCipher.reset(new Cipher(method, masterKey, iv, true));
-    return iv + enCipher->update(in);
+    std::string header;
+    enCipher.reset(initEncipher(&header));
+    return header + enCipher->update(in);
 }
 
-std::string Encryptor::decryptAll(const std::string &in)
+std::string Encryptor::decryptAll(std::string in)
 {
-    int ivLen = Cipher::cipherInfoMap.at(method).ivLen;
-    std::string iv = in.substr(0, ivLen);
-    if (iv.size() != ivLen) {
-        return std::string();
-    }
-    deCipher.reset(new Cipher(method, masterKey, iv, false));
-    return deCipher->update(in.substr(Cipher::cipherInfoMap.at(method).ivLen));
+    deCipher.reset(initDecipher(&in));
+    return deCipher->update(in);
 }

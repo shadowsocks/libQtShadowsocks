@@ -41,3 +41,24 @@ void Encryptor_T::testAesGcm()
     decrypted = decryptor.decrypt(encrypted);
     QCOMPARE(decrypted, testData);
 }
+
+void Encryptor_T::testAesGcmUdp()
+{
+    const std::string method("aes-256-gcm");
+    const std::string password("test");
+    const Cipher::CipherInfo cInfo = Cipher::cipherInfoMap.at(method);
+    Encryptor encryptor(method, password);
+    Encryptor decryptor(method, password);
+
+    // Test the first packet in UDP
+    std::string encrypted = encryptor.encryptAll(testData);
+    QCOMPARE(encrypted.length(), cInfo.saltLen + testData.length() + cInfo.tagLen);
+    std::string decrypted = decryptor.decryptAll(encrypted);
+    QCOMPARE(decrypted, testData);
+
+    // The following packets have the same structure in UDP
+    encrypted = encryptor.encryptAll(testData);
+    QCOMPARE(encrypted.length(), cInfo.saltLen + testData.length() + cInfo.tagLen);
+    decrypted = decryptor.decryptAll(encrypted);
+    QCOMPARE(decrypted, testData);
+}

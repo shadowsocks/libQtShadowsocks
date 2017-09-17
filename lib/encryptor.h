@@ -56,7 +56,7 @@ public:
     std::string decrypt(std::string);
     std::string encrypt(const std::string &);
 
-    std::string decryptAll(const std::string &);//(de)encryptAll is for updreplay
+    std::string decryptAll(std::string);//(de)encryptAll is for updreplay
     std::string encryptAll(const std::string &);
 
     void reset();
@@ -65,14 +65,12 @@ private:
     const Cipher::CipherInfo cipherInfo;
     std::string method;
     std::string masterKey;
-    std::string salt;
-    std::string enCipherIV;
 
     // Incomplete data chunk that is pending
     std::string incompleteChunk;
 
-    Cipher* initEncipher();
-    Cipher* initDecipher(const std::string& in);
+    Cipher* initEncipher(std::string *header);
+    Cipher* initDecipher(std::string *inOut);
 
 protected:
     std::unique_ptr<Cipher> enCipher;
