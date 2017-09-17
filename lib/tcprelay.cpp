@@ -31,8 +31,8 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    const Address &server_addr,
                    const std::string &method,
                    const std::string &password,
-                   const bool &is_local,
-                   const bool &autoBan,
+                   bool is_local,
+                   bool autoBan,
                    QObject *parent) :
     QObject(parent),
     stage(INIT),
@@ -40,7 +40,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     isLocal(is_local),
     autoBan(autoBan),
     local(localSocket),
-    encryptor{new Encryptor(method, password, this)}
+    encryptor{new Encryptor(method, password)}
 {
     connect(&remoteAddress, &Address::lookedUp,
             this, &TcpRelay::onDNSResolved);

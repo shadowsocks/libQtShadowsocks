@@ -41,8 +41,8 @@ public:
              const Address &server_addr,
              const std::string& method,
              const std::string& password,
-             const bool &is_local,
-             const bool &autoBan,
+             bool is_local,
+             bool autoBan,
              QObject *parent = 0);
 
     enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
@@ -74,7 +74,7 @@ private:
     QTcpSocket *remote;
     QTimer *timer;
     QTime startTime;
-    Encryptor *encryptor;
+    std::unique_ptr<Encryptor> encryptor;
 
     void handleStageAddr(std::string &);
     bool writeToRemote(const char *data, size_t length);

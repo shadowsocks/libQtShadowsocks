@@ -54,9 +54,7 @@ std::string evpBytesToKey(const Cipher::CipherInfo& cipherInfo, const std::strin
 }
 
 Encryptor::Encryptor(const std::string &method,
-                     const std::string &password,
-                     QObject *parent) :
-    QObject(parent),
+                     const std::string &password) :
     cipherInfo(Cipher::cipherInfoMap.at(method)),
     method(method),
     masterKey(evpBytesToKey(cipherInfo, password))

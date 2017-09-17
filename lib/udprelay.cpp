@@ -41,15 +41,15 @@ KEY findKeyFromMapValue(const std::map<KEY, VALUE>& map, const VALUE& val)
 
 UdpRelay::UdpRelay(const std::string &method,
                    const std::string &password,
-                   const bool is_local,
-                   const bool auto_ban,
+                   bool is_local,
+                   bool auto_ban,
                    const Address &serverAddress,
                    QObject *parent) :
     QObject(parent),
     serverAddress(serverAddress),
     isLocal(is_local),
     autoBan(auto_ban),
-    encryptor{new Encryptor(method, password, this)}
+    encryptor{new Encryptor(method, password)}
 {
     listenSocket.setReadBufferSize(RemoteRecvSize);
     listenSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);

@@ -38,8 +38,8 @@ class QSS_EXPORT UdpRelay : public QObject
 public:
     UdpRelay(const std::string& method,
              const std::string& password,
-             const bool is_local,
-             const bool auto_ban,
+             bool is_local,
+             bool auto_ban,
              const Address &serverAddress,
              QObject *parent = 0);
 
@@ -68,7 +68,7 @@ private:
     const bool isLocal;
     const bool autoBan;
     QUdpSocket listenSocket;
-    Encryptor *encryptor;
+    std::unique_ptr<Encryptor> encryptor;
 
     std::map<Address, QUdpSocket*> m_cache;
 

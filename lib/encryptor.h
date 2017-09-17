@@ -30,28 +30,21 @@
 #ifndef ENCRYPTOR_H
 #define ENCRYPTOR_H
 
-#include <QObject>
 #include <memory>
 #include "cipher.h"
-#include "export.h"
 
 namespace QSS {
 
-class Cipher;
-
-class QSS_EXPORT Encryptor : public QObject
+class Encryptor
 {
-    Q_OBJECT
 public:
     /**
      * @brief Encryptor
      * @param method The encryption method in Shadowsocks convention
      * @param password The preshared password
-     * @param parent The parent QObject
      */
     Encryptor(const std::string& method,
-              const std::string& password,
-              QObject *parent = 0);
+              const std::string& password);
 
     std::string decrypt(std::string);
     std::string encrypt(const std::string &);
