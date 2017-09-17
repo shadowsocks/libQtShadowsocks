@@ -80,9 +80,6 @@ int main(int argc, char *argv[])
     QCommandLineOption debug(
                 QStringList() << "D" << "debug",
                 "debug-level log.");
-    QCommandLineOption auth(
-                QStringList() << "A" << "auth",
-                "enable one-time message authentication.");
     QCommandLineOption autoBan("autoban",
                 "automatically ban IPs that send malformed header. "
                 "ignored in local mode.");
@@ -98,7 +95,6 @@ int main(int argc, char *argv[])
     parser.addOption(serverMode);
     parser.addOption(testSpeed);
     parser.addOption(debug);
-    parser.addOption(auth);
     parser.addOption(autoBan);
     parser.process(a);
 
@@ -113,17 +109,13 @@ int main(int argc, char *argv[])
                 parser.value(encryptionMethod),
                 parser.value(timeout),
                 parser.isSet(http),
-                parser.isSet(debug),
-                parser.isSet(auth));
+                parser.isSet(debug));
     }
     c.setAutoBan(parser.isSet(autoBan));
     c.setDebug(parser.isSet(debug));
     //command-line option has a higher priority to make H, S, T consistent
     if (parser.isSet(http)) {
         c.setHttpMode(true);
-    }
-    if (parser.isSet(auth)) {
-        c.setAuth(true);
     }
 
     if (parser.isSet(testSpeed)) {

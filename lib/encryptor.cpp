@@ -59,8 +59,7 @@ Encryptor::Encryptor(const std::string &method,
     QObject(parent),
     cipherInfo(Cipher::cipherInfoMap.at(method)),
     method(method),
-    masterKey(evpBytesToKey(cipherInfo, password)),
-    chunkId(0)
+    masterKey(evpBytesToKey(cipherInfo, password))
 {
 }
 
@@ -68,7 +67,6 @@ void Encryptor::reset()
 {
     enCipher.reset();
     deCipher.reset();
-    chunkId = 0;
 }
 
 Cipher* Encryptor::initEncipher()
@@ -167,75 +165,3 @@ std::string Encryptor::decryptAll(const std::string &in)
     deCipher.reset(new Cipher(method, masterKey, iv, false));
     return deCipher->update(in.substr(Cipher::cipherInfoMap.at(method).ivLen));
 }
-
-std::string Encryptor::deCipherIV() const
-{
-    if (deCipher) {
-        return deCipher->getIV();
-    } else {
-        return std::string();
-    }
-}
-
-void Encryptor::addHeaderAuth(std::string &headerData) const
-{
-    std::string authCode = Cipher::hmacSha1(enCipherIV + masterKey, headerData);
-    headerData.append(authCode);
-}
-
-void Encryptor::addHeaderAuth(std::string &data, const int &headerLen) const
-{
-    std::string authCode = Cipher::hmacSha1(enCipherIV + masterKey, data.substr(0, headerLen));
-    data.insert(headerLen, authCode.data(), authCode.size());
-}
-
-void Encryptor::addChunkAuth(std::string &data)
-{
-    char counter[4];
-    qToBigEndian(chunkId, reinterpret_cast<uchar*>(counter));
-    chunkId++;
-    std::string key = enCipherIV + std::string(counter, 4);
-    std::string authCode = Cipher::hmacSha1(key, data);
-    uint16_t len = static_cast<uint16_t>(data.size());
-    char len_c[2];
-    qToBigEndian(len, reinterpret_cast<uchar*>(len_c));
-    data = std::string(len_c, 2) + authCode + data;
-}
-
-bool Encryptor::verifyHeaderAuth(const char *data, const int &headerLen) const
-{
-    return Cipher::hmacSha1(deCipherIV() + masterKey, std::string(data, headerLen)).compare(
-                std::string(data + headerLen, Cipher::AUTH_LEN)) == 0;
-}
-
-bool Encryptor::verifyExtractChunkAuth(std::string &data)
-{
-    std::string result;
-    bool verified = true;
-    data = incompleteChunk + data;
-    incompleteChunk.clear();
-    for (int pos = 0; pos < data.size(); ) {
-        const char *dataPtr = data.data() + pos;
-        uint16_t len = qFromBigEndian(*reinterpret_cast<const uint16_t*>(dataPtr));
-        if (data.size() - pos - 2 - Cipher::AUTH_LEN < len) {
-            incompleteChunk = std::string(dataPtr, data.size() - pos);
-            break;
-        }
-
-        char counter[4];
-        qToBigEndian(chunkId, reinterpret_cast<uchar*>(counter));
-        chunkId++;
-        std::string key = deCipherIV() + std::string(counter, 4);
-        std::string chunk = data.substr(pos + 2 + Cipher::AUTH_LEN, len);
-        verified &= (Cipher::hmacSha1(key, chunk).compare(data.substr(pos + 2, Cipher::AUTH_LEN)) == 0);
-        if (verified) {
-            result += std::string(chunk.data(), chunk.size());
-            pos += (2 + Cipher::AUTH_LEN + len);
-        } else {
-            break;
-        }
-    }
-    data = result;
-    return verified;
-}
-

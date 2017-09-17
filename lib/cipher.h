@@ -86,8 +86,6 @@ public:
      */
     static const std::string kdfLabel;
 
-    static const int AUTH_LEN;
-
     /**
      * @brief randomIv Generates a vector of random characters of given length
      * @param length
@@ -113,11 +111,6 @@ public:
     static bool isSupported(const std::string &method);
 
     static std::vector<std::string> supportedMethods();
-
-    /*
-     * OTA is deprecated, these methods will be removed in future releases
-     */
-    static std::string hmacSha1(const std::string &key, const std::string &msg);
 
 #ifdef USE_BOTAN2
     static std::string deriveAeadSubkey(size_t length, const std::string &masterKey, const std::string& salt);

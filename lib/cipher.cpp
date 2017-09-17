@@ -131,7 +131,6 @@ const std::unordered_map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap 
 #endif
 };
 const std::string Cipher::kdfLabel = {"ss-subkey"};
-const int Cipher::AUTH_LEN = 10;
 
 std::string Cipher::update(const std::string &data)
 {
@@ -181,14 +180,6 @@ std::string Cipher::randomIv(const std::string &method)
     } else {
         return randomIv(cipherInfo.ivLen);
     }
-}
-
-std::string Cipher::hmacSha1(const std::string &key, const std::string &msg)
-{
-    QByteArray result = QMessageAuthenticationCode::hash(QByteArray(msg.data(), msg.size()),
-                                           QByteArray(key.data(), key.size()),
-                                           QCryptographicHash::Sha1).left(AUTH_LEN);
-    return std::string(result.data(), result.size());
 }
 
 std::string Cipher::md5Hash(const std::string &in)

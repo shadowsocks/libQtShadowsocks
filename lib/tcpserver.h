@@ -39,7 +39,6 @@ public:
               int timeout,
               bool is_local,
               bool auto_ban,
-              bool auth,
               const Address &serverAddress,
               QObject *parent = nullptr);
     ~TcpServer();
@@ -60,7 +59,6 @@ private:
     const std::string password;
     const bool isLocal;
     const bool autoBan;
-    const bool auth;
     const Address serverAddress;
     const int timeout;
 

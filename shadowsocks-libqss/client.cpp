@@ -57,7 +57,8 @@ bool Client::readConfig(const QString &file)
     profile.setTimeout(confObj["timeout"].toInt());
     profile.setHttpProxy(confObj["http_proxy"].toBool());
     if (confObj["auth"].toBool()) {
-        profile.enableOta();
+        std::cerr << "OTA is deprecated, please disable OTA in the config." << std::endl;
+        return false;
     }
 
     return true;
@@ -71,8 +72,7 @@ void Client::setup(const QString &remote_addr,
                    const QString &method,
                    const QString &timeout,
                    const bool http_proxy,
-                   const bool debug,
-                   const bool auth)
+                   const bool debug)
 {
     profile.setServerAddress(remote_addr.toStdString());
     profile.setServerPort(remote_port.toInt());
@@ -84,9 +84,6 @@ void Client::setup(const QString &remote_addr,
     profile.setHttpProxy(http_proxy);
     if (debug) {
         profile.enableDebug();
-    }
-    if (auth) {
-        profile.enableOta();
     }
 }
 
@@ -107,15 +104,6 @@ void Client::setDebug(bool debug)
 void Client::setHttpMode(bool http)
 {
     profile.setHttpProxy(http);
-}
-
-void Client::setAuth(bool auth)
-{
-    if (auth) {
-        profile.enableOta();
-    } else {
-        profile.disableOta();
-    }
 }
 
 bool Client::start(bool _server)
@@ -146,8 +134,7 @@ bool Client::start(bool _server)
             std::cout << "Connectivity testing error: " << error.toStdString() << std::endl;
         });
         tester->startConnectivityTest(profile.method(),
-                                      profile.password(),
-                                      profile.otaEnabled());
+                                      profile.password());
     }
 
     return lc->start();
@@ -156,20 +143,19 @@ bool Client::start(bool _server)
 bool Client::headerTest()
 {
     int length;
-    bool unused_auth;
     QHostAddress test_addr("1.2.3.4");
     QHostAddress test_addr_v6("2001:0db8:85a3:0000:0000:8a2e:1010:2020");
     uint16_t test_port = 56;
     QSS::Address test_res, test_v6(test_addr_v6, test_port);
     std::string packed = QSS::Common::packAddress(test_v6);
-    QSS::Common::parseHeader(packed, test_res, length, unused_auth);
+    QSS::Common::parseHeader(packed, test_res, length);
     bool success = (test_v6 == test_res);
     if (!success) {
         std::cout << test_v6.toString() << " --> "
                   << test_res.toString() << std::endl;
     }
     packed = QSS::Common::packAddress(test_addr, test_port);
-    QSS::Common::parseHeader(packed, test_res, length, unused_auth);
+    QSS::Common::parseHeader(packed, test_res, length);
     bool success2 = ((test_res.getFirstIP() == test_addr)
                  && (test_res.getPort() == test_port));
     if (!success2) {

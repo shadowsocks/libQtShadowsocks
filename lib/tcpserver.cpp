@@ -33,7 +33,6 @@ TcpServer::TcpServer(const std::string &method,
                      int timeout,
                      bool is_local,
                      bool auto_ban,
-                     bool auth,
                      const Address &serverAddress,
                      QObject *parent) :
     QTcpServer(parent),
@@ -41,7 +40,6 @@ TcpServer::TcpServer(const std::string &method,
     password(password),
     isLocal(is_local),
     autoBan(auto_ban),
-    auth(auth),
     serverAddress(serverAddress),
     timeout(timeout),
     workerThreadID(0)
@@ -86,8 +84,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
                                  method,
                                  password,
                                  isLocal,
-                                 autoBan,
-                                 auth);
+                                 autoBan);
     conList.append(con);
     connect(con, &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
     connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);

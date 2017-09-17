@@ -33,15 +33,13 @@ class Address;
 namespace Common {
 
 QSS_EXPORT const char* version();
-QSS_EXPORT std::string packAddress(const Address &addr, bool auth = false);
+QSS_EXPORT std::string packAddress(const Address &addr);
 //this will never use ADDRTYPE_HOST because addr is an IP address
 QSS_EXPORT std::string packAddress(const QHostAddress &addr,
-                                   const uint16_t &port,
-                                   bool auth = false);
+                                   const uint16_t &port);
 QSS_EXPORT void parseHeader(const std::string &data,
                             Address &addr,
-                            int &length,
-                            bool &authFlag);
+                            int &length);
 //generate a random number which is in the range [min, max)
 QSS_EXPORT int randomNumber(int max, int min = 0);
 QSS_EXPORT void exclusive_or(unsigned char *ks,
@@ -54,7 +52,6 @@ QSS_EXPORT bool isAddressBanned(const QHostAddress &addr);
 QSS_EXPORT std::string stringFromHex(const std::string&);
 
 extern const uint8_t ADDRESS_MASK;
-extern const uint8_t ONETIMEAUTH_FLAG;
 }
 
 }

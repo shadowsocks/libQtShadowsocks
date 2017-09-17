@@ -62,7 +62,6 @@ Controller::Controller(const Profile &_profile,
                               profile.timeout(),
                               isLocal,
                               autoBan,
-                              profile.otaEnabled(),
                               serverAddress,
                               this);
 
@@ -72,7 +71,6 @@ Controller::Controller(const Profile &_profile,
                             profile.password(),
                             isLocal,
                             autoBan,
-                            profile.otaEnabled(),
                             serverAddress,
                             this);
     httpProxy = new HttpProxy(this);
@@ -144,9 +142,6 @@ bool Controller::start()
     if (listen_ret) {
         QDebug(QtMsgType::QtInfoMsg) << sstr;
         emit runningStateChanged(true);
-        if (profile.otaEnabled()) {
-            qInfo("One-time message authentication is enabled.");
-        }
     } else {
         qCritical("TCP server listen failed.");
     }

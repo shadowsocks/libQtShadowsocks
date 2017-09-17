@@ -42,13 +42,11 @@ public:
                const QString &method,
                const QString &timeout,
                const bool http_proxy,
-               const bool debug,
-               const bool auth);
+               const bool debug);
 
     void setAutoBan(bool ban);
     void setDebug(bool debug);
     void setHttpMode(bool http);
-    void setAuth(bool auth);
     std::string getMethod() const;
 
 public slots:

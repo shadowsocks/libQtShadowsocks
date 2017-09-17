@@ -60,18 +60,6 @@ public:
     std::string encryptAll(const std::string &);
 
     void reset();
-    void addHeaderAuth(std::string &headerData) const;
-    void addHeaderAuth(std::string &data, const int &headerLen) const;
-    void addChunkAuth(std::string &data);
-
-    bool verifyHeaderAuth(const char *data, const int &headerLen) const;
-
-    /*
-     * data will be overwritten by extracted data which can be sent to
-     * downstream
-     * @return the hash verification result
-     */
-    bool verifyExtractChunkAuth(std::string &data);
 
 private:
     const Cipher::CipherInfo cipherInfo;
@@ -82,9 +70,6 @@ private:
 
     // Incomplete data chunk that is pending
     std::string incompleteChunk;
-    uint32_t chunkId;
-
-    std::string deCipherIV() const;
 
     Cipher* initEncipher();
     Cipher* initDecipher(const std::string& in);

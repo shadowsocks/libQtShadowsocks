@@ -15,7 +15,6 @@ void Profile_T::testConstructorEmpty()
     QCOMPARE(uint16_t(0), p.serverPort());
     QCOMPARE(uint16_t(0), p.localPort());
     QCOMPARE(600, p.timeout());
-    QVERIFY(!p.otaEnabled());
     QVERIFY(!p.debug());
     QVERIFY(!p.httpProxy());
 }
@@ -26,10 +25,9 @@ void Profile_T::testFromUri()
     QSS::Profile p = QSS::Profile::fromUri("ss://YmYtY2ZiLWF1dGg6dGVzdEAxOTIuMTY4LjEwMC4xOjg4ODg#Tést");
     QCOMPARE(std::string("Tést"), p.name());
     QCOMPARE(std::string("192.168.100.1"), p.serverAddress());
-    QCOMPARE(std::string("bf-cfb"), p.method());
+    QCOMPARE(std::string("bf-cfb-auth"), p.method());
     QCOMPARE(std::string("test"), p.password());
     QCOMPARE(uint16_t(8888), p.serverPort());
-    QVERIFY(p.otaEnabled());
 }
 
 void Profile_T::testFromUriSip002()
@@ -40,7 +38,6 @@ void Profile_T::testFromUriSip002()
     QCOMPARE(std::string("rc4-md5"), p.method());
     QCOMPARE(std::string("passwd"), p.password());
     QCOMPARE(uint16_t(8888), p.serverPort());
-    QVERIFY(!p.otaEnabled());
 }
 
 void Profile_T::testToUri()
@@ -51,7 +48,6 @@ void Profile_T::testToUri()
     p.setPassword("test");
     p.setServerAddress("192.168.100.1");
     p.setServerPort(8888);
-    p.disableOta();
     QCOMPARE(std::string("ss://YmYtY2ZiOnRlc3RAMTkyLjE2OC4xMDAuMTo4ODg4#Tést"), p.toUri());
 }
 

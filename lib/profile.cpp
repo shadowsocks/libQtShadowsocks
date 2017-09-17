@@ -6,7 +6,6 @@ namespace QSS {
 
 struct ProfilePrivate {
     bool httpProxy = false;
-    bool otaAuth = false;
 };
 
 Profile::Profile() :
@@ -74,11 +73,6 @@ bool Profile::httpProxy() const
     return d_private->httpProxy;
 }
 
-bool Profile::otaEnabled() const
-{
-    return d_private->otaAuth;
-}
-
 void Profile::setName(const std::string& name)
 {
     d_name = name;
@@ -134,16 +128,6 @@ void Profile::disableDebug()
     d_debug = false;
 }
 
-void Profile::enableOta()
-{
-    d_private->otaAuth = true;
-}
-
-void Profile::disableOta()
-{
-    d_private->otaAuth = false;
-}
-
 Profile Profile::fromUri(const std::string& ssUri)
 {
     if (ssUri.length() < 5) {
@@ -173,10 +157,6 @@ Profile Profile::fromUri(const std::string& ssUri)
             throw std::invalid_argument("Can't find the colon separator between method and password");
         }
         std::string method = decoded.substr(0, colonPos);
-        if (method.substr(method.length() - 5) == "-auth") {
-            result.enableOta();
-            method.erase(method.length() - 5);
-        }
         result.setMethod(method);
         decoded.erase(0, colonPos + 1);
         atPos = decoded.find_last_of('@');
@@ -200,10 +180,6 @@ Profile Profile::fromUri(const std::string& ssUri)
         }
         std::string method = userInfo.substr(0, userInfoSp);
         result.setMethod(method);
-        if (method.substr(method.length() - 5) == "-auth") {
-            result.enableOta();
-            method.erase(method.length() - 5);
-        }
         result.setPassword(userInfo.substr(userInfoSp + 1));
 
         uri.erase(0, atPos + 1);
@@ -220,7 +196,7 @@ Profile Profile::fromUri(const std::string& ssUri)
 
 std::string Profile::toUri() const
 {
-    std::string ssUri = method() + (otaEnabled() ? "-auth" : "") + ":" + password() + "@" + serverAddress() + ":" + std::to_string(serverPort());
+    std::string ssUri = method() + ":" + password() + "@" + serverAddress() + ":" + std::to_string(serverPort());
     QByteArray uri = QByteArray(ssUri.data()).toBase64(QByteArray::Base64Option::OmitTrailingEquals);
     uri.prepend("ss://");
     uri.append("#");
@@ -230,7 +206,7 @@ std::string Profile::toUri() const
 
 std::string Profile::toUriSip002() const
 {
-    std::string plainUserInfo = method() + (otaEnabled() ? "-auth" : "") + ":" + password();
+    std::string plainUserInfo = method() + ":" + password();
     std::string userinfo(QByteArray(plainUserInfo.data()).toBase64(QByteArray::Base64Option::Base64UrlEncoding).data());
     return "ss://" + userinfo + "@" + serverAddress() + ":" + std::to_string(serverPort()) + "#" + name();
 }

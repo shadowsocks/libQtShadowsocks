@@ -43,24 +43,15 @@ UdpRelay::UdpRelay(const std::string &method,
                    const std::string &password,
                    const bool is_local,
                    const bool auto_ban,
-                   const bool auth,
                    const Address &serverAddress,
                    QObject *parent) :
     QObject(parent),
     serverAddress(serverAddress),
     isLocal(is_local),
     autoBan(auto_ban),
-    auth(auth),
     encryptor{new Encryptor(method, password, this)}
 {
-    // To make sure datagram doesn't exceed remote server's maximum, we can
-    // limit how many bytes we take from local socket at a time. This is due
-    // the overhead introduced by OTA.
-    uint64_t localRecvSize = RemoteRecvSize;
-    if (auth && isLocal) {
-        localRecvSize -= (Cipher::AUTH_LEN + 2);
-    }
-    listenSocket.setReadBufferSize(localRecvSize);
+    listenSocket.setReadBufferSize(RemoteRecvSize);
     listenSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
     connect(&listenSocket, &QUdpSocket::stateChanged,
@@ -154,8 +145,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     Address destAddr, remoteAddr(r_addr, r_port);//remote == client
     int header_length = 0;
-    bool at_auth = false;
-    Common::parseHeader(data, destAddr, header_length, at_auth);
+    Common::parseHeader(data, destAddr, header_length);
     if (header_length == 0) {
         qCritical("[UDP] Can't parse header. Wrong encryption method or password?");
         if (!isLocal && autoBan) {
@@ -180,32 +170,10 @@ void UdpRelay::onServerUdpSocketReadyRead()
     }
 
     if (isLocal) {
-        if (auth || at_auth) {
-            /*
-             * shadowsocks UDP Request (OTA-enabled, unencrypted)
-             * +------+----------+----------+----------+-------------+
-             * | ATYP | DST.ADDR | DST.PORT |   DATA   |  HMAC-SHA1  |
-             * +------+----------+----------+----------+-------------+
-             * |  1   | Variable |    2     | Variable |     10      |
-             * +------+----------+----------+----------+-------------+
-             */
-            encryptor->addHeaderAuth(data);
-        }
         data = encryptor->encryptAll(data);
         destAddr = serverAddress;
     } else {
-        if (auth || at_auth) {
-            if (!encryptor->verifyHeaderAuth(data.data(),
-                                             data.length() - Cipher::AUTH_LEN)) {
-                qCritical("[UDP] One-time message authentication for header failed.");
-                if (autoBan) {
-                    Common::banAddress(r_addr);
-                }
-                return;
-            }
-        }
-        data = data.substr(header_length,
-                        data.length() - header_length - Cipher::AUTH_LEN);
+        data = data.substr(header_length);
     }
 
     if (!destAddr.isIPValid()) {//TODO async dns
@@ -240,9 +208,8 @@ void UdpRelay::onClientUdpSocketReadyRead()
         data = encryptor->decryptAll(data);
         Address destAddr;
         int header_length = 0;
-        bool _auth;
 
-        Common::parseHeader(data, destAddr, header_length, _auth);
+        Common::parseHeader(data, destAddr, header_length);
         if (header_length == 0) {
             qCritical("[UDP] Can't parse header. "
                       "Wrong encryption method or password?");

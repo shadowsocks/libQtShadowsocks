@@ -33,14 +33,12 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    const std::string &password,
                    const bool &is_local,
                    const bool &autoBan,
-                   const bool &auth,
                    QObject *parent) :
     QObject(parent),
     stage(INIT),
     serverAddress(server_addr),
     isLocal(is_local),
     autoBan(autoBan),
-    auth(auth),
     local(localSocket),
     encryptor{new Encryptor(method, password, this)}
 {
@@ -78,14 +76,7 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
             timer, static_cast<void (QTimer::*)()> (&QTimer::start));
     connect(remote, &QTcpSocket::bytesWritten, this, &TcpRelay::bytesSend);
 
-    // To make sure datagram doesn't exceed remote server's maximum, we can
-    // limit how many bytes we take from local socket at a time. This is due
-    // the overhead introduced by OTA.
-    uint64_t localRecvSize = RemoteRecvSize;
-    if (auth && isLocal) {
-        localRecvSize -= (Cipher::AUTH_LEN + 2);
-    }
-    local->setReadBufferSize(localRecvSize);
+    local->setReadBufferSize(RemoteRecvSize);
     local->setSocketOption(QAbstractSocket::LowDelayOption, 1);
     local->setSocketOption(QAbstractSocket::KeepAliveOption, 1);
 
@@ -129,7 +120,7 @@ void TcpRelay::handleStageAddr(std::string &data)
     }
 
     int header_length = 0;
-    Common::parseHeader(data, remoteAddress, header_length, auth);
+    Common::parseHeader(data, remoteAddress, header_length);
     if (header_length == 0) {
         qCritical("Can't parse header. Wrong encryption method or password?");
         if (!isLocal && autoBan) {
@@ -148,49 +139,12 @@ void TcpRelay::handleStageAddr(std::string &data)
         static const char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
         static const QByteArray response(res, 10);
         local->write(response);
-
-        if (auth) {
-            char atyp = data[0];
-            data[0] = (atyp | Common::ONETIMEAUTH_FLAG);
-            if (data.size() > header_length) {
-                std::string header = data.substr(0, header_length);
-                std::string chunk = data.substr(header_length);
-                encryptor->addHeaderAuth(header);
-                encryptor->addChunkAuth(chunk);
-                data = header + chunk;
-            } else {
-                encryptor->addHeaderAuth(data);
-            }
-        }
         std::string toWrite = encryptor->encrypt(data);
         dataToWrite += toWrite;
         serverAddress.lookUp();
     } else {
-        if (auth) {
-            if (!encryptor->verifyHeaderAuth(data.data(), header_length)) {
-                qCritical("One-time message authentication for header failed.");
-                if (autoBan) {
-                    Common::banAddress(local->peerAddress());
-                }
-                close();
-                return;
-            } else {
-                header_length += Cipher::AUTH_LEN;
-            }
-        }
-
         if (data.size() > header_length) {
             data = data.substr(header_length);
-            if (auth) {
-                if (!encryptor->verifyExtractChunkAuth(data)) {
-                    qCritical("Data chunk hash authentication failed.");
-                    if (autoBan) {
-                        Common::banAddress(local->peerAddress());
-                    }
-                    close();
-                    return;
-                }
-            }
             dataToWrite += data;
         }
         remoteAddress.lookUp();
@@ -268,21 +222,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
 
     if (stage == STREAM) {
         if (isLocal) {
-            if (auth) {
-                encryptor->addChunkAuth(data);
-            }
             data = encryptor->encrypt(data);
-        } else if (auth) {
-            if (!encryptor->verifyExtractChunkAuth(data)) {
-                qCritical("Data chunk hash authentication failed.");
-                if (autoBan) {
-                    Common::banAddress(local->peerAddress());
-                }
-                close();
-                return;
-            } else if (data.empty()) {
-                return;
-            }
         }
         writeToRemote(data.data(), data.size());
     } else if (isLocal && stage == INIT) {
@@ -301,19 +241,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     } else if (stage == CONNECTING || stage == DNS) {
         //take DNS into account, otherwise some data will get lost
         if (isLocal) {
-            if (auth) {
-                encryptor->addChunkAuth(data);
-            }
             data = encryptor->encrypt(data);
-        } else if (auth) {
-            if (!encryptor->verifyExtractChunkAuth(data)) {
-                qCritical("Data chunk hash authentication failed.");
-                if (autoBan) {
-                    Common::banAddress(local->peerAddress());
-                }
-                close();
-                return;
-            }
         }
         dataToWrite += data;
     } else if ((isLocal && stage == ADDR) || (!isLocal && stage == INIT)) {

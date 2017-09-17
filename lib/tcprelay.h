@@ -43,7 +43,6 @@ public:
              const std::string& password,
              const bool &is_local,
              const bool &autoBan,
-             const bool &auth,
              QObject *parent = 0);
 
     enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
@@ -68,9 +67,8 @@ private:
     Address remoteAddress;
     Address serverAddress;
     std::string dataToWrite;
-    const bool &isLocal;
-    const bool &autoBan;
-    bool auth;
+    const bool isLocal;
+    const bool autoBan;
 
     QTcpSocket *local;
     QTcpSocket *remote;

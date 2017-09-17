@@ -59,7 +59,6 @@ public:
      */
     void startConnectivityTest(const std::string &method,
                                const std::string &password,
-                               bool one_time_auth,
                                int timeout = 3000);
 
 signals:
@@ -84,7 +83,6 @@ private:
 
     std::string encryptionMethod;
     std::string encryptionPassword;
-    bool oneTimeAuth;
 
     void connectToServer(int timeout);
 

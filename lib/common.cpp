@@ -37,7 +37,6 @@ std::mutex bannedAddressMutex;
 }
 
 const uint8_t Common::ADDRESS_MASK = 0b00001111;//0xf
-const uint8_t Common::ONETIMEAUTH_FLAG = 0b00010000;//0x10
 
 const char* Common::version()
 {
@@ -45,7 +44,7 @@ const char* Common::version()
 }
 
 //pack a shadowsocks header
-std::string Common::packAddress(const Address &addr, bool auth)
+std::string Common::packAddress(const Address &addr)
 {
     std::string portNs(2, '\0');
     qToBigEndian(addr.getPort(), reinterpret_cast<uchar*>(&portNs[0]));
@@ -66,16 +65,11 @@ std::string Common::packAddress(const Address &addr, bool auth)
     }
 
     char typeChar = static_cast<char>(type);
-    if (auth) {
-        typeChar |= ONETIMEAUTH_FLAG;
-    }
-
     return typeChar + addrBin + portNs;
 }
 
 std::string Common::packAddress(const QHostAddress &addr,
-                                const uint16_t &port,
-                                bool auth)
+                                const uint16_t &port)
 {
     std::string addrBin;
     char typeChar;
@@ -90,19 +84,14 @@ std::string Common::packAddress(const QHostAddress &addr,
         Q_IPV6ADDR ipv6Address = addr.toIPv6Address();
         addrBin = std::string(reinterpret_cast<char*>(ipv6Address.c), 16);
     }
-    if (auth) {
-        typeChar |= ONETIMEAUTH_FLAG;
-    }
     return typeChar + addrBin + portNs;
 }
 
 void Common::parseHeader(const std::string &data,
                          Address &dest,
-                         int &header_length,
-                         bool &authFlag)
+                         int &header_length)
 {
     char atyp = data[0];
-    authFlag |= (atyp & ONETIMEAUTH_FLAG);
     int addrtype = static_cast<int>(atyp & ADDRESS_MASK);
     header_length = 0;
 

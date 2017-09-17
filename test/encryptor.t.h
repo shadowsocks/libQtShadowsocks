@@ -11,8 +11,6 @@ public:
 
 private Q_SLOTS:
     void selfTestEncryptDecrypt();
-    void testChunkAuth();
-    void testIncompleteChunkAuth();
     void testAesGcm();
 };
 

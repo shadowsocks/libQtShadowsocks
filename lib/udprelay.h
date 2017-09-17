@@ -40,7 +40,6 @@ public:
              const std::string& password,
              const bool is_local,
              const bool auto_ban,
-             const bool auth,
              const Address &serverAddress,
              QObject *parent = 0);
 
@@ -68,7 +67,6 @@ private:
     const Address serverAddress;
     const bool isLocal;
     const bool autoBan;
-    const bool auth;
     QUdpSocket listenSocket;
     Encryptor *encryptor;
 

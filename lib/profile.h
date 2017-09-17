@@ -46,7 +46,6 @@ public:
     int timeout() const;
     bool httpProxy() const;
     bool debug() const;
-    bool otaEnabled() const;
 
     std::string toUri() const;
     std::string toUriSip002() const;
@@ -62,8 +61,6 @@ public:
     void setHttpProxy(bool);
     void enableDebug();
     void disableDebug();
-    void enableOta();
-    void disableOta();
 
     // Both the original schema and the SIP002 are supported by this function
     static Profile fromUri(const std::string&);
