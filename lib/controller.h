@@ -48,15 +48,15 @@ signals:
     void runningStateChanged(bool);
 
     // These two signals pass any new bytes read or sent
-    void newBytesReceived(uint64_t);
-    void newBytesSent(uint64_t);
+    void newBytesReceived(quint64);
+    void newBytesSent(quint64);
 
     /*
      * These two signals pass accumulated bytes read or sent so far
      * (aka total in this session)
      */
-    void bytesReceivedChanged(uint64_t);
-    void bytesSentChanged(uint64_t);
+    void bytesReceivedChanged(quint64);
+    void bytesSentChanged(quint64);
 
     /*
      * Time used to connect to remote host (msec)
@@ -91,8 +91,8 @@ protected:
 
 protected slots:
     void onTcpServerError(QAbstractSocket::SocketError err);
-    void onBytesRead(uint64_t);
-    void onBytesSend(uint64_t);
+    void onBytesRead(quint64);
+    void onBytesSend(quint64);
     void onServerAddressLookedUp(const bool success, const QString& err);
 };
 

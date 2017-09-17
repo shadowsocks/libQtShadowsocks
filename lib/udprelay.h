@@ -58,8 +58,8 @@ signals:
      * The same situation here.
      * We only count "listen" socket's read and written bytes
      */
-    void bytesRead(uint64_t);
-    void bytesSend(uint64_t);
+    void bytesRead(quint64);
+    void bytesSend(quint64);
 
 private:
     //64KB, same as shadowsocks-python (udprelay)

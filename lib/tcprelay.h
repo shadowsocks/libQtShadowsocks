@@ -54,8 +54,8 @@ signals:
      * Either in local or server mode, the remote socket is used to communicate
      * with other-side shadowsocks instance (a local or a server)
      */
-    void bytesRead(uint64_t);
-    void bytesSend(uint64_t);
+    void bytesRead(quint64);
+    void bytesSend(quint64);
 
     //time used for remote to connect to the host (msec)
     void latencyAvailable(int);

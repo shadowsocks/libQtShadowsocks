@@ -186,7 +186,7 @@ void Controller::onTcpServerError(QAbstractSocket::SocketError err)
     }
 }
 
-void Controller::onBytesRead(uint64_t r)
+void Controller::onBytesRead(quint64 r)
 {
     if (r != -1) {//-1 means read failed. don't count
         bytesReceived += r;
@@ -195,7 +195,7 @@ void Controller::onBytesRead(uint64_t r)
     }
 }
 
-void Controller::onBytesSend(uint64_t s)
+void Controller::onBytesSend(quint64 s)
 {
     if (s != -1) {//-1 means write failed. don't count
         bytesSent += s;
