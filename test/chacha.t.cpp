@@ -15,12 +15,12 @@ void ChaCha_T::testChaCha(const std::string &iv)
     ChaCha chacha(key, iv);
     ChaCha decryptor(key, iv);
     std::string testString1("barfoo!");
-    std::string intermed = chacha.update(testString1.data(), testString1.size());
-    QCOMPARE(decryptor.update(intermed.data(), intermed.size()), testString1);
+    std::string intermed = chacha.update(testString1);
+    QCOMPARE(decryptor.update(intermed), testString1);
 
     std::string testString2("$ is cheaper than £");
-    intermed = chacha.update(testString2.data(), testString2.size());
-    QCOMPARE(decryptor.update(intermed.data(), intermed.size()), testString2);
+    intermed = chacha.update(testString2);
+    QCOMPARE(decryptor.update(intermed), testString2);
 }
 
 void ChaCha_T::test8ByteIV()
@@ -40,12 +40,12 @@ void ChaCha_T::referenceTest()
     std::string testIv(8, 0);
     std::string testData(9, '\0');
     ChaCha chacha(testKey, testIv);
-    QCOMPARE(chacha.update(testData.data(), testData.size()),
+    QCOMPARE(chacha.update(testData),
              Common::stringFromHex("76b8e0ada0f13d9040"));
 
     // Test ChaCha20-IETF
     std::string testIv_ietf(12, 0);
     ChaCha chacha_ietf(testKey, testIv_ietf);
-    QCOMPARE(chacha_ietf.update(testData.data(), testData.size()),
+    QCOMPARE(chacha_ietf.update(testData),
              Common::stringFromHex("76b8e0ada0f13d9040"));
 }

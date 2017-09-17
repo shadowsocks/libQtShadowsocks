@@ -48,13 +48,10 @@ RC4::RC4(const std::string &_key, const std::string &_iv) :
     generate();
 }
 
-std::string RC4::update(const std::string &input)
+std::string RC4::update(const uint8_t *in, size_t length)
 {
-    size_t length = input.length();
     std::string output;
     output.resize(length);
-    const unsigned char *in =
-            reinterpret_cast<const unsigned char*>(input.data());
     unsigned char *out =
             reinterpret_cast<unsigned char*>(&output[0]);
 
@@ -70,6 +67,11 @@ std::string RC4::update(const std::string &input)
     Common::exclusive_or(buffer.data() + position, in, out, length);
     position += length;
     return output;
+}
+
+std::string RC4::update(const std::string &input)
+{
+    return update(reinterpret_cast<const uint8_t*>(input.data()), input.length());
 }
 
 void RC4::generate()

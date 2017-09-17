@@ -133,12 +133,10 @@ void ChaCha::chacha()
      m_position = 0;
 }
 
-std::string ChaCha::update(const char *input, size_t length)
+std::string ChaCha::update(const uint8_t *in, size_t length)
 {
     std::string output;
     output.resize(length);
-    const unsigned char *in =
-            reinterpret_cast<const unsigned char*>(input);
     unsigned char *out = reinterpret_cast<unsigned char*>(&output[0]);
 
     uint32_t buf_size = m_buffer.size();
@@ -155,4 +153,9 @@ std::string ChaCha::update(const char *input, size_t length)
     Common::exclusive_or(m_buffer.data() + m_position, in, out, length);
     m_position += length;
     return output;
+}
+
+std::string ChaCha::update(const std::string &input)
+{
+    return update(reinterpret_cast<const uint8_t*>(input.data()), input.length());
 }

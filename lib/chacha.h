@@ -41,7 +41,8 @@ public:
            const std::string &_iv);
 
     //encrypt (or decrypt, same process for ChaCha algorithm) a byte array.
-    std::string update(const char *input, size_t length);
+    std::string update(const uint8_t *input, size_t length);
+    std::string update(const std::string &input);
 
 private:
     std::vector<uint32_t> m_state;

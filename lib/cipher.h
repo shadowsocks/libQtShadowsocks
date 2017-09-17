@@ -60,6 +60,7 @@ public:
     ~Cipher();
 
     std::string update(const std::string &data);
+    std::string update(const uint8_t *data, size_t length);
     const std::string &getIV() const;
 
     enum CipherType {

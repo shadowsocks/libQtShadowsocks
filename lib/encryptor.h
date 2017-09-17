@@ -46,10 +46,14 @@ public:
     Encryptor(const std::string& method,
               const std::string& password);
 
-    std::string decrypt(std::string);
+    std::string decrypt(const std::string &);
+    std::string decrypt(const uint8_t *data, size_t length);
+
     std::string encrypt(const std::string &);
 
-    std::string decryptAll(std::string);//(de)encryptAll is for updreplay
+    // (de)encryptAll is for updreplay
+    std::string decryptAll(const std::string &);
+    std::string decryptAll(const uint8_t *data, size_t length);
     std::string encryptAll(const std::string &);
 
     void reset();
@@ -63,7 +67,7 @@ private:
     std::string incompleteChunk;
 
     Cipher* initEncipher(std::string *header);
-    Cipher* initDecipher(std::string *inOut);
+    Cipher* initDecipher(const char *data, size_t *offset);
 
 protected:
     std::unique_ptr<Cipher> enCipher;

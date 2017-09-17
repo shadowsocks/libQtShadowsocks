@@ -134,13 +134,18 @@ const std::string Cipher::kdfLabel = {"ss-subkey"};
 
 std::string Cipher::update(const std::string &data)
 {
+    return update(reinterpret_cast<const uint8_t*>(data.data()), data.length());
+}
+
+std::string Cipher::update(const uint8_t *data, size_t length)
+{
     if (chacha) {
-        return chacha->update(data.data(), data.size());
+        return chacha->update(data, length);
     } else if (rc4) {
-        return rc4->update(data);
+        return rc4->update(data, length);
     } else if (pipe) {
         pipe->process_msg(reinterpret_cast<const Botan::byte *>
-                          (data.data()), data.size());
+                          (data), length);
         SecureByteArray c = pipe->read_all(Botan::Pipe::LAST_MESSAGE);
         if (cipherInfo.type == CipherType::AEAD) {
             nonceIncrement(reinterpret_cast<unsigned char*>(&iv[0]), iv.length());
