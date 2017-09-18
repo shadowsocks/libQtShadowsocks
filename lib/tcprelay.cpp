@@ -213,9 +213,16 @@ void TcpRelay::onLocalTcpSocketReadyRead()
     }
 
     if (!isLocal) {
-        data = encryptor->decrypt(data);
+        try {
+            data = encryptor->decrypt(data);
+        } catch (const std::exception &e) {
+            QDebug(QtMsgType::QtCriticalMsg) << "Local: " << e.what();
+            close();
+            return;
+        }
+
         if (data.empty()) {
-            qCritical("Data is empty after decryption.");
+            qWarning("Data is empty after decryption.");
             return;
         }
     }
@@ -259,7 +266,13 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
         return;
     }
     emit bytesRead(buf.size());
-    buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
+    try {
+        buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
+    } catch (const std::exception &e) {
+        QDebug(QtMsgType::QtCriticalMsg) << "Remote: " << e.what();
+        close();
+        return;
+    }
     local->write(buf.data(), buf.size());
 }
 

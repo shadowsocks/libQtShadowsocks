@@ -46,16 +46,30 @@ public:
     Encryptor(const std::string& method,
               const std::string& password);
 
+    /**
+     * @brief decrypt Decrypts encrypted shadowsocks TCP packets
+     * @return Decrypted data
+     */
     std::string decrypt(const std::string &);
     std::string decrypt(const uint8_t *data, size_t length);
 
+    /**
+     * @brief encrypt Encrypts plain text in TCP sessions
+     * @return Encrypted data
+     */
     std::string encrypt(const std::string &);
 
-    // (de)encryptAll is for updreplay
+    /**
+     * decryptAll and encryptAll are the counterpart for UDP packets
+     */
     std::string decryptAll(const std::string &);
     std::string decryptAll(const uint8_t *data, size_t length);
+
     std::string encryptAll(const std::string &);
 
+    /**
+     * @brief reset Resets this Encryptor to initial state
+     */
     void reset();
 
 private:
@@ -63,11 +77,8 @@ private:
     std::string method;
     std::string masterKey;
 
-    // Incomplete data chunk that is pending
-    std::string incompleteChunk;
-
-    Cipher* initEncipher(std::string *header);
-    Cipher* initDecipher(const char *data, size_t *offset);
+    void initEncipher(std::string *header);
+    void initDecipher(const char *data, size_t length, size_t *offset);
 
 protected:
     std::unique_ptr<Cipher> enCipher;

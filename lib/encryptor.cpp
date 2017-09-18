@@ -67,7 +67,7 @@ void Encryptor::reset()
     deCipher.reset();
 }
 
-Cipher* Encryptor::initEncipher(std::string *header)
+void Encryptor::initEncipher(std::string *header)
 {
     const std::string iv = Cipher::randomIv(method);
     std::string key;
@@ -83,49 +83,54 @@ Cipher* Encryptor::initEncipher(std::string *header)
 #ifdef USE_BOTAN2
     }
 #endif
-    Cipher* cipher = new Cipher(method, key, iv, true);
-    return cipher;
+    enCipher.reset(new Cipher(method, key, iv, true));
 }
 
-Cipher* Encryptor::initDecipher(const char *data, size_t *offset)
+void Encryptor::initDecipher(const char *data, size_t length, size_t *offset)
 {
     std::string key, iv;
 #ifdef USE_BOTAN2
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
         iv = std::string(cipherInfo.ivLen, static_cast<char>(0));
+        if (length < cipherInfo.saltLen) {
+            throw std::length_error("Data chunk is too small to initialise an AEAD decipher");
+        }
         key = Cipher::deriveAeadSubkey(cipherInfo.keyLen, masterKey, std::string(data, cipherInfo.saltLen));
         *offset = cipherInfo.saltLen;
     } else {
 #endif
+        if (length < cipherInfo.ivLen) {
+            throw std::length_error("Data chunk is too small to initialise a stream decipher");
+        }
         iv = std::string(data, cipherInfo.ivLen);
         key = masterKey;
         *offset = cipherInfo.ivLen;
 #ifdef USE_BOTAN2
     }
 #endif
-    Cipher* cipher = new Cipher(method, key, iv, false);
-    return cipher;
+    deCipher.reset(new Cipher(method, key, iv, false));
 }
 
 std::string Encryptor::encrypt(const std::string &in)
 {
     std::string header;
     if (!enCipher) {
-        enCipher.reset(initEncipher(&header));
+        initEncipher(&header);
     }
 
     std::string encrypted;
 #ifdef USE_BOTAN2
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
         uint16_t inLen = in.length() & 0x3FFF;
-        if (inLen != in.length()) {
-            incompleteChunk += in.substr(inLen);
-        }
         std::string length(2, static_cast<char>(0));
         qToBigEndian(inLen, reinterpret_cast<uint16_t*>(&length[0]));
         std::string encLength = enCipher->update(length); // length + tag
         std::string encPayload = enCipher->update(in.substr(0, inLen)); // payload + tag
         encrypted = encLength + encPayload;
+        if (inLen != in.length()) {
+            // Append the remaining part recursively if there is any
+            encrypted += encrypt(in.substr(inLen));
+        }
     } else {
 #endif
         encrypted = enCipher->update(in);
@@ -145,19 +150,30 @@ std::string Encryptor::decrypt(const uint8_t* data, size_t length)
     std::string out;
     if (!deCipher) {
         size_t headerLength = 0;
-        deCipher.reset(initDecipher(reinterpret_cast<const char*>(data), &headerLength));
+        initDecipher(reinterpret_cast<const char*>(data), length, &headerLength);
         data += headerLength;
         length -= headerLength;
     }
 
 #ifdef USE_BOTAN2
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
-        std::string enc = incompleteChunk + std::string(reinterpret_cast<const char*>(data), length);
-        const uint8_t *encPtr = reinterpret_cast<const uint8_t*>(enc.data());
-        std::string decLength = deCipher->update(encPtr, 2 + cipherInfo.tagLen);
-        uint16_t length = qFromBigEndian(*reinterpret_cast<const uint16_t*>(decLength.data()));
-        out = deCipher->update(encPtr + 2 + cipherInfo.tagLen, length + cipherInfo.tagLen);
-        incompleteChunk = enc.substr(2 + cipherInfo.tagLen + length + cipherInfo.tagLen);
+        if (length < 2 + cipherInfo.tagLen) {
+            throw std::length_error("AEAD data chunk is too small to decrypt the length");
+        }
+        std::string decLength = deCipher->update(data, 2 + cipherInfo.tagLen);
+        uint16_t payloadLength = qFromBigEndian(*reinterpret_cast<const uint16_t*>(decLength.data()));
+        data += (2 + cipherInfo.tagLen);
+        length -= (2 + cipherInfo.tagLen);
+        if (length < payloadLength + cipherInfo.tagLen) {
+            throw std::length_error("AEAD data chunk is too small to decrypt the payload");
+        }
+        out = deCipher->update(data, payloadLength + cipherInfo.tagLen);
+        data += (payloadLength + cipherInfo.tagLen);
+        length -= (payloadLength + cipherInfo.tagLen);
+        if (length > 0) {
+            // Append remaining decrypted chunks recursively if there is any
+            out += decrypt(data, length);
+        }
     } else {
 #endif
         out = deCipher->update(data, length);
@@ -170,7 +186,7 @@ std::string Encryptor::decrypt(const uint8_t* data, size_t length)
 std::string Encryptor::encryptAll(const std::string &in)
 {
     std::string header;
-    enCipher.reset(initEncipher(&header));
+    initEncipher(&header);
     return header + enCipher->update(in);
 }
 
@@ -182,7 +198,7 @@ std::string Encryptor::decryptAll(const std::string &data)
 std::string Encryptor::decryptAll(const uint8_t* data, size_t length)
 {
     size_t headerLength = 0; // IV or salt length
-    deCipher.reset(initDecipher(reinterpret_cast<const char*>(data), &headerLength));
+    initDecipher(reinterpret_cast<const char*>(data), length, &headerLength);
     data += headerLength;
     length -= headerLength;
     return deCipher->update(data, length);
