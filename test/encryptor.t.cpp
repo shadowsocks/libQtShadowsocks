@@ -91,8 +91,15 @@ void Encryptor_T::testAesGcmIncompleteChunks()
     Encryptor encryptor(method, password);
     Encryptor decryptor(method, password);
 
+    // Too small for payload
     std::string encrypted = encryptor.encrypt(testData);
     std::string decrypted = decryptor.decrypt(encrypted.substr(0, 50));
     decrypted += decryptor.decrypt(encrypted.substr(50));
+    QCOMPARE(decrypted, testData);
+
+    // Too small for length
+    encrypted = encryptor.encrypt(testData);
+    decrypted = decryptor.decrypt(encrypted.substr(0, 2));
+    decrypted += decryptor.decrypt(encrypted.substr(2));
     QCOMPARE(decrypted, testData);
 }

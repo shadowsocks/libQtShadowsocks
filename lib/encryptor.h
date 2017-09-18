@@ -58,6 +58,7 @@ public:
      * @return Encrypted data
      */
     std::string encrypt(const std::string &);
+    std::string encrypt(const uint8_t *data, size_t length);
 
     /**
      * decryptAll and encryptAll are the counterpart for UDP packets
@@ -66,6 +67,7 @@ public:
     std::string decryptAll(const uint8_t *data, size_t length);
 
     std::string encryptAll(const std::string &);
+    std::string encryptAll(const uint8_t *data, size_t length);
 
     /**
      * @brief reset Resets this Encryptor to initial state
