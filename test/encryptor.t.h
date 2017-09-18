@@ -13,6 +13,8 @@ private Q_SLOTS:
     void selfTestEncryptDecrypt();
     void testAesGcm();
     void testAesGcmUdp();
+    void testAesGcmMultiChunks();
+    void testAesGcmIncompleteChunks();
 };
 
 #endif // ENCRYPTOR_T_H

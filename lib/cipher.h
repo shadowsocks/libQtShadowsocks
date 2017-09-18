@@ -61,7 +61,12 @@ public:
 
     std::string update(const std::string &data);
     std::string update(const uint8_t *data, size_t length);
-    const std::string &getIV() const;
+
+    /**
+     * @brief incrementIv Increments the current nonce by 1
+     * This is required by Shadowsocks AEAD operation after each encryption/decryption
+     */
+    void incrementIv();
 
     enum CipherType {
         STREAM,

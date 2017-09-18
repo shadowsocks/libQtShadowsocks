@@ -147,12 +147,6 @@ std::string Cipher::update(const uint8_t *data, size_t length)
         pipe->process_msg(reinterpret_cast<const Botan::byte *>
                           (data), length);
         SecureByteArray c = pipe->read_all(Botan::Pipe::LAST_MESSAGE);
-        if (cipherInfo.type == CipherType::AEAD) {
-            nonceIncrement(reinterpret_cast<unsigned char*>(&iv[0]), iv.length());
-            filter->set_iv(Botan::InitializationVector(
-                               reinterpret_cast<const Botan::byte *>(iv.data()), iv.size()
-                               ));
-        }
         return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(c)),
                            c.size());
     } else {
@@ -160,9 +154,12 @@ std::string Cipher::update(const uint8_t *data, size_t length)
     }
 }
 
-const std::string &Cipher::getIV() const
+void Cipher::incrementIv()
 {
-    return iv;
+    nonceIncrement(reinterpret_cast<unsigned char*>(&iv[0]), iv.length());
+    filter->set_iv(Botan::InitializationVector(
+                       reinterpret_cast<const Botan::byte *>(iv.data()), iv.size()
+                       ));
 }
 
 std::string Cipher::randomIv(int length)

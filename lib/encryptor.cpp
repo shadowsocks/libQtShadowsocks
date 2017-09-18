@@ -57,7 +57,8 @@ Encryptor::Encryptor(const std::string &method,
                      const std::string &password) :
     cipherInfo(Cipher::cipherInfoMap.at(method)),
     method(method),
-    masterKey(evpBytesToKey(cipherInfo, password))
+    masterKey(evpBytesToKey(cipherInfo, password)),
+    incompleteLength(0)
 {
 }
 
@@ -65,6 +66,8 @@ void Encryptor::reset()
 {
     enCipher.reset();
     deCipher.reset();
+    incompleteChunk.clear();
+    incompleteLength = 0;
 }
 
 void Encryptor::initEncipher(std::string *header)
@@ -125,7 +128,9 @@ std::string Encryptor::encrypt(const std::string &in)
         std::string length(2, static_cast<char>(0));
         qToBigEndian(inLen, reinterpret_cast<uint16_t*>(&length[0]));
         std::string encLength = enCipher->update(length); // length + tag
+        enCipher->incrementIv();
         std::string encPayload = enCipher->update(in.substr(0, inLen)); // payload + tag
+        enCipher->incrementIv();
         encrypted = encLength + encPayload;
         if (inLen != in.length()) {
             // Append the remaining part recursively if there is any
@@ -148,6 +153,7 @@ std::string Encryptor::decrypt(const std::string &data)
 std::string Encryptor::decrypt(const uint8_t* data, size_t length)
 {
     std::string out;
+    const uint8_t *dataEnd = data + length;
     if (!deCipher) {
         size_t headerLength = 0;
         initDecipher(reinterpret_cast<const char*>(data), length, &headerLength);
@@ -157,22 +163,39 @@ std::string Encryptor::decrypt(const uint8_t* data, size_t length)
 
 #ifdef USE_BOTAN2
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
-        if (length < 2 + cipherInfo.tagLen) {
-            throw std::length_error("AEAD data chunk is too small to decrypt the length");
+        // Concatenate the data with incomplete chunk (if it exists)
+        std::string chunk = incompleteChunk + std::string(reinterpret_cast<const char*>(data), length);
+        data = reinterpret_cast<const uint8_t*>(chunk.data());
+        length = chunk.length();
+        dataEnd = data + length;
+
+        uint16_t payloadLength = 0;
+        if (incompleteLength) {
+            payloadLength = incompleteLength;
+            incompleteLength = 0;
+            incompleteChunk.clear();
+        } else {
+            if (dataEnd - data < 2 + cipherInfo.tagLen) {
+                throw std::length_error("AEAD data chunk is too small to decrypt the length");
+            }
+            std::string decLength = deCipher->update(data, 2 + cipherInfo.tagLen);
+            deCipher->incrementIv();
+            data += (2 + cipherInfo.tagLen);
+            payloadLength = qFromBigEndian(*reinterpret_cast<const uint16_t*>(decLength.data()));
         }
-        std::string decLength = deCipher->update(data, 2 + cipherInfo.tagLen);
-        uint16_t payloadLength = qFromBigEndian(*reinterpret_cast<const uint16_t*>(decLength.data()));
-        data += (2 + cipherInfo.tagLen);
-        length -= (2 + cipherInfo.tagLen);
-        if (length < payloadLength + cipherInfo.tagLen) {
-            throw std::length_error("AEAD data chunk is too small to decrypt the payload");
+
+        if (dataEnd - data < payloadLength + cipherInfo.tagLen) {
+            qDebug("AEAD data chunk is incomplete");
+            incompleteChunk = std::string(reinterpret_cast<const char*>(data), dataEnd - data);
+            incompleteLength = payloadLength;
+            return std::string();
         }
         out = deCipher->update(data, payloadLength + cipherInfo.tagLen);
+        deCipher->incrementIv();
         data += (payloadLength + cipherInfo.tagLen);
-        length -= (payloadLength + cipherInfo.tagLen);
-        if (length > 0) {
+        if (dataEnd > data) {
             // Append remaining decrypted chunks recursively if there is any
-            out += decrypt(data, length);
+            out += decrypt(data, dataEnd - data);
         }
     } else {
 #endif

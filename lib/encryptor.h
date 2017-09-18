@@ -76,6 +76,8 @@ private:
     const Cipher::CipherInfo cipherInfo;
     std::string method;
     std::string masterKey;
+    std::string incompleteChunk;
+    uint16_t incompleteLength;
 
     void initEncipher(std::string *header);
     void initDecipher(const char *data, size_t length, size_t *offset);

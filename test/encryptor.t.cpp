@@ -62,3 +62,37 @@ void Encryptor_T::testAesGcmUdp()
     decrypted = decryptor.decryptAll(encrypted);
     QCOMPARE(decrypted, testData);
 }
+
+void Encryptor_T::testAesGcmMultiChunks()
+{
+    const std::string method("aes-256-gcm");
+    const std::string password("test");
+    Encryptor encryptor(method, password);
+    Encryptor decryptor(method, password);
+
+    // encrypted has salt preprended
+    std::string encrypted = encryptor.encrypt(std::string("Hello"));
+    encrypted += encryptor.encrypt(std::string(" Bye")); // the execution order matters!
+    std::string decrypted = decryptor.decrypt(encrypted);
+    QCOMPARE(decrypted, std::string("Hello Bye"));
+
+    // No salt preprended
+    encrypted = encryptor.encrypt(std::string("Shadow"));
+    encrypted += encryptor.encrypt(std::string("sock"));
+    encrypted += encryptor.encrypt(std::string("s"));
+    decrypted = decryptor.decrypt(encrypted);
+    QCOMPARE(decrypted, std::string("Shadowsocks"));
+}
+
+void Encryptor_T::testAesGcmIncompleteChunks()
+{
+    const std::string method("aes-256-gcm");
+    const std::string password("test");
+    Encryptor encryptor(method, password);
+    Encryptor decryptor(method, password);
+
+    std::string encrypted = encryptor.encrypt(testData);
+    std::string decrypted = decryptor.decrypt(encrypted.substr(0, 50));
+    decrypted += decryptor.decrypt(encrypted.substr(50));
+    QCOMPARE(decrypted, testData);
+}
