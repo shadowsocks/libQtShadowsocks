@@ -125,7 +125,8 @@ const std::unordered_map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap 
     {"seed-cfb", {"SEED/CFB", 16, 16, Cipher::CipherType::STREAM}},
     {"serpent-256-cfb", {"Serpent/CFB", 32, 16, Cipher::CipherType::STREAM}}
 #ifdef USE_BOTAN2
-   ,{"aes-128-gcm", {"AES-128/GCM", 16, 12, Cipher::CipherType::AEAD, 16, 16}},
+   ,{"chacha20-ietf-poly1305", {"ChaCha20Poly1305", 32, 12, Cipher::CipherType::AEAD, 32, 16}},
+    {"aes-128-gcm", {"AES-128/GCM", 16, 12, Cipher::CipherType::AEAD, 16, 16}},
     {"aes-192-gcm", {"AES-192/GCM", 24, 12, Cipher::CipherType::AEAD, 24, 16}},
     {"aes-256-gcm", {"AES-256/GCM", 32, 12, Cipher::CipherType::AEAD, 32, 16}}
 #endif
