@@ -21,6 +21,7 @@
 #include <QCoreApplication>
 #include <QCommandLineParser>
 #include <signal.h>
+#include <cstdio>
 #include "client.h"
 #include "utils.h"
 
@@ -36,6 +37,14 @@ int main(int argc, char *argv[])
     QCoreApplication a(argc, argv);
     a.setApplicationName("Shadowsocks-libQtShadowsocks");
     a.setApplicationVersion(Common::version());
+
+    qSetMessagePattern("%{time yyyy-MM-dd h:mm:ss.zzz} "
+                       "%{if-debug}DEBUG%{endif}"
+                       "%{if-info}INFO%{endif}"
+                       "%{if-warning}WARN%{endif}"
+                       "%{if-critical}ERROR%{endif}"
+                       "%{if-fatal}FATAL%{endif}: "
+                       "%{message}");
 
     signal(SIGINT, onSIGINT_TERM);
     signal(SIGTERM, onSIGINT_TERM);

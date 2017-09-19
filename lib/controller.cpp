@@ -42,9 +42,10 @@ Controller::Controller(const Profile &_profile,
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
     } catch (std::exception &e) {
-        qCritical("%s", e.what());
+        qFatal("Failed to initialise Botan library: %s", e.what());
     }
 
+    qInfo("Initialising cipher: %s", profile.method().data());
     /*
      * the default QHostAddress constructor will construct "::" as AnyIPv6
      * we explicitly use Any to enable dual stack
@@ -106,10 +107,8 @@ bool Controller::start()
 
     bool listen_ret = false;
 
-    QString sstr("TCP server listen at port ");
     if (isLocal) {
         qInfo("Running in local mode.");
-        sstr.append(QString::number(profile.localPort()));
         listen_ret = tcpServer->listen(
                     getLocalAddr(),
                     profile.httpProxy() ? 0 : profile.localPort());
@@ -130,7 +129,6 @@ bool Controller::start()
         }
     } else {
         qInfo("Running in server mode.");
-        sstr.append(QString::number(profile.serverPort()));
         listen_ret = tcpServer->listen(serverAddress.getFirstIP(),
                                        profile.serverPort());
         if (listen_ret) {
@@ -140,7 +138,10 @@ bool Controller::start()
     }
 
     if (listen_ret) {
-        QDebug(QtMsgType::QtInfoMsg) << sstr;
+        QDebug(QtMsgType::QtInfoMsg).noquote().nospace()
+                << "TCP server listening at "
+                << (isLocal ? getLocalAddr().toString() : serverAddress.getFirstIP().toString())
+                << ":" << (isLocal ? profile.localPort() : profile.serverPort());
         emit runningStateChanged(true);
     } else {
         qCritical("TCP server listen failed.");
@@ -164,16 +165,16 @@ QHostAddress Controller::getLocalAddr()
     if (!addr.isNull()) {
         return addr;
     } else {
-        QDebug(QtMsgType::QtInfoMsg) << "Can't get address from "
-                                     << QString::fromStdString(profile.localAddress())
-                                     << ". Using localhost instead.";
+        QDebug(QtMsgType::QtInfoMsg).noquote() << "Can't get address from "
+                                               << QString::fromStdString(profile.localAddress())
+                                               << ". Using localhost instead.";
         return QHostAddress::LocalHost;
     }
 }
 
 void Controller::onTcpServerError(QAbstractSocket::SocketError err)
 {
-    QDebug(QtMsgType::QtWarningMsg) << "TCP server error: " << tcpServer->errorString();
+    QDebug(QtMsgType::QtWarningMsg).noquote() << "TCP server error: " << tcpServer->errorString();
 
     //can't continue if address is already in use
     if (err == QAbstractSocket::AddressInUseError) {
@@ -202,7 +203,6 @@ void Controller::onBytesSend(quint64 s)
 void Controller::onServerAddressLookedUp(const bool success, const QString &err)
 {
     if (!success) {
-        QDebug(QtMsgType::QtWarningMsg) << "Shadowsocks server DNS lookup failed: "
-                                        << err;
+        QDebug(QtMsgType::QtWarningMsg).noquote() << "Shadowsocks server DNS lookup failed: " << err;
     }
 }

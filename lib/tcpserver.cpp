@@ -71,8 +71,8 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     localSocket->setSocketDescriptor(socketDescriptor);
 
     if (!isLocal && autoBan && Common::isAddressBanned(localSocket->peerAddress())) {
-        QDebug(QtMsgType::QtInfoMsg) << "A banned IP " << localSocket->peerAddress()
-                                     << " attempted to access this server";
+        QDebug(QtMsgType::QtInfoMsg).noquote() << "A banned IP" << localSocket->peerAddress()
+                                               << "attempted to access this server";
         localSocket->deleteLater();
         return;
     }

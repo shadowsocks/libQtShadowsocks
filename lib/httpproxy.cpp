@@ -89,8 +89,7 @@ void HttpProxy::onSocketReadyRead()
     if (method != "CONNECT") {
         QUrl url = QUrl::fromEncoded(address);
         if (!url.isValid()) {
-            QDebug(QtMsgType::QtCriticalMsg) << "Invalid URL: "
-                                            << url;
+            QDebug(QtMsgType::QtCriticalMsg) << "Invalid URL: " << url;
             socket->disconnectFromHost();
             return;
         }

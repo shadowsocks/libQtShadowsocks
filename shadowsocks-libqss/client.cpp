@@ -23,7 +23,7 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <iostream>
+#include <QDebug>
 #include "client.h"
 
 Client::Client(QObject *parent) :
@@ -36,11 +36,12 @@ bool Client::readConfig(const QString &file)
 {
     QFile c(file);
     if (!c.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        std::cout << "can't open config file " << file.toStdString() << std::endl;
+        QDebug(QtMsgType::QtCriticalMsg).noquote() << "Can't open configuration file" << file;
         return false;
     }
     if (!c.isReadable()) {
-        std::cout << "config file " << file.toStdString() << " is not readable!" << std::endl;
+        QDebug(QtMsgType::QtCriticalMsg).noquote()
+                << "Configuration file" << file << "is not readable!";
         return false;
     }
     QByteArray confArray = c.readAll();
@@ -57,7 +58,7 @@ bool Client::readConfig(const QString &file)
     profile.setTimeout(confObj["timeout"].toInt());
     profile.setHttpProxy(confObj["http_proxy"].toBool());
     if (confObj["auth"].toBool()) {
-        std::cerr << "OTA is deprecated, please disable OTA in the config." << std::endl;
+        QDebug(QtMsgType::QtCriticalMsg) << "OTA is deprecated, please disable OTA in the configuration.";
         return false;
     }
 
@@ -110,7 +111,7 @@ bool Client::start(bool _server)
 {
     if (profile.debug()) {
         if (!headerTest()) {
-            std::cout << "Header test failed" << std::endl;
+            QDebug(QtMsgType::QtCriticalMsg) << "Header test failed.";
             return false;
         }
     }
@@ -131,7 +132,7 @@ bool Client::start(bool _server)
                 this, &Client::onConnectivityResultArrived);
         connect(tester, &QSS::AddressTester::testErrorString,
                 [] (const QString& error) {
-            std::cout << "Connectivity testing error: " << error.toStdString() << std::endl;
+            QDebug(QtMsgType::QtWarningMsg).noquote() << "Connectivity testing error: " << error;
         });
         tester->startConnectivityTest(profile.method(),
                                       profile.password());
@@ -151,17 +152,15 @@ bool Client::headerTest()
     QSS::Common::parseHeader(packed, test_res, length);
     bool success = (test_v6 == test_res);
     if (!success) {
-        std::cout << test_v6.toString() << " --> "
-                  << test_res.toString() << std::endl;
+        qWarning("%s --> %s", test_v6.toString().data(), test_res.toString().data());
     }
     packed = QSS::Common::packAddress(test_addr, test_port);
     QSS::Common::parseHeader(packed, test_res, length);
     bool success2 = ((test_res.getFirstIP() == test_addr)
                  && (test_res.getPort() == test_port));
     if (!success2) {
-        std::cout << test_addr.toString().toStdString()
-                  << ":" << test_port << " --> "
-                  << test_res.toString() << std::endl;
+        QDebug(QtMsgType::QtWarningMsg).noquote().nospace()
+                << test_addr.toString() << ":" << test_port << " --> " << test_res.toString().data();
     }
     return success & success2;
 }
@@ -174,11 +173,11 @@ std::string Client::getMethod() const
 void Client::onConnectivityResultArrived(bool c)
 {
     if (c) {
-        std::cout << "The shadowsocks connection is okay." << std::endl;
+        QDebug(QtMsgType::QtInfoMsg) << "The shadowsocks connection is okay.";
     } else {
-        std::cout << "Destination is not reachable. "
-                     "Please check your network and firewall settings. "
-                     "And make sure the profile is correct."
-                  << std::endl;
+        QDebug(QtMsgType::QtWarningMsg)
+                << "Destination is not reachable. "
+                   "Please check your network and firewall settings. "
+                   "And make sure the profile is correct.";
     }
 }

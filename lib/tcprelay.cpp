@@ -130,9 +130,9 @@ void TcpRelay::handleStageAddr(std::string &data)
         return;
     }
 
-    QDebug(QtMsgType::QtInfoMsg) << "Connecting " << remoteAddress
-                                 << " from " << local->peerAddress().toString()
-                                 << ":" << local->peerPort();
+    QDebug(QtMsgType::QtInfoMsg).noquote().nospace()
+            << "Connecting " << remoteAddress << " from "
+            << local->peerAddress().toString() << ":" << local->peerPort();
 
     stage = DNS;
     if (isLocal) {
@@ -155,9 +155,9 @@ void TcpRelay::onLocalTcpSocketError()
 {
     //it's not an "error" if remote host closed a connection
     if (local->error() != QAbstractSocket::RemoteHostClosedError) {
-        QDebug(QtMsgType::QtWarningMsg) << "Local socket error: " << local->errorString();
+        QDebug(QtMsgType::QtWarningMsg).noquote() << "Local socket:" << local->errorString();
     } else {
-        QDebug(QtMsgType::QtInfoMsg) << "Local socket info: " << local->errorString();
+        QDebug(QtMsgType::QtDebugMsg).noquote() << "Local socket:" << local->errorString();
     }
     close();
 }
@@ -170,7 +170,7 @@ void TcpRelay::onDNSResolved(const bool success, const QString &errStr)
         startTime = QTime::currentTime();
         remote->connectToHost(addr->getFirstIP(), addr->getPort());
     } else {
-        QDebug(QtMsgType::QtCriticalMsg) << "DNS resolve failed: " << errStr;
+        QDebug(QtMsgType::QtCriticalMsg).noquote() << "DNS resolve failed:" << errStr;
         close();
     }
 }
@@ -194,9 +194,9 @@ void TcpRelay::onRemoteTcpSocketError()
 {
     //it's not an "error" if remote host closed a connection
     if (remote->error() != QAbstractSocket::RemoteHostClosedError) {
-        QDebug(QtMsgType::QtWarningMsg) << "Remote socket error: " << remote->errorString();
+        QDebug(QtMsgType::QtWarningMsg).noquote() << "Remote socket:" << remote->errorString();
     } else {
-        QDebug(QtMsgType::QtInfoMsg) << "Remote socket info: " << remote->errorString();
+        QDebug(QtMsgType::QtDebugMsg).noquote() << "Remote socket:" << remote->errorString();
     }
     close();
 }
@@ -216,7 +216,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         try {
             data = encryptor->decrypt(data);
         } catch (const std::exception &e) {
-            QDebug(QtMsgType::QtCriticalMsg) << "Local: " << e.what();
+            QDebug(QtMsgType::QtCriticalMsg) << "Local:" << e.what();
             close();
             return;
         }
@@ -269,7 +269,7 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
     try {
         buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
     } catch (const std::exception &e) {
-        QDebug(QtMsgType::QtCriticalMsg) << "Remote: " << e.what();
+        QDebug(QtMsgType::QtCriticalMsg) << "Remote:" << e.what();
         close();
         return;
     }

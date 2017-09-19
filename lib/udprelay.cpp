@@ -99,15 +99,15 @@ void UdpRelay::onSocketError()
         return;
     }
     if (sock == &listenSocket) {
-        QDebug(QtMsgType::QtCriticalMsg) << "[UDP] server socket error " << sock->errorString();
+        QDebug(QtMsgType::QtCriticalMsg).noquote() << "[UDP] server socket error" << sock->errorString();
     } else {
-        QDebug(QtMsgType::QtCriticalMsg) << "[UDP] client socket error " << sock->errorString();
+        QDebug(QtMsgType::QtCriticalMsg).noquote() << "[UDP] client socket error" << sock->errorString();
     }
 }
 
 void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 {
-    QDebug(QtMsgType::QtDebugMsg) << "Listen UDP socket state changed to " << s;
+    QDebug(QtMsgType::QtDebugMsg) << "Listen UDP socket state changed to" << s;
 }
 
 void UdpRelay::onServerUdpSocketReadyRead()
@@ -136,8 +136,8 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data = data.substr(3);
     } else {
         if (autoBan && Common::isAddressBanned(r_addr)) {
-            QDebug(QtMsgType::QtInfoMsg) << "[UDP] A banned IP " << r_addr
-                                         << " attempted to access this server";
+            QDebug(QtMsgType::QtInfoMsg).noquote() << "[UDP] A banned IP" << r_addr
+                                                   << "attempted to access this server";
             return;
         }
         data = encryptor->decryptAll(data);
@@ -164,9 +164,9 @@ void UdpRelay::onServerUdpSocketReadyRead()
                 this, &UdpRelay::onClientUdpSocketReadyRead);
         connect(client, &QUdpSocket::disconnected,
                 this, &UdpRelay::onClientDisconnected);
-        QDebug(QtMsgType::QtDebugMsg) << "[UDP] cache miss:" << destAddr << "<->" << remoteAddr;
+        QDebug(QtMsgType::QtDebugMsg).noquote() << "[UDP] cache miss:" << destAddr << "<->" << remoteAddr;
     } else {
-        QDebug(QtMsgType::QtDebugMsg) << "[UDP] cache hit:" << destAddr << "<->" << remoteAddr;
+        QDebug(QtMsgType::QtDebugMsg).noquote() << "[UDP] cache hit:" << destAddr << "<->" << remoteAddr;
     }
 
     if (isLocal) {
@@ -232,7 +232,7 @@ void UdpRelay::onClientUdpSocketReadyRead()
             qDebug("[UDP] Drop a packet from somewhere else we know.");
         }
     } catch (const std::exception& e) {
-        QDebug(QtMsgType::QtDebugMsg) << "Failed to find the address from client socket: "
+        QDebug(QtMsgType::QtDebugMsg) << "Failed to find the address from client socket:"
                                       << e.what();
     }
 }

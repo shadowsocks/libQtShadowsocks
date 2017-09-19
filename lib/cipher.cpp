@@ -36,6 +36,7 @@
 
 #include <QCryptographicHash>
 #include <QMessageAuthenticationCode>
+#include <QDebug>
 #include <stdexcept>
 #include <memory>
 
@@ -95,7 +96,7 @@ Cipher::Cipher(const std::string &method,
         // we shouldn't deallocate filter externally
         pipe.reset(new Botan::Pipe(filter));
     } catch(const Botan::Exception &e) {
-        qFatal("%s\n", e.what());
+        QDebug(QtMsgType::QtFatalMsg) << "Failed to initialise cipher: " << e.what();
     }
 }
 
@@ -199,11 +200,12 @@ bool Cipher::isSupported(const std::string &method)
 #endif
 
     if (method.find("rc4") == std::string::npos) {
-        std::unique_ptr<Botan::Keyed_Filter> filter;
+        std::unique_ptr<Botan::Keyed_Filter> keyFilter;
         try {
-            filter.reset(Botan::get_cipher(method, Botan::ENCRYPTION));
+            keyFilter.reset(Botan::get_cipher(method, Botan::ENCRYPTION));
         } catch (Botan::Exception &e) {
-            qDebug("%s\n", e.what());
+            QDebug(QtMsgType::QtDebugMsg).noquote() << "Method" << QString::fromStdString(method)
+                                                    << "is not supported by Botan: " << e.what();
             return false;
         }
     }
