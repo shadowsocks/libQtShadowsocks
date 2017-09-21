@@ -11,10 +11,12 @@ public:
 
 private Q_SLOTS:
     void selfTestEncryptDecrypt();
+#ifdef USE_BOTAN2
     void testAesGcm();
     void testAesGcmUdp();
     void testAesGcmMultiChunks();
     void testAesGcmIncompleteChunks();
+#endif
 };
 
 #endif // ENCRYPTOR_T_H

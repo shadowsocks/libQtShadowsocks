@@ -1,6 +1,8 @@
 #ifndef EXPORT_H
 #define EXPORT_H
 
+#include <QtGlobal>
+
 #ifdef QSS_STATIC
 #  define QSS_EXPORT
 #elif defined(QSS_LIBRARY)

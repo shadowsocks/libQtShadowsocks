@@ -31,11 +31,12 @@
 #define ENCRYPTOR_H
 
 #include <memory>
+#include "export.h"
 #include "cipher.h"
 
 namespace QSS {
 
-class Encryptor
+class QSS_EXPORT Encryptor
 {
 public:
     /**

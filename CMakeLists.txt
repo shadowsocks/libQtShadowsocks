@@ -31,8 +31,10 @@ find_library(BOTAN_LIBRARY_VAR
              NAMES ${BOTAN_LIBRARIES}
              HINTS ${BOTAN_LIBRARY_DIRS} ${BOTAN_LIBDIR})
 
-if(NOT BUILD_SHARED_LIBS)
-    add_definitions(-DQSS_STATIC)
+if(BUILD_SHARED_LIBS)
+	add_definitions(-DQSS_LIBRARY)
+else()
+	add_definitions(-DQSS_STATIC)
 endif()
 
 if(WIN32 OR APPLE)

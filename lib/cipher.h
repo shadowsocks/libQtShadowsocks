@@ -44,7 +44,7 @@ class KDF;
 
 namespace QSS {
 
-class Cipher
+class QSS_EXPORT Cipher
 {
 public:
     /**

@@ -27,10 +27,11 @@
 
 #include <string>
 #include <vector>
+#include "export.h"
 
 namespace QSS {
 
-class ChaCha
+class QSS_EXPORT ChaCha
 {
 public:
     /*

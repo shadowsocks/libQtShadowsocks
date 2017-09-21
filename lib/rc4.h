@@ -29,10 +29,11 @@
 
 #include <vector>
 #include <string>
+#include "export.h"
 
 namespace QSS {
 
-class RC4
+class QSS_EXPORT RC4
 {
 public:
     // non-skip

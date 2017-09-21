@@ -21,6 +21,7 @@ void Encryptor_T::selfTestEncryptDecrypt()
     QCOMPARE(decryptor.decrypt(encryptor.encrypt(testData)), testData);
 }
 
+#ifdef USE_BOTAN2
 void Encryptor_T::testAesGcm()
 {
     const std::string method("aes-256-gcm");
@@ -103,3 +104,4 @@ void Encryptor_T::testAesGcmIncompleteChunks()
     decrypted += decryptor.decrypt(encrypted.substr(2));
     QCOMPARE(decrypted, testData);
 }
+#endif

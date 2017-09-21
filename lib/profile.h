@@ -25,12 +25,13 @@
 
 #include <string>
 #include <cstdint>
+#include "export.h"
 
 namespace QSS {
 
 struct ProfilePrivate;
 
-class Profile {
+class QSS_EXPORT Profile {
 public:
     Profile();
 
