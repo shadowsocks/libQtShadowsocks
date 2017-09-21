@@ -40,7 +40,8 @@ set(HEADERS
     )
 
 add_library(${LIBNAME} ${SOURCE})
-
+set_target_properties(${LIBNAME} PROPERTIES VERSION ${PROJECT_VERSION}
+                                            SOVERSION ${PROJECT_VERSION_MAJOR})
 target_link_libraries(${LIBNAME}
     PUBLIC Qt5::Core
     PUBLIC Qt5::Network

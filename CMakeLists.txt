@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(QtShadowsocks
-        VERSION 1.11.0
+        VERSION 2.0.0
         LANGUAGES CXX)
 
 option(BUILD_SHARED_LIBS "Build ${PROJECT_NAME} as a shared library" ON)
@@ -17,13 +17,13 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-find_package(Qt5Core)
-find_package(Qt5Network)
+find_package(Qt5Core 5.5)
+find_package(Qt5Network 5.5)
 find_package(PkgConfig)
 
 if (USE_BOTAN2)
     add_definitions(-DUSE_BOTAN2)
-    pkg_check_modules(BOTAN REQUIRED botan-2>=2.2.0)
+    pkg_check_modules(BOTAN REQUIRED botan-2>=2.3.0)
 else()
     pkg_check_modules(BOTAN REQUIRED botan-1.10)
 endif()
