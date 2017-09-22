@@ -195,19 +195,23 @@ std::string Cipher::md5Hash(const std::string &in)
 
 bool Cipher::isSupported(const std::string &method)
 {
+    std::unordered_map<std::string, CipherInfo>::const_iterator cIt = cipherInfoMap.find(method);
+    if (cIt == cipherInfoMap.end()) {
+        return false;
+    }
+
 #ifndef USE_BOTAN2
     if (method.find("chacha20") != std::string::npos)  return true;
 #endif
+    if (method.find("rc4") != std::string::npos)    return true;
 
-    if (method.find("rc4") == std::string::npos) {
-        std::unique_ptr<Botan::Keyed_Filter> keyFilter;
-        try {
-            keyFilter.reset(Botan::get_cipher(method, Botan::ENCRYPTION));
-        } catch (Botan::Exception &e) {
-            QDebug(QtMsgType::QtDebugMsg).noquote() << "Method" << QString::fromStdString(method)
-                                                    << "is not supported by Botan: " << e.what();
-            return false;
-        }
+    std::unique_ptr<Botan::Keyed_Filter> keyFilter;
+    try {
+        keyFilter.reset(Botan::get_cipher(cIt->second.internalName, Botan::ENCRYPTION));
+    } catch (Botan::Exception &e) {
+        qDebug("Method %s(%s) is not supported by Botan: %s",
+               method.data(), cIt->second.internalName.data(), e.what());
+        return false;
     }
     return true;
 }
@@ -216,7 +220,7 @@ std::vector<std::string> Cipher::supportedMethods()
 {
     std::vector<std::string> supportedMethods;
     for (auto& cipher : Cipher::cipherInfoMap) {
-        if (Cipher::isSupported(cipher.second.internalName)) {
+        if (Cipher::isSupported(cipher.first)) {
             supportedMethods.push_back(cipher.first);
         }
     }
