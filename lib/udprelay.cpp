@@ -26,19 +26,6 @@
 
 using namespace QSS;
 
-namespace {
-template<class KEY, class VALUE>
-KEY findKeyFromMapValue(const std::map<KEY, VALUE>& map, const VALUE& val)
-{
-    for (typename std::map<KEY, VALUE>::const_iterator it = map.begin(); it != map.end(); ++it) {
-        if (it->second == val) {
-            return it->first;
-        }
-    }
-    throw std::out_of_range("Cannot find the key that matches the value");
-}
-}
-
 UdpRelay::UdpRelay(const std::string &method,
                    const std::string &password,
                    bool is_local,
