@@ -25,6 +25,7 @@ void Utils::testSpeed(const std::string &method, uint32_t data_size_mb)
 void Utils::testSpeed(uint32_t data_size_mb)
 {
     std::vector<std::string> allMethods = QSS::Cipher::supportedMethods();
+    std::sort(allMethods.begin(), allMethods.end());
     for (const auto& method : allMethods) {
         testSpeed(method, data_size_mb);
     }
