@@ -32,49 +32,47 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    const std::string &method,
                    const std::string &password,
                    bool is_local,
-                   bool autoBan,
-                   QObject *parent) :
-    QObject(parent),
+                   bool autoBan) :
+    QObject(),
     stage(INIT),
     serverAddress(server_addr),
     isLocal(is_local),
     autoBan(autoBan),
     local(localSocket),
-    encryptor{new Encryptor(method, password)}
+    remote(new QTcpSocket()),
+    timer(new QTimer()),
+    encryptor(new Encryptor(method, password))
 {
     connect(&remoteAddress, &Address::lookedUp,
             this, &TcpRelay::onDNSResolved);
     connect(&serverAddress, &Address::lookedUp,
             this, &TcpRelay::onDNSResolved);
 
-    timer = new QTimer(this);
     timer->setInterval(timeout);
-    connect(timer, &QTimer::timeout, this, &TcpRelay::onTimeout);
+    connect(timer.get(), &QTimer::timeout, this, &TcpRelay::onTimeout);
 
-    local->setParent(this);
-    connect(local,
+    connect(local.get(),
             static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>
             (&QTcpSocket::error),
             this,
             &TcpRelay::onLocalTcpSocketError);
-    connect(local, &QTcpSocket::disconnected, this, &TcpRelay::close);
-    connect(local, &QTcpSocket::readyRead,
+    connect(local.get(), &QTcpSocket::disconnected, this, &TcpRelay::close);
+    connect(local.get(), &QTcpSocket::readyRead,
             this, &TcpRelay::onLocalTcpSocketReadyRead);
-    connect(local, &QTcpSocket::readyRead,
-            timer, static_cast<void (QTimer::*)()> (&QTimer::start));
+    connect(local.get(), &QTcpSocket::readyRead,
+            timer.get(), static_cast<void (QTimer::*)()> (&QTimer::start));
 
-    remote = new QTcpSocket(this);
-    connect(remote, &QTcpSocket::connected, this, &TcpRelay::onRemoteConnected);
-    connect(remote,
+    connect(remote.get(), &QTcpSocket::connected, this, &TcpRelay::onRemoteConnected);
+    connect(remote.get(),
             static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>
             (&QTcpSocket::error),
             this, &TcpRelay::onRemoteTcpSocketError);
-    connect(remote, &QTcpSocket::disconnected, this, &TcpRelay::close);
-    connect(remote, &QTcpSocket::readyRead,
+    connect(remote.get(), &QTcpSocket::disconnected, this, &TcpRelay::close);
+    connect(remote.get(), &QTcpSocket::readyRead,
             this, &TcpRelay::onRemoteTcpSocketReadyRead);
-    connect(remote, &QTcpSocket::readyRead,
-            timer, static_cast<void (QTimer::*)()> (&QTimer::start));
-    connect(remote, &QTcpSocket::bytesWritten, this, &TcpRelay::bytesSend);
+    connect(remote.get(), &QTcpSocket::readyRead,
+            timer.get(), static_cast<void (QTimer::*)()> (&QTimer::start));
+    connect(remote.get(), &QTcpSocket::bytesWritten, this, &TcpRelay::bytesSend);
 
     local->setReadBufferSize(RemoteRecvSize);
     local->setSocketOption(QAbstractSocket::LowDelayOption, 1);

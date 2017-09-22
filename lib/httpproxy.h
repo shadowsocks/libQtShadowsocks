@@ -36,7 +36,7 @@ class QSS_EXPORT HttpProxy : public QTcpServer
 {
     Q_OBJECT
 public:
-    explicit HttpProxy(QObject *parent = 0);
+    HttpProxy();
 
     /*
      * DO NOT use listen() function, use httpListen instead

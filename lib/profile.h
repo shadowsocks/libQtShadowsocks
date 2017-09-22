@@ -34,7 +34,7 @@ struct ProfilePrivate;
 class QSS_EXPORT Profile {
 public:
     Profile();
-
+    Profile(const Profile&);
     ~Profile();
 
     const std::string& name() const;
@@ -75,7 +75,7 @@ public:
     static Profile fromUri(const std::string&);
 
 private:
-    ProfilePrivate *const d_private; // For future extension (to keep ABI compatible)
+    ProfilePrivate* const d_private; // For future extension (to keep ABI compatible)
 
     /**
      * Essential data are stored directly as members in this class
@@ -89,7 +89,6 @@ private:
     uint16_t d_serverPort;
     uint16_t d_localPort;
     int d_timeout;
-    bool d_debug;
 };
 
 }

@@ -28,7 +28,7 @@
 
 using namespace QSS;
 
-HttpProxy::HttpProxy(QObject *parent) : QTcpServer(parent)
+HttpProxy::HttpProxy() : QTcpServer()
 {
     this->setMaxPendingConnections(FD_SETSIZE);
 }

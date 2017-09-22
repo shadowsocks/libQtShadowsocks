@@ -57,33 +57,30 @@ Controller::Controller(const Profile &_profile,
         serverAddress.lookUp();
     }
 
-    tcpServer = new TcpServer(profile.method(),
-                              profile.password(),
-                              profile.timeout(),
-                              isLocal,
-                              autoBan,
-                              serverAddress,
-                              this);
+    tcpServer.reset(new TcpServer(profile.method(),
+                                  profile.password(),
+                                  profile.timeout(),
+                                  isLocal,
+                                  autoBan,
+                                  serverAddress));
 
     //FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
     tcpServer->setMaxPendingConnections(FD_SETSIZE);
-    udpRelay = new UdpRelay(profile.method(),
-                            profile.password(),
-                            isLocal,
-                            autoBan,
-                            serverAddress,
-                            this);
-    httpProxy = new HttpProxy(this);
+    udpRelay.reset(new UdpRelay(profile.method(),
+                                profile.password(),
+                                isLocal,
+                                autoBan,
+                                serverAddress));
 
-    connect(tcpServer, &TcpServer::acceptError,
+    connect(tcpServer.get(), &TcpServer::acceptError,
             this, &Controller::onTcpServerError);
-    connect(tcpServer, &TcpServer::bytesRead, this, &Controller::onBytesRead);
-    connect(tcpServer, &TcpServer::bytesSend, this, &Controller::onBytesSend);
-    connect(tcpServer, &TcpServer::latencyAvailable,
+    connect(tcpServer.get(), &TcpServer::bytesRead, this, &Controller::onBytesRead);
+    connect(tcpServer.get(), &TcpServer::bytesSend, this, &Controller::onBytesSend);
+    connect(tcpServer.get(), &TcpServer::latencyAvailable,
             this, &Controller::tcpLatencyAvailable);
 
-    connect(udpRelay, &UdpRelay::bytesRead, this, &Controller::onBytesRead);
-    connect(udpRelay, &UdpRelay::bytesSend, this, &Controller::onBytesSend);
+    connect(udpRelay.get(), &UdpRelay::bytesRead, this, &Controller::onBytesRead);
+    connect(udpRelay.get(), &UdpRelay::bytesSend, this, &Controller::onBytesSend);
 
     connect(&serverAddress, &Address::lookedUp,
             this, &Controller::onServerAddressLookedUp);
@@ -111,6 +108,7 @@ bool Controller::start()
             if (profile.httpProxy() && listen_ret) {
                 QDebug(QtMsgType::QtInfoMsg) << "SOCKS5 port is "
                                              << tcpServer->serverPort();
+                httpProxy.reset(new HttpProxy());
                 if (httpProxy->httpListen(getLocalAddr(),
                                           profile.localPort(),
                                           tcpServer->serverPort())) {
@@ -146,7 +144,9 @@ bool Controller::start()
 
 void Controller::stop()
 {
-    httpProxy->close();
+    if (httpProxy) {
+        httpProxy->close();
+    }
     tcpServer->close();
     udpRelay->close();
     emit runningStateChanged(false);

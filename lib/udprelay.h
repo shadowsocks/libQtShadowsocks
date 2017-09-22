@@ -40,8 +40,7 @@ public:
              const std::string& password,
              bool is_local,
              bool auto_ban,
-             const Address &serverAddress,
-             QObject *parent = 0);
+             const Address &serverAddress);
 
     void setup(const QHostAddress &localAddr,
                const uint16_t &localPort);
@@ -70,14 +69,12 @@ private:
     QUdpSocket listenSocket;
     std::unique_ptr<Encryptor> encryptor;
 
-    std::map<Address, QUdpSocket*> m_cache;
+    std::map<Address, std::shared_ptr<QUdpSocket> > m_cache;
 
 private slots:
     void onSocketError();
     void onListenStateChanged(QAbstractSocket::SocketState);
     void onServerUdpSocketReadyRead();
-    void onClientUdpSocketReadyRead();
-    void onClientDisconnected();
 };
 
 }

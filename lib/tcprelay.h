@@ -42,8 +42,7 @@ public:
              const std::string& method,
              const std::string& password,
              bool is_local,
-             bool autoBan,
-             QObject *parent = 0);
+             bool autoBan);
 
     enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
 
@@ -70,9 +69,9 @@ private:
     const bool isLocal;
     const bool autoBan;
 
-    QTcpSocket *local;
-    QTcpSocket *remote;
-    QTimer *timer;
+    std::unique_ptr<QTcpSocket> local;
+    std::unique_ptr<QTcpSocket> remote;
+    std::unique_ptr<QTimer> timer;
     QTime startTime;
     std::unique_ptr<Encryptor> encryptor;
 

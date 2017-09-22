@@ -6,6 +6,7 @@ namespace QSS {
 
 struct ProfilePrivate {
     bool httpProxy = false;
+    bool debug = false;
 };
 
 Profile::Profile() :
@@ -13,9 +14,22 @@ Profile::Profile() :
     d_localAddress("127.0.0.1"),
     d_serverPort(0),
     d_localPort(0),
-    d_timeout(600),
-    d_debug(false)
+    d_timeout(600)
 {
+}
+
+Profile::Profile(const Profile &b) :
+    d_private(new ProfilePrivate()),
+    d_name(b.d_name),
+    d_method(b.d_method),
+    d_password(b.d_password),
+    d_serverAddress(b.d_serverAddress),
+    d_localAddress(b.d_localAddress),
+    d_serverPort(b.d_serverPort),
+    d_localPort(b.d_localPort),
+    d_timeout(b.d_timeout)
+{
+    *d_private = *b.d_private;
 }
 
 Profile::~Profile()
@@ -65,7 +79,7 @@ int Profile::timeout() const
 
 bool Profile::debug() const
 {
-    return d_debug;
+    return d_private->debug;
 }
 
 bool Profile::httpProxy() const
@@ -125,12 +139,12 @@ void Profile::setHttpProxy(bool e)
 
 void Profile::enableDebug()
 {
-    d_debug = true;
+    d_private->debug = true;
 }
 
 void Profile::disableDebug()
 {
-    d_debug = false;
+    d_private->debug = false;
 }
 
 Profile Profile::fromUri(const std::string& ssUri)

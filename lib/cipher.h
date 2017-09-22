@@ -53,7 +53,6 @@ public:
      * @param sKey The secret key (dervied per-session for AEAD)
      * @param iv The initialiser vector, aka nonce
      * @param encrypt Whether the operation is to encrypt, otherwise it's to decrypt
-     * @param parent The parent QObject pointer
      */
     Cipher(const std::string &method, const std::string &sKey, const std::string &iv, bool encrypt);
     Cipher(Cipher &&) = default;

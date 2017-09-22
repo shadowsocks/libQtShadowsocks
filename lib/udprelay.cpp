@@ -43,13 +43,12 @@ UdpRelay::UdpRelay(const std::string &method,
                    const std::string &password,
                    bool is_local,
                    bool auto_ban,
-                   const Address &serverAddress,
-                   QObject *parent) :
-    QObject(parent),
+                   const Address &serverAddress) :
+    QObject(),
     serverAddress(serverAddress),
     isLocal(is_local),
     autoBan(auto_ban),
-    encryptor{new Encryptor(method, password)}
+    encryptor(new Encryptor(method, password))
 {
     listenSocket.setReadBufferSize(RemoteRecvSize);
     listenSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
@@ -85,9 +84,6 @@ void UdpRelay::close()
 {
     listenSocket.close();
     encryptor->reset();
-    for (auto&& cachedSocket : m_cache) {
-        cachedSocket.second->deleteLater();
-    }
     m_cache.clear();
 }
 
@@ -156,14 +152,57 @@ void UdpRelay::onServerUdpSocketReadyRead()
 
     auto clientIt = m_cache.find(remoteAddr);
     if (clientIt == m_cache.end()) {
-        QUdpSocket *client = new QUdpSocket(this);
+        std::shared_ptr<QUdpSocket> client(new QUdpSocket());
         client->setReadBufferSize(RemoteRecvSize);
         client->setSocketOption(QAbstractSocket::LowDelayOption, 1);
         clientIt = m_cache.insert(clientIt, std::make_pair(remoteAddr, client));
-        connect(client, &QUdpSocket::readyRead,
-                this, &UdpRelay::onClientUdpSocketReadyRead);
-        connect(client, &QUdpSocket::disconnected,
-                this, &UdpRelay::onClientDisconnected);
+        connect(client.get(), &QUdpSocket::readyRead,
+                [remoteAddr, this]() {
+            std::shared_ptr<QUdpSocket> sock = m_cache.at(remoteAddr);
+            const size_t packetSize = sock->pendingDatagramSize();
+            if (packetSize > RemoteRecvSize) {
+                qWarning("[UDP] Datagram is too large. Discarded.");
+                return;
+            }
+
+            std::string data;
+            data.resize(packetSize);
+            QHostAddress r_addr;
+            uint16_t r_port;
+            sock->readDatagram(&data[0], packetSize, &r_addr, &r_port);
+
+            std::string response;
+            if (isLocal) {
+                data = encryptor->decryptAll(data);
+                Address destAddr;
+                int header_length = 0;
+
+                Common::parseHeader(data, destAddr, header_length);
+                if (header_length == 0) {
+                    qCritical("[UDP] Can't parse header. "
+                              "Wrong encryption method or password?");
+                    return;
+                }
+                response = std::string(3, static_cast<char>(0)) + data;
+            } else {
+                data = Common::packAddress(r_addr, r_port) + data;
+                response = encryptor->encryptAll(data);
+            }
+
+            if (remoteAddr.getPort() != 0) {
+                listenSocket.writeDatagram(response.data(),
+                                           response.size(),
+                                           remoteAddr.getFirstIP(),
+                                           remoteAddr.getPort());
+            } else {
+                qDebug("[UDP] Drop a packet from somewhere else we know.");
+            }
+        });
+        connect(client.get(), &QUdpSocket::disconnected,
+                [remoteAddr, this]() {
+            m_cache.erase(remoteAddr);
+            qDebug("[UDP] A client connection is disconnected and destroyed.");
+        });
         QDebug(QtMsgType::QtDebugMsg).noquote() << "[UDP] cache miss:" << destAddr << "<->" << remoteAddr;
     } else {
         QDebug(QtMsgType::QtDebugMsg).noquote() << "[UDP] cache hit:" << destAddr << "<->" << remoteAddr;
@@ -181,76 +220,4 @@ void UdpRelay::onServerUdpSocketReadyRead()
     }
     clientIt->second->writeDatagram(data.data(), data.size(),
                                     destAddr.getFirstIP(), destAddr.getPort());
-}
-
-void UdpRelay::onClientUdpSocketReadyRead()
-{
-    QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
-    if (!sock) {
-        qFatal("Fatal. A false object calling onClientUdpSocketReadyRead.");
-        return;
-    }
-
-    const size_t packetSize = sock->pendingDatagramSize();
-    if (packetSize > RemoteRecvSize) {
-        qWarning("[UDP] Datagram is too large. Discarded.");
-        return;
-    }
-
-    std::string data;
-    data.resize(packetSize);
-    QHostAddress r_addr;
-    uint16_t r_port;
-    sock->readDatagram(&data[0], packetSize, &r_addr, &r_port);
-
-    std::string response;
-    if (isLocal) {
-        data = encryptor->decryptAll(data);
-        Address destAddr;
-        int header_length = 0;
-
-        Common::parseHeader(data, destAddr, header_length);
-        if (header_length == 0) {
-            qCritical("[UDP] Can't parse header. "
-                      "Wrong encryption method or password?");
-            return;
-        }
-        response = std::string(3, static_cast<char>(0)) + data;
-    } else {
-        data = Common::packAddress(r_addr, r_port) + data;
-        response = encryptor->encryptAll(data);
-    }
-
-    try {
-        Address clientAddress = findKeyFromMapValue(m_cache, sock);
-        if (clientAddress.getPort() != 0) {
-            listenSocket.writeDatagram(response.data(),
-                                       response.size(),
-                                       clientAddress.getFirstIP(),
-                                       clientAddress.getPort());
-        } else {
-            qDebug("[UDP] Drop a packet from somewhere else we know.");
-        }
-    } catch (const std::exception& e) {
-        QDebug(QtMsgType::QtDebugMsg) << "Failed to find the address from client socket:"
-                                      << e.what();
-    }
-}
-
-void UdpRelay::onClientDisconnected()
-{
-    QUdpSocket *client = qobject_cast<QUdpSocket *>(sender());
-    if (!client) {
-        qFatal("Fatal. A false object calling onClientDisconnected.");
-        return;
-    }
-    for (auto it = m_cache.begin(); it != m_cache.end();) {
-        if (it->second == client) {
-            it = m_cache.erase(it);
-        } else {
-            ++it;
-        }
-    }
-    client->deleteLater();
-    qDebug("[UDP] A client connection is disconnected and destroyed.");
 }

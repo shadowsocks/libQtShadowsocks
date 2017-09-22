@@ -82,9 +82,9 @@ protected:
      * (only used when it's a server)
      */
     const bool autoBan;
-    TcpServer *tcpServer;
-    UdpRelay *udpRelay;
-    HttpProxy *httpProxy;
+    std::unique_ptr<TcpServer> tcpServer;
+    std::unique_ptr<UdpRelay> udpRelay;
+    std::unique_ptr<HttpProxy> httpProxy;
 
     QHostAddress getLocalAddr();
 

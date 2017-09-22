@@ -1,7 +1,7 @@
 /*
- * tcpserver.h - Multi-threaded Shadowsocks TCP Server
+ * tcpserver.h - Shadowsocks TCP Server
  *
- * Copyright (C) 2015-2016 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2015-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -24,6 +24,8 @@
 #define TCPSERVER_H
 
 #include <QTcpServer>
+#include <vector>
+#include <memory>
 #include "address.h"
 #include "export.h"
 #include "tcprelay.h"
@@ -39,12 +41,8 @@ public:
               int timeout,
               bool is_local,
               bool auto_ban,
-              const Address &serverAddress,
-              QObject *parent = nullptr);
+              const Address &serverAddress);
     ~TcpServer();
-
-    bool listen(const QHostAddress &address, uint16_t port);
-    void close();
 
 signals:
     void bytesRead(quint64);
@@ -62,10 +60,7 @@ private:
     const Address serverAddress;
     const int timeout;
 
-    QList<TcpRelay*> conList;
-    QList<QThread*> threadList;
-    uint64_t workerThreadID;
-    uint64_t totalWorkers;
+    std::list<std::shared_ptr<TcpRelay> > conList;
 };
 
 }

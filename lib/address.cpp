@@ -27,22 +27,22 @@
 
 using namespace QSS;
 
-Address::Address(const std::string &a, uint16_t p, QObject *parent) :
-    QObject(parent)
+Address::Address(const std::string &a, uint16_t p) :
+    QObject()
 {
     data.second = p;
     setAddress(a);
 }
 
-Address::Address(const QHostAddress &ip, uint16_t p, QObject *parent) :
-    QObject(parent)
+Address::Address(const QHostAddress &ip, uint16_t p) :
+    QObject()
 {
     data.second = p;
     setIPAddress(ip);
 }
 
 Address::Address(const Address &o) :
-    QObject(o.parent())
+    QObject()
 {
     *this = o;
 }

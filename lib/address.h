@@ -39,12 +39,10 @@ class QSS_EXPORT Address : public QObject
     Q_OBJECT
 public:
     explicit Address(const std::string &a = std::string(),
-                     uint16_t p = 0,
-                     QObject *parent = 0);
+                     uint16_t p = 0);
 
     Address(const QHostAddress &ip,
-            uint16_t p,
-            QObject *parent = 0);
+            uint16_t p);
 
     Address(const Address &o);
     //force the generation of default move constructor

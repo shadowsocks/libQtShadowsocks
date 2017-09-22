@@ -1,7 +1,7 @@
 /*
  * tcpserver.cpp
  *
- * Copyright (C) 2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2015-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -22,9 +22,7 @@
 
 #include "tcpserver.h"
 #include "common.h"
-#include <QThread>
 #include <QDebug>
-#include <thread>
 
 using namespace QSS;
 
@@ -33,33 +31,19 @@ TcpServer::TcpServer(const std::string &method,
                      int timeout,
                      bool is_local,
                      bool auto_ban,
-                     const Address &serverAddress,
-                     QObject *parent) :
-    QTcpServer(parent),
+                     const Address &serverAddress) :
+    QTcpServer(),
     method(method),
     password(password),
     isLocal(is_local),
     autoBan(auto_ban),
     serverAddress(serverAddress),
-    timeout(timeout),
-    workerThreadID(0)
+    timeout(timeout)
 {
-    totalWorkers = std::thread::hardware_concurrency();
-    if (totalWorkers == 0) {
-        totalWorkers = 1;// need at least one working thread
-    }
-    for (unsigned int i = 0; i < totalWorkers; ++i) {
-        QThread *t = new QThread(this);
-        threadList.append(t);
-    }
 }
 
 TcpServer::~TcpServer()
 {
-    for (auto&& con : conList) {
-        con->deleteLater();
-    }
-
     if (isListening()) {
         close();
     }
@@ -67,56 +51,29 @@ TcpServer::~TcpServer()
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    QTcpSocket *localSocket = new QTcpSocket;
+    std::unique_ptr<QTcpSocket> localSocket(new QTcpSocket());
     localSocket->setSocketDescriptor(socketDescriptor);
 
     if (!isLocal && autoBan && Common::isAddressBanned(localSocket->peerAddress())) {
         QDebug(QtMsgType::QtInfoMsg).noquote() << "A banned IP" << localSocket->peerAddress()
                                                << "attempted to access this server";
-        localSocket->deleteLater();
         return;
     }
 
     //timeout * 1000: convert sec to msec
-    TcpRelay *con = new TcpRelay(localSocket,
-                                 timeout * 1000,
-                                 serverAddress,
-                                 method,
-                                 password,
-                                 isLocal,
-                                 autoBan);
-    conList.append(con);
-    connect(con, &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
-    connect(con, &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
-    connect(con, &TcpRelay::latencyAvailable,
+    std::shared_ptr<TcpRelay> con(new TcpRelay(localSocket.release(),
+                                               timeout * 1000,
+                                               serverAddress,
+                                               method,
+                                               password,
+                                               isLocal,
+                                               autoBan));
+    conList.push_back(con);
+    connect(con.get(), &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
+    connect(con.get(), &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
+    connect(con.get(), &TcpRelay::latencyAvailable,
             this, &TcpServer::latencyAvailable);
-    connect(con, &TcpRelay::finished, this, [=]() {
-        if (conList.removeOne(con)) {
-            con->deleteLater();
-        }
+    connect(con.get(), &TcpRelay::finished, this, [=]() {
+        conList.remove(con);
     });
-    con->moveToThread(threadList.at(workerThreadID++));
-    workerThreadID %= totalWorkers;
-}
-
-bool TcpServer::listen(const QHostAddress &address, uint16_t port)
-{
-    bool l = QTcpServer::listen(address, port);
-    if (l) {
-        for (auto&& thread : threadList) {
-            thread->start();
-        }
-    }
-    return l;
-}
-
-void TcpServer::close()
-{
-    for (auto&& thread : threadList) {
-        thread->quit();
-    }
-    for (auto&& thread : threadList) {
-        thread->wait();
-    }
-    QTcpServer::close();
 }
