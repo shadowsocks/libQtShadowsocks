@@ -42,12 +42,17 @@ bool Client::readConfig(const QString &file)
         QDebug(QtMsgType::QtCriticalMsg).noquote()
                 << "Configuration file" << file << "is not readable!";
         return false;
-    }
-    QByteArray confArray = c.readAll();
-    c.close();
+    }    
 
-    QJsonDocument confJson = QJsonDocument::fromJson(confArray);
+    QJsonParseError error;
+    QJsonDocument confJson = QJsonDocument::fromJson(c.readAll(), &error);
+    c.close();
     QJsonObject confObj = confJson.object();
+    if (error.error != QJsonParseError::NoError) {
+        qCritical() << "Failed to parse configuration file:" << error.errorString();
+        return false;
+    }
+
     profile.setLocalAddress(confObj["local_address"].toString().toStdString());
     profile.setLocalPort(confObj["local_port"].toInt());
     profile.setMethod(confObj["method"].toString().toStdString());
@@ -57,8 +62,7 @@ bool Client::readConfig(const QString &file)
     profile.setTimeout(confObj["timeout"].toInt());
     profile.setHttpProxy(confObj["http_proxy"].toBool());
     if (confObj["auth"].toBool()) {
-        QDebug(QtMsgType::QtCriticalMsg) << "OTA is deprecated, please disable OTA in the configuration.";
-        return false;
+        QDebug(QtMsgType::QtCriticalMsg) << "OTA is deprecated, please remove OTA from the configuration file.";
     }
 
     return true;
