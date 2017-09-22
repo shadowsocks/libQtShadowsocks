@@ -42,6 +42,8 @@ public:
                   const uint16_t &server_port,
                   QObject *parent = 0);
 
+    AddressTester(const AddressTester &) = delete;
+
     static const int LAG_TIMEOUT = -1;
     static const int LAG_ERROR = -2;
 

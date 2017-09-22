@@ -38,6 +38,8 @@ class QSS_EXPORT HttpProxy : public QTcpServer
 public:
     HttpProxy();
 
+    HttpProxy(const HttpProxy &) = delete;
+
     /*
      * DO NOT use listen() function, use httpListen instead
      * The socks_port is local socks proxy server port

@@ -42,6 +42,8 @@ public:
                  QAbstractSocket *b,
                  QObject *parent = 0);
 
+    SocketStream(const SocketStream &) = delete;
+
 private:
     QAbstractSocket *as;
     QAbstractSocket *bs;

@@ -47,6 +47,8 @@ public:
     Encryptor(const std::string& method,
               const std::string& password);
 
+    Encryptor(const Encryptor &) = delete;
+
     /**
      * @brief decrypt Decrypts encrypted shadowsocks TCP packets
      * @return Decrypted data

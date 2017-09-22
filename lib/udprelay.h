@@ -1,7 +1,7 @@
 /*
  * udprelay.h - the header file of UdpRelay class
  *
- * Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -41,6 +41,8 @@ public:
              bool is_local,
              bool auto_ban,
              const Address &serverAddress);
+
+    UdpRelay(const UdpRelay &) = delete;
 
     void setup(const QHostAddress &localAddr,
                const uint16_t &localPort);

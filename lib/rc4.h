@@ -42,6 +42,8 @@ public:
     RC4(const std::string &_key,
         const std::string &_iv);
 
+    RC4(const RC4 &) = delete;
+
     std::string update(const uint8_t *data, size_t length);
     std::string update(const std::string &input);
 

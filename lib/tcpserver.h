@@ -44,6 +44,8 @@ public:
               const Address &serverAddress);
     ~TcpServer();
 
+    TcpServer(const TcpServer &) = delete;
+
 signals:
     void bytesRead(quint64);
     void bytesSend(quint64);

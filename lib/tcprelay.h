@@ -44,6 +44,8 @@ public:
              bool is_local,
              bool autoBan);
 
+    TcpRelay(const TcpRelay &) = delete;
+
     enum STAGE { INIT, ADDR, UDP_ASSOC, DNS, CONNECTING, STREAM, DESTROYED };
 
 signals:

@@ -58,6 +58,8 @@ public:
     Cipher(Cipher &&) = default;
     ~Cipher();
 
+    Cipher(const Cipher &) = delete;
+
     std::string update(const std::string &data);
     std::string update(const uint8_t *data, size_t length);
 

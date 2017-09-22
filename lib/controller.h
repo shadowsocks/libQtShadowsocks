@@ -43,6 +43,8 @@ public:
                QObject *parent = 0);
     ~Controller();
 
+    Controller(const Controller&) = delete;
+
 signals:
     // Connect this signal to get notified when running state is changed
     void runningStateChanged(bool);

@@ -41,6 +41,8 @@ public:
     ChaCha(const std::string &_key,
            const std::string &_iv);
 
+    ChaCha(const ChaCha &) = delete;
+
     //encrypt (or decrypt, same process for ChaCha algorithm) a byte array.
     std::string update(const uint8_t *input, size_t length);
     std::string update(const std::string &input);
