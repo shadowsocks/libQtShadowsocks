@@ -20,15 +20,14 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <QObject>
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDebug>
 #include "client.h"
 
-Client::Client(QObject *parent) :
-    QObject(parent),
-    lc(nullptr),
+Client::Client() :
     autoBan(false)
 {}
 
@@ -116,21 +115,24 @@ bool Client::start(bool _server)
         }
     }
 
-    if (lc) {
-        lc->deleteLater();
-    }
-    lc = new QSS::Controller(profile, !_server, autoBan, this);
+    controller.reset(new QSS::Controller(profile, !_server, autoBan));
 
     if (!_server) {
         QSS::Address server(profile.serverAddress(), profile.serverPort());
         server.blockingLookUp();
-        QSS::AddressTester *tester =
-                new QSS::AddressTester(server.getFirstIP(),
-                                       server.getPort(),
-                                       this);
-        connect(tester, &QSS::AddressTester::connectivityTestFinished,
-                this, &Client::onConnectivityResultArrived);
-        connect(tester, &QSS::AddressTester::testErrorString,
+        tester.reset(new QSS::AddressTester(server.getFirstIP(), server.getPort()));
+        QObject::connect(tester.get(), &QSS::AddressTester::connectivityTestFinished,
+                [] (bool c) {
+            if (c) {
+                QDebug(QtMsgType::QtInfoMsg) << "The shadowsocks connection is okay.";
+            } else {
+                QDebug(QtMsgType::QtWarningMsg)
+                        << "Destination is not reachable. "
+                           "Please check your network and firewall settings. "
+                           "And make sure the profile is correct.";
+            }
+        });
+        QObject::connect(tester.get(), &QSS::AddressTester::testErrorString,
                 [] (const QString& error) {
             QDebug(QtMsgType::QtWarningMsg).noquote() << "Connectivity testing error: " << error;
         });
@@ -138,7 +140,7 @@ bool Client::start(bool _server)
                                       profile.password());
     }
 
-    return lc->start();
+    return controller->start();
 }
 
 bool Client::headerTest()
@@ -165,19 +167,7 @@ bool Client::headerTest()
     return success & success2;
 }
 
-std::string Client::getMethod() const
+const std::string& Client::getMethod() const
 {
     return profile.method();
-}
-
-void Client::onConnectivityResultArrived(bool c)
-{
-    if (c) {
-        QDebug(QtMsgType::QtInfoMsg) << "The shadowsocks connection is okay.";
-    } else {
-        QDebug(QtMsgType::QtWarningMsg)
-                << "Destination is not reachable. "
-                   "Please check your network and firewall settings. "
-                   "And make sure the profile is correct.";
-    }
 }
