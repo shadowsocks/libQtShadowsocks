@@ -24,7 +24,7 @@
 #define TCPSERVER_H
 
 #include <QTcpServer>
-#include <vector>
+#include <list>
 #include <memory>
 #include "address.h"
 #include "export.h"

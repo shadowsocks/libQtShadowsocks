@@ -73,7 +73,7 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     connect(con.get(), &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
     connect(con.get(), &TcpRelay::latencyAvailable,
             this, &TcpServer::latencyAvailable);
-    connect(con.get(), &TcpRelay::finished, this, [=]() {
+    connect(con.get(), &TcpRelay::finished, this, [con, this]() {
         conList.remove(con);
     });
 }
