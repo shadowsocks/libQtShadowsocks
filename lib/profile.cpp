@@ -73,6 +73,11 @@ bool Profile::httpProxy() const
     return d_private->httpProxy;
 }
 
+bool Profile::isValid() const
+{
+    return !method().empty() && !password().empty() && !serverAddress().empty();
+}
+
 void Profile::setName(const std::string& name)
 {
     d_name = name;

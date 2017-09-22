@@ -48,6 +48,14 @@ public:
     bool httpProxy() const;
     bool debug() const;
 
+    /**
+     * @brief isValid Whether this profile has essential information.
+     * The validation only checks if essential fields such as method, address
+     * are set, but it doesn't verify the validity of each field.
+     * @return
+     */
+    bool isValid() const;
+
     std::string toUri() const;
     std::string toUriSip002() const;
 

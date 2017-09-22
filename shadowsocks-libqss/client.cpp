@@ -119,6 +119,11 @@ bool Client::start(bool _server)
         }
     }
 
+    if (!profile.isValid()) {
+        qCritical() << "The profile is invalid. Improper setup?";
+        return false;
+    }
+
     controller.reset(new QSS::Controller(profile, !_server, autoBan));
 
     if (!_server) {

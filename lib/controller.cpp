@@ -35,7 +35,6 @@ Controller::Controller(const Profile &_profile,
                        QObject *parent) :
     QObject(parent),
     profile(_profile),
-    valid(true),
     isLocal(is_local),
     autoBan(auto_ban)
 {
@@ -100,11 +99,6 @@ Controller::~Controller()
 
 bool Controller::start()
 {
-    if (!valid) {
-        qCritical("Controller is not valid. Maybe improper setup?");
-        return false;
-    }
-
     bool listen_ret = false;
 
     if (isLocal) {

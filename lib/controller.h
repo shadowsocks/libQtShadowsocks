@@ -76,7 +76,6 @@ protected:
 
     Profile profile;
     Address serverAddress;
-    bool valid;
     const bool isLocal; // Run on local-side (client) or server-side (server)
     /*
      * auto ban IPs that use malformed header data as our anti-probe measure
