@@ -8,13 +8,20 @@ addons:
       - ubuntu-toolchain-r-test
       - sourceline: 'ppa:hedges/qt5.5'
     packages:
+      - g++-7
       - cmake
       - qt55base
       - libbotan1.10-dev
 
+env:
+  - MATRIX_EVAL="CC=gcc-7 && CXX=g++-7"
+
 branches:
   only:
     - 'master'
+
+before_install:
+  - eval "${MATRIX_EVAL}"
 
 script:
   # Build
