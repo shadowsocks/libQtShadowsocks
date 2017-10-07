@@ -38,11 +38,13 @@ Controller::Controller(const Profile &_profile,
     isLocal(is_local),
     autoBan(auto_ban)
 {
+#ifndef USE_BOTAN2
     try {
         Botan::LibraryInitializer::initialize("thread_safe");
     } catch (std::exception &e) {
         qFatal("Failed to initialise Botan library: %s", e.what());
     }
+#endif
 
     qInfo("Initialising cipher: %s", profile.method().data());
     /*
@@ -54,7 +56,12 @@ Controller::Controller(const Profile &_profile,
         serverAddress = Address(QHostAddress::Any, profile.serverPort());
     } else {
         serverAddress = Address(profile.serverAddress(), profile.serverPort());
-        serverAddress.lookUp();
+        if (!serverAddress.blockingLookUp()) {
+            QDebug(QtMsgType::QtCriticalMsg).noquote().nospace()
+                    << "Cannot look up the host records of server address "
+                    << serverAddress << ". Please make sure your Internet "
+                    << "connection is good and the configuration is correct";
+        }
     }
 
     tcpServer.reset(new TcpServer(profile.method(),
@@ -81,9 +88,6 @@ Controller::Controller(const Profile &_profile,
 
     connect(udpRelay.get(), &UdpRelay::bytesRead, this, &Controller::onBytesRead);
     connect(udpRelay.get(), &UdpRelay::bytesSend, this, &Controller::onBytesSend);
-
-    connect(&serverAddress, &Address::lookedUp,
-            this, &Controller::onServerAddressLookedUp);
 }
 
 Controller::~Controller()
@@ -91,7 +95,9 @@ Controller::~Controller()
     if (tcpServer->isListening()) {
         stop();
     }
+#ifndef USE_BOTAN2
     Botan::LibraryInitializer::deinitialize();
+#endif
 }
 
 bool Controller::start()
@@ -194,9 +200,3 @@ void Controller::onBytesSend(quint64 s)
     }
 }
 
-void Controller::onServerAddressLookedUp(const bool success, const QString &err)
-{
-    if (!success) {
-        QDebug(QtMsgType::QtWarningMsg).noquote() << "Shadowsocks server DNS lookup failed: " << err;
-    }
-}

@@ -203,7 +203,10 @@ void UdpRelay::onServerUdpSocketReadyRead()
     }
 
     if (!destAddr.isIPValid()) {//TODO async dns
-        destAddr.blockingLookUp();
+        if (!destAddr.blockingLookUp()) {
+            qDebug("[UDP] Failed to look up destination address. Closing this connection");
+            close();
+        }
     }
     clientIt->second->writeDatagram(data.data(), data.size(),
                                     destAddr.getFirstIP(), destAddr.getPort());

@@ -143,7 +143,7 @@ bool Client::start(bool _server)
         });
         QObject::connect(tester.get(), &QSS::AddressTester::testErrorString,
                 [] (const QString& error) {
-            QDebug(QtMsgType::QtWarningMsg).noquote() << "Connectivity testing error: " << error;
+            QDebug(QtMsgType::QtWarningMsg).noquote() << "Connectivity testing error:" << error;
         });
         tester->startConnectivityTest(profile.method(),
                                       profile.password());

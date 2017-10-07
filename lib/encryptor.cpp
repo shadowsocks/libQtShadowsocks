@@ -169,7 +169,6 @@ std::string Encryptor::decrypt(const uint8_t* data, size_t length)
     }
 
     std::string out;
-    const uint8_t *dataEnd = data + length;
     if (!deCipher) {
         size_t headerLength = 0;
         initDecipher(reinterpret_cast<const char*>(data), length, &headerLength);
@@ -183,7 +182,7 @@ std::string Encryptor::decrypt(const uint8_t* data, size_t length)
         std::string chunk = incompleteChunk + std::string(reinterpret_cast<const char*>(data), length);
         data = reinterpret_cast<const uint8_t*>(chunk.data());
         length = chunk.length();
-        dataEnd = data + length;
+        const uint8_t *dataEnd = data + length;
 
         uint16_t payloadLength = 0;
         if (incompleteLength) {

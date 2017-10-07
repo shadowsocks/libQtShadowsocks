@@ -43,11 +43,6 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
     timer(new QTimer()),
     encryptor(new Encryptor(method, password))
 {
-    connect(&remoteAddress, &Address::lookedUp,
-            this, &TcpRelay::onDNSResolved);
-    connect(&serverAddress, &Address::lookedUp,
-            this, &TcpRelay::onDNSResolved);
-
     timer->setInterval(timeout);
     connect(timer.get(), &QTimer::timeout, this, &TcpRelay::onTimeout);
 
@@ -139,13 +134,31 @@ void TcpRelay::handleStageAddr(std::string &data)
         local->write(response);
         std::string toWrite = encryptor->encrypt(data);
         dataToWrite += toWrite;
-        serverAddress.lookUp();
+        serverAddress.lookUp([this](bool success) {
+            if (success) {
+                stage = CONNECTING;
+                startTime = QTime::currentTime();
+                remote->connectToHost(serverAddress.getFirstIP(), serverAddress.getPort());
+            } else {
+                QDebug(QtMsgType::QtDebugMsg).noquote() << "Failed to lookup server address. Closing TCP connection.";
+                close();
+            }
+        });
     } else {
         if (data.size() > header_length) {
             data = data.substr(header_length);
             dataToWrite += data;
         }
-        remoteAddress.lookUp();
+        remoteAddress.lookUp([this](bool success) {
+            if (success) {
+                stage = CONNECTING;
+                startTime = QTime::currentTime();
+                remote->connectToHost(remoteAddress.getFirstIP(), remoteAddress.getPort());
+            } else {
+                QDebug(QtMsgType::QtDebugMsg).noquote() << "Failed to lookup remote address. Closing TCP connection.";
+                close();
+            }
+        });
     }
 }
 
@@ -158,19 +171,6 @@ void TcpRelay::onLocalTcpSocketError()
         QDebug(QtMsgType::QtDebugMsg).noquote() << "Local socket:" << local->errorString();
     }
     close();
-}
-
-void TcpRelay::onDNSResolved(const bool success, const QString &errStr)
-{
-    if (success) {
-        stage = CONNECTING;
-        Address *addr = qobject_cast<Address*>(sender());
-        startTime = QTime::currentTime();
-        remote->connectToHost(addr->getFirstIP(), addr->getPort());
-    } else {
-        QDebug(QtMsgType::QtCriticalMsg).noquote() << "DNS resolve failed:" << errStr;
-        close();
-    }
 }
 
 bool TcpRelay::writeToRemote(const char *data, size_t length)

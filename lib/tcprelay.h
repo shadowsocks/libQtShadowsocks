@@ -81,7 +81,6 @@ private:
     bool writeToRemote(const char *data, size_t length);
 
 private slots:
-    void onDNSResolved(const bool success, const QString& errStr);
     void onRemoteConnected();
     void onRemoteTcpSocketError();
     void onRemoteTcpSocketReadyRead();

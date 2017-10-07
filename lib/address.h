@@ -28,15 +28,14 @@
 #include <QString>
 #include <QHostAddress>
 #include <QHostInfo>
-#include <QObject>
 #include <vector>
+#include <functional>
 #include "export.h"
 
 namespace QSS {
 
-class QSS_EXPORT Address : public QObject
+class QSS_EXPORT Address
 {
-    Q_OBJECT
 public:
     explicit Address(const std::string &a = std::string(),
                      uint16_t p = 0);
@@ -44,9 +43,10 @@ public:
     Address(const QHostAddress &ip,
             uint16_t p);
 
-    Address(const Address &o);
-    //force the generation of default move constructor
+    Address(const Address &) = default;
     Address(Address &&) = default;
+
+    Address& operator=(const Address&) = default;
 
     const std::string &getAddress() const;
 
@@ -70,14 +70,23 @@ public:
     bool isIPValid() const;
     uint16_t getPort() const;
 
-    /*
-     * lookedUp signal will pass if it's successful
-     * then you can use getRandomIP() to get a random IP address
-     * Note this function will emit lookedUp signal immediately if there is
-     * already a valid IP
+    /**
+     * @brief LookUpCallback
+     * The argument indicates whether a lookup was successful.
      */
-    void lookUp();
-    void blockingLookUp();
+    typedef std::function<void(bool)> LookUpCallback;
+
+    /*
+     * Looks up the network address if the address is a domain name.
+     * The callback is invoked whenever the operation is finished.
+     */
+    void lookUp(const LookUpCallback&);
+
+    /**
+     * @brief blockingLookUp
+     * @return Whether the DNS lookup was successful
+     */
+    bool blockingLookUp();
 
     void setAddress(const std::string &);
     void setIPAddress(const QHostAddress &);
@@ -88,8 +97,6 @@ public:
     ATYP addressType() const;
 
     std::string toString() const;
-
-    Address& operator= (const Address &o);
 
     inline bool operator< (const Address &o) const {
         return this->data < o.data;
@@ -108,15 +115,9 @@ public:
         return os << QString::fromStdString(addr.toString());
     }
 
-signals:
-    void lookedUp(const bool success, const QString& errStr);
-
 private:
     std::pair<std::string, uint16_t> data;//first: address string; second: port
     std::vector<QHostAddress> ipAddrList;
-
-private slots:
-    void onLookUpFinished(const QHostInfo &host);
 };
 
 }

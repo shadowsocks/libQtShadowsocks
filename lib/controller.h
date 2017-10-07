@@ -94,7 +94,6 @@ protected slots:
     void onTcpServerError(QAbstractSocket::SocketError err);
     void onBytesRead(quint64);
     void onBytesSend(quint64);
-    void onServerAddressLookedUp(const bool success, const QString& err);
 };
 
 }
