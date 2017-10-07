@@ -23,19 +23,19 @@
 #include "tcprelay.h"
 #include "common.h"
 #include <QDebug>
+#include <utility>
 
-using namespace QSS;
+namespace QSS {
 
 TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    int timeout,
-                   const Address &server_addr,
+                   Address server_addr,
                    const std::string &method,
                    const std::string &password,
                    bool is_local,
                    bool autoBan) :
-    QObject(),
     stage(INIT),
-    serverAddress(server_addr),
+    serverAddress(std::move(server_addr)),
     isLocal(is_local),
     autoBan(autoBan),
     local(localSocket),
@@ -93,7 +93,7 @@ void TcpRelay::close()
 void TcpRelay::handleStageAddr(std::string &data)
 {
     if (isLocal) {
-        int cmd = static_cast<int>(data.at(1));
+        auto cmd = static_cast<int>(data.at(1));
         if (cmd == 3) {//CMD_UDP_ASSOCIATE
             qDebug("UDP associate");
             static const char header_data [] = { 5, 0, 0 };
@@ -103,7 +103,7 @@ void TcpRelay::handleStageAddr(std::string &data)
             local->write(toWrite.data(), toWrite.length());
             stage = UDP_ASSOC;
             return;
-        } else if (cmd == 1) {//CMD_CONNECT
+        } if (cmd == 1) {//CMD_CONNECT
             data = data.substr(3);
         } else {
             qCritical("Unknown command %d", cmd);
@@ -279,3 +279,5 @@ void TcpRelay::onTimeout()
     qInfo("TCP connection timeout.");
     close();
 }
+
+}  // namespace QSS

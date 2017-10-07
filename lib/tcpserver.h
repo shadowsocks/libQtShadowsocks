@@ -36,12 +36,12 @@ class QSS_EXPORT TcpServer : public QTcpServer
 {
     Q_OBJECT
 public:
-    TcpServer(const std::string& method,
-              const std::string& password,
+    TcpServer(std::string method,
+              std::string password,
               int timeout,
               bool is_local,
               bool auto_ban,
-              const Address &serverAddress);
+              Address serverAddress);
     ~TcpServer();
 
     TcpServer(const TcpServer &) = delete;
@@ -52,7 +52,7 @@ signals:
     void latencyAvailable(int);
 
 protected:
-    void incomingConnection(qintptr handler) Q_DECL_OVERRIDE;
+    void incomingConnection(qintptr socketDescriptor) Q_DECL_OVERRIDE;
 
 private:
     const std::string method;

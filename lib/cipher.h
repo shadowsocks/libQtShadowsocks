@@ -50,11 +50,11 @@ public:
     /**
      * @brief Cipher
      * @param method The cipher method name (in Shadowsocks convention)
-     * @param sKey The secret key (dervied per-session for AEAD)
+     * @param key The secret key (dervied per-session for AEAD)
      * @param iv The initialiser vector, aka nonce
      * @param encrypt Whether the operation is to encrypt, otherwise it's to decrypt
      */
-    Cipher(const std::string &method, const std::string &sKey, const std::string &iv, bool encrypt);
+    Cipher(const std::string &method, std::string key, std::string iv, bool encrypt);
     Cipher(Cipher &&) = default;
     ~Cipher();
 
@@ -128,8 +128,8 @@ private:
     std::unique_ptr<Botan::Pipe> pipe;
     std::unique_ptr<RC4> rc4;
     std::unique_ptr<ChaCha> chacha;
-    const std::string key; // preshared key
-    std::string iv; // nonce
+    const std::string m_key; // preshared key
+    std::string m_iv; // nonce
     const CipherInfo cipherInfo;
 };
 

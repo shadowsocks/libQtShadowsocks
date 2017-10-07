@@ -37,7 +37,7 @@ class QSS_EXPORT Controller : public QObject
 {
     Q_OBJECT
 public:
-    Controller(const Profile & _profile,
+    Controller(Profile _profile,
                bool is_local,
                bool auto_ban,
                QObject *parent = 0);

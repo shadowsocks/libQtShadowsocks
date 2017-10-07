@@ -20,21 +20,25 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include <QDebug>
 #include <QHostInfo>
 #include <QTcpSocket>
+
 #include <botan/init.h>
-#include <QDebug>
+
 #include "controller.h"
 #include "encryptor.h"
 
-using namespace QSS;
+namespace QSS {
 
-Controller::Controller(const Profile &_profile,
+Controller::Controller(Profile _profile,
                        bool is_local,
                        bool auto_ban,
                        QObject *parent) :
     QObject(parent),
-    profile(_profile),
+    bytesReceived(0),
+    bytesSent(0),
+    profile(std::move(_profile)),
     isLocal(is_local),
     autoBan(auto_ban)
 {
@@ -64,20 +68,20 @@ Controller::Controller(const Profile &_profile,
         }
     }
 
-    tcpServer.reset(new TcpServer(profile.method(),
+    tcpServer = std::make_unique<QSS::TcpServer>(profile.method(),
                                   profile.password(),
                                   profile.timeout(),
                                   isLocal,
                                   autoBan,
-                                  serverAddress));
+                                  serverAddress);
 
     //FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
     tcpServer->setMaxPendingConnections(FD_SETSIZE);
-    udpRelay.reset(new UdpRelay(profile.method(),
+    udpRelay = std::make_unique<QSS::UdpRelay>(profile.method(),
                                 profile.password(),
                                 isLocal,
                                 autoBan,
-                                serverAddress));
+                                serverAddress);
 
     connect(tcpServer.get(), &TcpServer::acceptError,
             this, &Controller::onTcpServerError);
@@ -114,7 +118,7 @@ bool Controller::start()
             if (profile.httpProxy() && listen_ret) {
                 QDebug(QtMsgType::QtInfoMsg) << "SOCKS5 port is "
                                              << tcpServer->serverPort();
-                httpProxy.reset(new HttpProxy());
+                httpProxy = std::make_unique<QSS::HttpProxy>();
                 if (httpProxy->httpListen(getLocalAddr(),
                                           profile.localPort(),
                                           tcpServer->serverPort())) {
@@ -164,12 +168,11 @@ QHostAddress Controller::getLocalAddr()
     QHostAddress addr(QString::fromStdString(profile.localAddress()));
     if (!addr.isNull()) {
         return addr;
-    } else {
-        QDebug(QtMsgType::QtInfoMsg).noquote() << "Can't get address from "
-                                               << QString::fromStdString(profile.localAddress())
-                                               << ". Using localhost instead.";
-        return QHostAddress::LocalHost;
     }
+    QDebug(QtMsgType::QtInfoMsg).noquote() << "Can't get address from "
+                                           << QString::fromStdString(profile.localAddress())
+                                           << ". Using localhost instead.";
+    return QHostAddress::LocalHost;
 }
 
 void Controller::onTcpServerError(QAbstractSocket::SocketError err)
@@ -200,3 +203,4 @@ void Controller::onBytesSend(quint64 s)
     }
 }
 
+} // namespace QSS

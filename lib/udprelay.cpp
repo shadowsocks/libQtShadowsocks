@@ -23,16 +23,16 @@
 #include "udprelay.h"
 #include "common.h"
 #include <QDebug>
+#include <utility>
 
-using namespace QSS;
+namespace QSS {
 
 UdpRelay::UdpRelay(const std::string &method,
                    const std::string &password,
                    bool is_local,
                    bool auto_ban,
-                   const Address &serverAddress) :
-    QObject(),
-    serverAddress(serverAddress),
+                   Address serverAddress) :
+    serverAddress(std::move(serverAddress)),
     isLocal(is_local),
     autoBan(auto_ban),
     encryptor(new Encryptor(method, password))
@@ -76,8 +76,8 @@ void UdpRelay::close()
 
 void UdpRelay::onSocketError()
 {
-    QUdpSocket *sock = qobject_cast<QUdpSocket *>(sender());
-    if (!sock) {
+    auto *sock = qobject_cast<QUdpSocket *>(sender());
+    if (sock == nullptr) {
         qFatal("Fatal. A false object calling onSocketError.");
         return;
     }
@@ -202,7 +202,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
         data = data.substr(header_length);
     }
 
-    if (!destAddr.isIPValid()) {//TODO async dns
+    if (!destAddr.isIPValid()) {// TODO(symeon): async dns
         if (!destAddr.blockingLookUp()) {
             qDebug("[UDP] Failed to look up destination address. Closing this connection");
             close();
@@ -211,3 +211,5 @@ void UdpRelay::onServerUdpSocketReadyRead()
     clientIt->second->writeDatagram(data.data(), data.size(),
                                     destAddr.getFirstIP(), destAddr.getPort());
 }
+
+}  // namespace QSS

@@ -21,16 +21,15 @@
  */
 
 #include "encryptor.h"
-#include <QtEndian>
 #include <QDebug>
-
-using namespace QSS;
+#include <QtEndian>
 
 namespace {
-static const size_t AEAD_CHUNK_SIZE_LEN = 2;
-static const uint16_t AEAD_CHUNK_SIZE_MASK = 0x3FFF;
+const size_t AEAD_CHUNK_SIZE_LEN = 2;
+const uint16_t AEAD_CHUNK_SIZE_MASK = 0x3FFF;
 
-std::string evpBytesToKey(const Cipher::CipherInfo& cipherInfo, const std::string &password)
+std::string evpBytesToKey(const QSS::Cipher::CipherInfo& cipherInfo,
+                          const std::string &password)
 {
     std::vector<std::string> m;
     std::string data;
@@ -42,7 +41,7 @@ std::string evpBytesToKey(const Cipher::CipherInfo& cipherInfo, const std::strin
         } else {
             data = m[i - 1] + password;
         }
-        m.push_back(Cipher::md5Hash(data));
+        m.push_back(QSS::Cipher::md5Hash(data));
         ++i;
     }
 
@@ -54,12 +53,13 @@ std::string evpBytesToKey(const Cipher::CipherInfo& cipherInfo, const std::strin
     return ms.substr(0, cipherInfo.keyLen);
 }
 
-}
+}  // namespace
 
-Encryptor::Encryptor(const std::string &method,
+namespace  QSS {
+Encryptor::Encryptor(std::string method,
                      const std::string &password) :
-    cipherInfo(Cipher::cipherInfoMap.at(method)),
-    method(method),
+    m_method(std::move(method)),
+    cipherInfo(Cipher::cipherInfoMap.at(m_method)),
     masterKey(evpBytesToKey(cipherInfo, password)),
     incompleteLength(0)
 {
@@ -75,7 +75,7 @@ void Encryptor::reset()
 
 void Encryptor::initEncipher(std::string *header)
 {
-    const std::string iv = Cipher::randomIv(method);
+    const std::string iv = Cipher::randomIv(m_method);
     std::string key;
 #ifdef USE_BOTAN2
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
@@ -89,7 +89,7 @@ void Encryptor::initEncipher(std::string *header)
 #ifdef USE_BOTAN2
     }
 #endif
-    enCipher.reset(new Cipher(method, key, iv, true));
+    enCipher = std::make_unique<QSS::Cipher>(m_method, key, iv, true);
 }
 
 void Encryptor::initDecipher(const char *data, size_t length, size_t *offset)
@@ -114,7 +114,7 @@ void Encryptor::initDecipher(const char *data, size_t length, size_t *offset)
 #ifdef USE_BOTAN2
     }
 #endif
-    deCipher.reset(new Cipher(method, key, iv, false));
+    deCipher = std::make_unique<QSS::Cipher>(m_method, key, iv, false);
 }
 
 std::string Encryptor::encrypt(const std::string &in)
@@ -185,7 +185,7 @@ std::string Encryptor::decrypt(const uint8_t* data, size_t length)
         const uint8_t *dataEnd = data + length;
 
         uint16_t payloadLength = 0;
-        if (incompleteLength) {
+        if (incompleteLength != 0u) {
             // The payload length is already known
             payloadLength = incompleteLength;
             incompleteLength = 0;
@@ -252,3 +252,5 @@ std::string Encryptor::decryptAll(const uint8_t* data, size_t length)
     length -= headerLength;
     return deCipher->update(data, length);
 }
+
+} // namespace QSS

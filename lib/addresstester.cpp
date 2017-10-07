@@ -24,12 +24,12 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "addresstester.h"
 #include "address.h"
-#include "encryptor.h"
+#include "addresstester.h"
 #include "common.h"
+#include "encryptor.h"
 
-using namespace QSS;
+namespace QSS {
 
 AddressTester::AddressTester(const QHostAddress &_address,
                              const uint16_t &_port,
@@ -126,3 +126,5 @@ void AddressTester::onSocketReadyRead()
     emit connectivityTestFinished(true);
     socket.abort();
 }
+
+} // namespace QSS

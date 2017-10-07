@@ -22,19 +22,21 @@
 
 #include "common.h"
 #include "address.h"
+
 #include <QHostInfo>
 #include <QtEndian>
+
 #include <mutex>
 #include <random>
-#include <vector>
 #include <sstream>
-
-using namespace QSS;
+#include <vector>
 
 namespace {
 std::vector<QHostAddress> bannedAddresses;
 std::mutex bannedAddressMutex;
-}
+} // namespace
+
+namespace  QSS {
 
 const uint8_t Common::ADDRESS_MASK = 0b00001111;//0xf
 
@@ -176,3 +178,5 @@ std::string Common::stringFromHex(const std::string& hex)
     QByteArray res = QByteArray::fromHex(QByteArray(hex.data(), hex.length()));
     return std::string(res.data(), res.length());
 }
+
+} // namespace QSS

@@ -1,6 +1,6 @@
 #include "profile.h"
-#include <stdexcept>
 #include <QByteArray>
+#include <stdexcept>
 
 namespace QSS {
 
@@ -19,7 +19,7 @@ Profile::Profile() :
 }
 
 Profile::Profile(const Profile &b) :
-    d_private(new ProfilePrivate()),
+    d_private(new ProfilePrivate(*b.d_private)),
     d_name(b.d_name),
     d_method(b.d_method),
     d_password(b.d_password),
@@ -29,7 +29,6 @@ Profile::Profile(const Profile &b) :
     d_localPort(b.d_localPort),
     d_timeout(b.d_timeout)
 {
-    *d_private = *b.d_private;
 }
 
 Profile::~Profile()
@@ -164,7 +163,7 @@ Profile Profile::fromUri(const std::string& ssUri)
     }
     size_t pluginPos = uri.find_first_of('/');
     if (pluginPos != std::string::npos) {
-        // TODO support plugins. For now, just ignore them
+        // TODO: support plugins. For now, just ignore them
         uri.erase(pluginPos);
     }
     size_t atPos = uri.find_first_of('@');
@@ -230,4 +229,4 @@ std::string Profile::toUriSip002() const
     return "ss://" + userinfo + "@" + serverAddress() + ":" + std::to_string(serverPort()) + "#" + name();
 }
 
-}
+}  // namespace QSS

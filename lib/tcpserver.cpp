@@ -23,22 +23,22 @@
 #include "tcpserver.h"
 #include "common.h"
 #include <QDebug>
+#include <utility>
 
-using namespace QSS;
+namespace QSS {
 
-TcpServer::TcpServer(const std::string &method,
-                     const std::string &password,
+TcpServer::TcpServer(std::string method,
+                     std::string password,
                      int timeout,
                      bool is_local,
                      bool auto_ban,
-                     const Address &serverAddress) :
-    QTcpServer(),
-    method(method),
-    password(password),
-    isLocal(is_local),
-    autoBan(auto_ban),
-    serverAddress(serverAddress),
-    timeout(timeout)
+                     Address serverAddress)
+    : method(std::move(method))
+    , password(std::move(password))
+    , isLocal(is_local)
+    , autoBan(auto_ban)
+    , serverAddress(std::move(serverAddress))
+    , timeout(timeout)
 {
 }
 
@@ -77,3 +77,5 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
         conList.remove(con);
     });
 }
+
+}  // namespace QSS

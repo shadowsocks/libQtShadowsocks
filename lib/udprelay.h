@@ -40,7 +40,7 @@ public:
              const std::string& password,
              bool is_local,
              bool auto_ban,
-             const Address &serverAddress);
+             Address serverAddress);
 
     UdpRelay(const UdpRelay &) = delete;
 

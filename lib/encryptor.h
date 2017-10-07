@@ -44,7 +44,7 @@ public:
      * @param method The encryption method in Shadowsocks convention
      * @param password The preshared password
      */
-    Encryptor(const std::string& method,
+    Encryptor(std::string method,
               const std::string& password);
 
     Encryptor(const Encryptor &) = delete;
@@ -78,8 +78,8 @@ public:
     void reset();
 
 private:
+    std::string m_method;
     const Cipher::CipherInfo cipherInfo;
-    std::string method;
     std::string masterKey;
     std::string incompleteChunk;
     uint16_t incompleteLength;

@@ -35,6 +35,7 @@ class QSS_EXPORT Profile {
 public:
     Profile();
     Profile(const Profile&);
+    Profile(Profile&&) = default;
     ~Profile();
 
     const std::string& name() const;

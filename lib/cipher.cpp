@@ -22,11 +22,14 @@
 
 #include "cipher.h"
 
+#include <memory>
+#include <stdexcept>
+
 #include <botan/auto_rng.h>
 #include <botan/key_filt.h>
 #include <botan/lookup.h>
-#include <botan/pipe.h>
 #include <botan/md5.h>
+#include <botan/pipe.h>
 
 #ifdef USE_BOTAN2
 #include <botan/hkdf.h>
@@ -35,22 +38,18 @@
 #endif
 
 #include <QCryptographicHash>
-#include <QMessageAuthenticationCode>
 #include <QDebug>
-#include <stdexcept>
-#include <memory>
-
-using namespace QSS;
-
-#ifdef USE_BOTAN2
-typedef Botan::secure_vector<Botan::byte> SecureByteArray;
-#define DataOfSecureByteArray(sba) sba.data()
-#else
-typedef Botan::SecureVector<Botan::byte> SecureByteArray;
-#define DataOfSecureByteArray(sba) sba.begin()
-#endif
+#include <QMessageAuthenticationCode>
 
 namespace {
+
+#ifdef USE_BOTAN2
+using SecureByteArray = Botan::secure_vector<Botan::byte>;
+#define DataOfSecureByteArray(sba) sba.data()
+#else
+using SecureByteArray = Botan::SecureVector<Botan::byte>;
+#define DataOfSecureByteArray(sba) sba.begin()
+#endif
 
 // Copied from libsodium's sodium_increment
 void nonceIncrement(unsigned char *n, const size_t nlen)
@@ -63,18 +62,20 @@ void nonceIncrement(unsigned char *n, const size_t nlen)
     }
 }
 
-}
+}  // namespace
 
-Cipher::Cipher(const std::string &method,
-               const std::string &sKey,
-               const std::string &iv,
+namespace QSS {
+
+Cipher::Cipher(const std::string& method,
+               std::string key,
+               std::string iv,
                bool encrypt) :
-    key(sKey),
-    iv(iv),
+    m_key(std::move(key)),
+    m_iv(std::move(iv)),
     cipherInfo(cipherInfoMap.at(method))
 {
     if (method.find("rc4") != std::string::npos) {
-        rc4.reset(new RC4(key, iv));
+        rc4 = std::make_unique<QSS::RC4>(m_key, m_iv);
         return;
     }
 #ifndef USE_BOTAN2
@@ -85,24 +86,22 @@ Cipher::Cipher(const std::string &method,
 #endif
     try {
         Botan::SymmetricKey _key(
-                    reinterpret_cast<const Botan::byte *>(key.data()),
-                    key.size());
+                    reinterpret_cast<const Botan::byte *>(m_key.data()),
+                    m_key.size());
         Botan::InitializationVector _iv(
-                    reinterpret_cast<const Botan::byte *>(iv.data()),
-                    iv.size());
+                    reinterpret_cast<const Botan::byte *>(m_iv.data()),
+                    m_iv.size());
         filter = Botan::get_cipher(cipherInfo.internalName, _key, _iv,
                     encrypt ? Botan::ENCRYPTION : Botan::DECRYPTION);
         // Botan::pipe will take control over filter
         // we shouldn't deallocate filter externally
-        pipe.reset(new Botan::Pipe(filter));
+        pipe = std::make_unique<Botan::Pipe>(filter);
     } catch(const Botan::Exception &e) {
         QDebug(QtMsgType::QtFatalMsg) << "Failed to initialise cipher: " << e.what();
     }
 }
 
-Cipher::~Cipher()
-{
-}
+Cipher::~Cipher() = default;
 
 const std::unordered_map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap = {
     {"aes-128-cfb", {"AES-128/CFB", 16, 16, Cipher::CipherType::STREAM}},
@@ -143,24 +142,25 @@ std::string Cipher::update(const uint8_t *data, size_t length)
 {
     if (chacha) {
         return chacha->update(data, length);
-    } else if (rc4) {
+    }
+    if (rc4) {
         return rc4->update(data, length);
-    } else if (pipe) {
+    }
+    if (pipe) {
         pipe->process_msg(reinterpret_cast<const Botan::byte *>
                           (data), length);
         SecureByteArray c = pipe->read_all(Botan::Pipe::LAST_MESSAGE);
         return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(c)),
                            c.size());
-    } else {
-        throw std::logic_error("Underlying ciphers are all uninitialised!");
     }
+    throw std::logic_error("Underlying ciphers are all uninitialised!");
 }
 
 void Cipher::incrementIv()
 {
-    nonceIncrement(reinterpret_cast<unsigned char*>(&iv[0]), iv.length());
+    nonceIncrement(reinterpret_cast<unsigned char*>(&m_iv[0]), m_iv.length());
     filter->set_iv(Botan::InitializationVector(
-                       reinterpret_cast<const Botan::byte *>(iv.data()), iv.size()
+                       reinterpret_cast<const Botan::byte *>(m_iv.data()), m_iv.size()
                        ));
 }
 
@@ -181,9 +181,8 @@ std::string Cipher::randomIv(const std::string &method)
     CipherInfo cipherInfo = cipherInfoMap.at(method);
     if (cipherInfo.type == AEAD) {
         return std::string(cipherInfo.ivLen, static_cast<char>(0));
-    } else {
-        return randomIv(cipherInfo.ivLen);
-    }
+    } 
+    return randomIv(cipherInfo.ivLen);
 }
 
 std::string Cipher::md5Hash(const std::string &in)
@@ -195,7 +194,7 @@ std::string Cipher::md5Hash(const std::string &in)
 
 bool Cipher::isSupported(const std::string &method)
 {
-    std::unordered_map<std::string, CipherInfo>::const_iterator cIt = cipherInfoMap.find(method);
+    const auto cIt = cipherInfoMap.find(method);
     if (cIt == cipherInfoMap.end()) {
         return false;
     }
@@ -203,7 +202,9 @@ bool Cipher::isSupported(const std::string &method)
 #ifndef USE_BOTAN2
     if (method.find("chacha20") != std::string::npos)  return true;
 #endif
-    if (method.find("rc4") != std::string::npos)    return true;
+    if (method.find("rc4") != std::string::npos) {
+        return true;
+    }
 
     std::unique_ptr<Botan::Keyed_Filter> keyFilter;
     try {
@@ -235,10 +236,12 @@ std::vector<std::string> Cipher::supportedMethods()
 std::string Cipher::deriveAeadSubkey(size_t length, const std::string& masterKey, const std::string& salt)
 {
     std::unique_ptr<Botan::KDF> kdf;
-    kdf.reset(new Botan::HKDF(new Botan::HMAC(new Botan::SHA_160())));
+    kdf = std::make_unique<Botan::HKDF>(new Botan::HMAC(new Botan::SHA_160()));
     //std::string salt = randomIv(cipherInfo.saltLen);
     SecureByteArray skey = kdf->derive_key(length, reinterpret_cast<const uint8_t*>(masterKey.data()), masterKey.length(), salt, kdfLabel);
     return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(skey)),
                        skey.size());
 }
 #endif
+
+} // namespace QSS

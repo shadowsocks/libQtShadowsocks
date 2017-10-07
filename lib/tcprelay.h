@@ -38,7 +38,7 @@ class QSS_EXPORT TcpRelay : public QObject
 public:
     TcpRelay(QTcpSocket *localSocket,
              int timeout,
-             const Address &server_addr,
+             Address server_addr,
              const std::string& method,
              const std::string& password,
              bool is_local,
