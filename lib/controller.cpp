@@ -116,7 +116,7 @@ bool Controller::start()
         if (listen_ret) {
             listen_ret = udpRelay->listen(getLocalAddr(), profile.localPort());
             if (profile.httpProxy() && listen_ret) {
-                QDebug(QtMsgType::QtInfoMsg) << "SOCKS5 port is "
+                QDebug(QtMsgType::QtInfoMsg) << "SOCKS5 port is"
                                              << tcpServer->serverPort();
                 httpProxy = std::make_unique<QSS::HttpProxy>();
                 if (httpProxy->httpListen(getLocalAddr(),

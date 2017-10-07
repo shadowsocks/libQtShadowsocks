@@ -1,7 +1,7 @@
 Name:		libQtShadowsocks
-Version:	1.11.0
-Release:	2%{?dist}
-Summary:	A lightweight and ultra-fast shadowsocks library
+Version:	2.0.0alpha
+Release:	1%{?dist}
+Summary:	A lightweight and ultra-fast shadowsocks library (C++)
 
 License:	LGPLv3+
 URL:		https://github.com/shadowsocks/%{name}
@@ -13,9 +13,9 @@ BuildRequires:	cmake3 >= 3.1
 %else
 BuildRequires:	cmake >= 3.1
 %endif
-BuildRequires:	qt5-qtbase-devel
+BuildRequires:	qt5-qtbase-devel >= 5.5
 Requires:	botan
-Requires:	qt5-qtbase
+Requires:	qt5-qtbase >= 5.5
 
 AutoReq:	no
 

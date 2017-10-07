@@ -1,7 +1,7 @@
 /*
  * profile.h - defines Profile struct
  *
- * Copyright (C) 2014-2016 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -25,6 +25,7 @@
 
 #include <string>
 #include <cstdint>
+#include <memory>
 #include "export.h"
 
 namespace QSS {
@@ -35,7 +36,7 @@ class QSS_EXPORT Profile {
 public:
     Profile();
     Profile(const Profile&);
-    Profile(Profile&&) = default;
+    Profile(Profile&&);
     ~Profile();
 
     const std::string& name() const;
@@ -76,7 +77,7 @@ public:
     static Profile fromUri(const std::string&);
 
 private:
-    ProfilePrivate* const d_private; // For future extension (to keep ABI compatible)
+    std::unique_ptr<ProfilePrivate> d_private; // For future extension (to keep ABI compatible)
 
     /**
      * Essential data are stored directly as members in this class

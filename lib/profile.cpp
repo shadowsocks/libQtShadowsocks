@@ -31,9 +31,21 @@ Profile::Profile(const Profile &b) :
 {
 }
 
+Profile::Profile(Profile &&b)
+    : d_private(std::move(b.d_private))
+    , d_name(std::move(b.d_name))
+    , d_method(std::move(b.d_method))
+    , d_password(std::move(b.d_password))
+    , d_serverAddress(std::move(b.d_serverAddress))
+    , d_localAddress(std::move(b.d_localAddress))
+    , d_serverPort(std::move(b.d_serverPort))
+    , d_localPort(std::move(b.d_localPort))
+    , d_timeout(std::move(b.d_timeout))
+{
+}
+
 Profile::~Profile()
 {
-    delete d_private;
 }
 
 const std::string& Profile::name() const
