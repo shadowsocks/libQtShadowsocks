@@ -138,7 +138,7 @@ std::string Encryptor::encrypt(const uint8_t *data, size_t length)
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
         uint16_t inLen = length > AEAD_CHUNK_SIZE_MASK ? AEAD_CHUNK_SIZE_MASK : length;
         std::string rawLength(AEAD_CHUNK_SIZE_LEN, static_cast<char>(0));
-        qToBigEndian(inLen, reinterpret_cast<uint16_t*>(&rawLength[0]));
+        qToBigEndian(inLen, reinterpret_cast<uint8_t*>(&rawLength[0]));
         std::string encLength = enCipher->update(rawLength); // length + tag
         enCipher->incrementIv();
         std::string encPayload = enCipher->update(data, inLen); // payload + tag
