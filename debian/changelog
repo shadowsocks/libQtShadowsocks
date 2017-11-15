@@ -1,3 +1,14 @@
+libqtshadowsocks (2.0.0-1) unstable; urgency=medium
+
+  * Shadowsocks AEAD ciphers (SIP004/SIP007), requires botan-2
+  * Shadowsocks SIP002 URI scheme support
+  * OTA support is dropped
+  * Minimum C++ standard is now C++14
+  * Underlying refactoring and breaking changes
+  * Logging formats improvements
+
+ -- Symeon Huang <hzwhuang@gmail.com>  Wed, 15 Nov 2017 20:14:00 +0000
+
 libqtshadowsocks (1.11.0-1) stable; urgency=medium
 
   * adds support for botan-2 (>=2.2.0)
