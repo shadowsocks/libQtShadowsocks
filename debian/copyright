@@ -1,7 +1,0 @@
-Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
-Upstream-Name: libQtShadowsocks
-Source: https://github.com/librehat/libQtShadowsocks
-
-Files: *
-Copyright: 2014-2015 Symeon Huang (librehat) <hzwhuang@gmail.com>
-License: LGPL-3+
