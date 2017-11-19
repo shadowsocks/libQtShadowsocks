@@ -119,7 +119,10 @@ const std::unordered_map<std::string, Cipher::CipherInfo> Cipher::cipherInfoMap 
     {"chacha20-ietf", {"ChaCha", 32, 12, Cipher::CipherType::STREAM}},
     {"des-cfb", {"DES/CFB", 8, 8, Cipher::CipherType::STREAM}},
     {"idea-cfb", {"IDEA/CFB", 16, 8, Cipher::CipherType::STREAM}},
+#ifndef USE_BOTAN2
+    // RC2 is not supported by botan-2
     {"rc2-cfb", {"RC2/CFB", 16, 8, Cipher::CipherType::STREAM}},
+#endif
     {"rc4-md5", {"RC4-MD5", 16, 16, Cipher::CipherType::STREAM}},
     {"salsa20", {"Salsa20", 32, 8, Cipher::CipherType::STREAM}},
     {"seed-cfb", {"SEED/CFB", 16, 16, Cipher::CipherType::STREAM}},
