@@ -67,8 +67,8 @@ void nonceIncrement(unsigned char *n, const size_t nlen)
 namespace QSS {
 
 Cipher::Cipher(const std::string& method,
-               std::string key,
-               std::string iv,
+               const std::string &key,
+               const std::string &iv,
                bool encrypt) :
     m_key(std::move(key)),
     m_iv(std::move(iv)),
@@ -184,7 +184,7 @@ std::string Cipher::randomIv(const std::string &method)
     CipherInfo cipherInfo = cipherInfoMap.at(method);
     if (cipherInfo.type == AEAD) {
         return std::string(cipherInfo.ivLen, static_cast<char>(0));
-    } 
+    }
     return randomIv(cipherInfo.ivLen);
 }
 
