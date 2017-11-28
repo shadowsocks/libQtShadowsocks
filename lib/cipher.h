@@ -54,7 +54,7 @@ public:
      * @param iv The initialiser vector, aka nonce
      * @param encrypt Whether the operation is to encrypt, otherwise it's to decrypt
      */
-    Cipher(const std::string &method, const std::string &key, const std::string &iv, bool encrypt);
+    Cipher(const std::string &method, std::string key, std::string iv, bool encrypt);
     Cipher(Cipher &&) = default;
     ~Cipher();
 

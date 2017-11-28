@@ -67,8 +67,8 @@ void nonceIncrement(unsigned char *n, const size_t nlen)
 namespace QSS {
 
 Cipher::Cipher(const std::string& method,
-               const std::string &key,
-               const std::string &iv,
+               std::string key,
+               std::string iv,
                bool encrypt) :
     m_key(std::move(key)),
     m_iv(std::move(iv)),
@@ -80,7 +80,7 @@ Cipher::Cipher(const std::string& method,
     }
 #ifndef USE_BOTAN2
     else if (method.find("chacha20") != std::string::npos) {
-        chacha.reset(new ChaCha(key, iv));
+        chacha.reset(new ChaCha(m_key, m_iv));
         return;
     }
 #endif

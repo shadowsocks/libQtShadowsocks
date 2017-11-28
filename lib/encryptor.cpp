@@ -75,7 +75,7 @@ void Encryptor::reset()
 
 void Encryptor::initEncipher(std::string *header)
 {
-    const std::string iv = Cipher::randomIv(m_method);
+    std::string iv = Cipher::randomIv(m_method);
     std::string key;
 #ifdef USE_BOTAN2
     if (cipherInfo.type == Cipher::CipherType::AEAD) {
@@ -89,7 +89,7 @@ void Encryptor::initEncipher(std::string *header)
 #ifdef USE_BOTAN2
     }
 #endif
-    enCipher = std::make_unique<QSS::Cipher>(m_method, key, iv, true);
+    enCipher = std::make_unique<QSS::Cipher>(m_method, std::move(key), std::move(iv), true);
 }
 
 void Encryptor::initDecipher(const char *data, size_t length, size_t *offset)
@@ -114,7 +114,7 @@ void Encryptor::initDecipher(const char *data, size_t length, size_t *offset)
 #ifdef USE_BOTAN2
     }
 #endif
-    deCipher = std::make_unique<QSS::Cipher>(m_method, key, iv, false);
+    deCipher = std::make_unique<QSS::Cipher>(m_method, std::move(key), std::move(iv), false);
 }
 
 std::string Encryptor::encrypt(const std::string &in)
