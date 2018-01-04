@@ -110,11 +110,14 @@ bool Controller::start()
 
     if (isLocal) {
         qInfo("Running in local mode.");
+        QHostAddress localAddress = profile.httpProxy()
+            ? QHostAddress::LocalHost
+            : getLocalAddr();
         listen_ret = tcpServer->listen(
-                    getLocalAddr(),
+                    localAddress,
                     profile.httpProxy() ? 0 : profile.localPort());
         if (listen_ret) {
-            listen_ret = udpRelay->listen(getLocalAddr(), profile.localPort());
+            listen_ret = udpRelay->listen(localAddress, profile.localPort());
             if (profile.httpProxy() && listen_ret) {
                 QDebug(QtMsgType::QtInfoMsg) << "SOCKS5 port is"
                                              << tcpServer->serverPort();

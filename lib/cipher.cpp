@@ -80,7 +80,7 @@ Cipher::Cipher(const std::string& method,
     }
 #ifndef USE_BOTAN2
     else if (method.find("chacha20") != std::string::npos) {
-        chacha.reset(new ChaCha(key, iv));
+        chacha.reset(new ChaCha(m_key, m_iv));
         return;
     }
 #endif
@@ -184,7 +184,7 @@ std::string Cipher::randomIv(const std::string &method)
     CipherInfo cipherInfo = cipherInfoMap.at(method);
     if (cipherInfo.type == AEAD) {
         return std::string(cipherInfo.ivLen, static_cast<char>(0));
-    } 
+    }
     return randomIv(cipherInfo.ivLen);
 }
 
