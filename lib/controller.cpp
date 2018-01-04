@@ -24,7 +24,9 @@
 #include <QHostInfo>
 #include <QTcpSocket>
 
+#ifndef USE_BOTAN2
 #include <botan/init.h>
+#endif
 
 #include "controller.h"
 #include "encryptor.h"
@@ -44,7 +46,7 @@ Controller::Controller(Profile _profile,
 {
 #ifndef USE_BOTAN2
     try {
-        Botan::LibraryInitializer::initialize("thread_safe");
+        botanInit = std::make_unique<Botan::LibraryInitializer>("thread_safe");
     } catch (std::exception &e) {
         qFatal("Failed to initialise Botan library: %s", e.what());
     }
@@ -99,9 +101,6 @@ Controller::~Controller()
     if (tcpServer->isListening()) {
         stop();
     }
-#ifndef USE_BOTAN2
-    Botan::LibraryInitializer::deinitialize();
-#endif
 }
 
 bool Controller::start()
