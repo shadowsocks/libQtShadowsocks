@@ -1,5 +1,5 @@
 Name:		libQtShadowsocks
-Version:	2.0.0alpha
+Version:	2.0.0
 Release:	1%{?dist}
 Summary:	A lightweight and ultra-fast shadowsocks library (C++)
 
