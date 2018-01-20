@@ -27,5 +27,5 @@ script:
   # Build
   - mkdir build && cd build
   - cmake .. -DQt5Core_DIR="/opt/qt55/lib/cmake/Qt5Core" -DQt5Network_DIR="/opt/qt55/lib/cmake/Qt5Network" -DQt5Test_DIR="/opt/qt55/lib/cmake/Qt5Test"
-  - make
+  - make && make test
 
