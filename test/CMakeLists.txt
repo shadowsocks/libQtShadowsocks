@@ -1,17 +1,17 @@
-set(TASK "qss_test")
+macro(qss_add_test component)
+    add_executable(${component} ${component}.cpp)
+    add_test(${component} ${component})
+    target_link_libraries(${component}
+                          Qt5::Core
+                          Qt5::Network
+                          Qt5::Test
+                          QtShadowsocks)
+    target_include_directories(${component}
+                               PUBLIC ${PROJECT_SOURCE_DIR}/lib)
+endmacro(qss_add_test)
 
-set(SOURCE
-    main.cpp
-    address.t.cpp
-    chacha.t.cpp
-    cipher.t.cpp
-    profile.t.cpp
-    encryptor.t.cpp
-    )
-
-add_executable(${TASK} ${SOURCE})
-
-find_package(Qt5Test)
-target_link_libraries(${TASK} Qt5::Core Qt5::Network Qt5::Test QtShadowsocks)
-target_include_directories(${TASK}
-    PUBLIC ${PROJECT_SOURCE_DIR}/lib)
+qss_add_test(address)
+qss_add_test(chacha)
+qss_add_test(cipher)
+qss_add_test(encryptor)
+qss_add_test(profile)

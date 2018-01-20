@@ -1,34 +1,44 @@
-#include "encryptor.t.h"
 #include "crypto/encryptor.h"
-
-using namespace QSS;
+#include <QtTest>
 
 namespace {
 const std::string testData = std::string("Hello Shadowsocks");
 }
 
-Encryptor_T::Encryptor_T()
+class Encryptor : public QObject
 {
-}
+    Q_OBJECT
+public:
+    Encryptor() = default;
 
-void Encryptor_T::selfTestEncryptDecrypt()
+private Q_SLOTS:
+    void selfTestEncryptDecrypt();
+#ifdef USE_BOTAN2
+    void testAesGcm();
+    void testAesGcmUdp();
+    void testAesGcmMultiChunks();
+    void testAesGcmIncompleteChunks();
+#endif
+};
+
+void Encryptor::selfTestEncryptDecrypt()
 {
     std::string method("aes-128-cfb");
     std::string password("test");
-    Encryptor encryptor(method, password);
-    Encryptor decryptor(method, password);
+    QSS::Encryptor encryptor(method, password);
+    QSS::Encryptor decryptor(method, password);
 
     QCOMPARE(decryptor.decrypt(encryptor.encrypt(testData)), testData);
 }
 
 #ifdef USE_BOTAN2
-void Encryptor_T::testAesGcm()
+void Encryptor::testAesGcm()
 {
     const std::string method("aes-256-gcm");
     const std::string password("test");
     const Cipher::CipherInfo cInfo = Cipher::cipherInfoMap.at(method);
-    Encryptor encryptor(method, password);
-    Encryptor decryptor(method, password);
+    QSS::Encryptor encryptor(method, password);
+    QSS::Encryptor decryptor(method, password);
 
     // Test the first packet
     std::string encrypted = encryptor.encrypt(testData);
@@ -43,13 +53,13 @@ void Encryptor_T::testAesGcm()
     QCOMPARE(decrypted, testData);
 }
 
-void Encryptor_T::testAesGcmUdp()
+void Encryptor::testAesGcmUdp()
 {
     const std::string method("aes-256-gcm");
     const std::string password("test");
     const Cipher::CipherInfo cInfo = Cipher::cipherInfoMap.at(method);
-    Encryptor encryptor(method, password);
-    Encryptor decryptor(method, password);
+    QSS::Encryptor encryptor(method, password);
+    QSS::Encryptor decryptor(method, password);
 
     // Test the first packet in UDP
     std::string encrypted = encryptor.encryptAll(testData);
@@ -64,12 +74,12 @@ void Encryptor_T::testAesGcmUdp()
     QCOMPARE(decrypted, testData);
 }
 
-void Encryptor_T::testAesGcmMultiChunks()
+void Encryptor::testAesGcmMultiChunks()
 {
     const std::string method("aes-256-gcm");
     const std::string password("test");
-    Encryptor encryptor(method, password);
-    Encryptor decryptor(method, password);
+    QSS::Encryptor encryptor(method, password);
+    QSS::Encryptor decryptor(method, password);
 
     // encrypted has salt preprended
     std::string encrypted = encryptor.encrypt(std::string("Hello"));
@@ -85,12 +95,12 @@ void Encryptor_T::testAesGcmMultiChunks()
     QCOMPARE(decrypted, std::string("Shadowsocks"));
 }
 
-void Encryptor_T::testAesGcmIncompleteChunks()
+void Encryptor::testAesGcmIncompleteChunks()
 {
     const std::string method("aes-256-gcm");
     const std::string password("test");
-    Encryptor encryptor(method, password);
-    Encryptor decryptor(method, password);
+    QSS::Encryptor encryptor(method, password);
+    QSS::Encryptor decryptor(method, password);
 
     // Too small for payload
     std::string encrypted = encryptor.encrypt(testData);
@@ -105,3 +115,6 @@ void Encryptor_T::testAesGcmIncompleteChunks()
     QCOMPARE(decrypted, testData);
 }
 #endif
+
+QTEST_MAIN(Encryptor)
+#include "encryptor.moc"
