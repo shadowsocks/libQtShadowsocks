@@ -29,7 +29,7 @@
 
 #include <vector>
 #include <string>
-#include "export.h"
+#include "util/export.h"
 
 namespace QSS {
 

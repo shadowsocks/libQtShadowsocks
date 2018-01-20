@@ -1,0 +1,16 @@
+list(APPEND SOURCE
+    ${CMAKE_CURRENT_LIST_DIR}/chacha.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/cipher.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/encryptor.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/rc4.cpp
+    )
+
+set(CRYPTO_HEADERS
+    ${CMAKE_CURRENT_LIST_DIR}/chacha.h
+    ${CMAKE_CURRENT_LIST_DIR}/cipher.h
+    ${CMAKE_CURRENT_LIST_DIR}/encryptor.h
+    ${CMAKE_CURRENT_LIST_DIR}/rc4.h
+    )
+
+install(FILES ${CRYPTO_HEADERS}
+    DESTINATION ${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}/crypto)

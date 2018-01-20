@@ -1,5 +1,5 @@
 #include "address.t.h"
-#include "../lib/address.h"
+#include "types/address.h"
 #include <QHostAddress>
 
 using namespace QSS;

@@ -28,7 +28,7 @@
 
 #include <QTcpServer>
 #include <QNetworkProxy>
-#include "export.h"
+#include "util/export.h"
 
 namespace QSS {
 

@@ -1,5 +1,5 @@
 #include "profile.t.h"
-#include "../lib/profile.h"
+#include "types/profile.h"
 
 Profile_T::Profile_T()
 {

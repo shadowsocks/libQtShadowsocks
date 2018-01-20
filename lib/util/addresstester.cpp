@@ -24,10 +24,10 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "address.h"
+#include "types/address.h"
 #include "addresstester.h"
 #include "common.h"
-#include "encryptor.h"
+#include "crypto/encryptor.h"
 
 namespace QSS {
 

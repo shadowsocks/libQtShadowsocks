@@ -27,8 +27,8 @@
 #include <QTcpSocket>
 #include <QTimer>
 #include <QTime>
-#include "address.h"
-#include "encryptor.h"
+#include "types/address.h"
+#include "crypto/encryptor.h"
 
 namespace QSS {
 

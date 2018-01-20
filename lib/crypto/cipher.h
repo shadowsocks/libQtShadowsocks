@@ -34,7 +34,7 @@
 #include <memory>
 #include "rc4.h"
 #include "chacha.h"
-#include "export.h"
+#include "util/export.h"
 
 namespace Botan {
 class Keyed_Filter;

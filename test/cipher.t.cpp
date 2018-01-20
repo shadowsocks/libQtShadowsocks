@@ -1,6 +1,6 @@
 #include "cipher.t.h"
-#include "../lib/cipher.h"
-#include "../lib/common.h"
+#include "crypto/cipher.h"
+#include "util/common.h"
 
 using namespace QSS;
 

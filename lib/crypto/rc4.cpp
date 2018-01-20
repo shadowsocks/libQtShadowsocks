@@ -22,7 +22,7 @@
 
 #include "rc4.h"
 #include "cipher.h"
-#include "common.h"
+#include "util/common.h"
 
 using namespace QSS;
 

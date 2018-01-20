@@ -21,7 +21,7 @@
  */
 
 #include "chacha.h"
-#include "common.h"
+#include "util/common.h"
 #include <botan/loadstor.h>
 #include <botan/rotate.h>
 #include <stdexcept>

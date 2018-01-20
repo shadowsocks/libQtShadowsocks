@@ -1,0 +1,12 @@
+list(APPEND SOURCE
+    ${CMAKE_CURRENT_LIST_DIR}/address.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/profile.cpp
+    )
+
+set(TYPES_HEADERS
+    ${CMAKE_CURRENT_LIST_DIR}/address.h
+    ${CMAKE_CURRENT_LIST_DIR}/profile.h
+    )
+
+install(FILES ${TYPES_HEADERS}
+    DESTINATION ${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}/types)

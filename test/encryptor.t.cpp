@@ -1,5 +1,5 @@
 #include "encryptor.t.h"
-#include "../lib/encryptor.h"
+#include "crypto/encryptor.h"
 
 using namespace QSS;
 

@@ -26,8 +26,8 @@
 #include <QTcpServer>
 #include <list>
 #include <memory>
-#include "address.h"
-#include "export.h"
+#include "types/address.h"
+#include "util/export.h"
 #include "tcprelay.h"
 
 namespace QSS {

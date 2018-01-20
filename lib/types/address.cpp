@@ -22,8 +22,8 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "common.h"
 #include "address.h"
+#include "util/common.h"
 
 #include <QDnsLookup>
 #include <memory>

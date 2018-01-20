@@ -30,7 +30,7 @@
 #include <QHostInfo>
 #include <vector>
 #include <functional>
-#include "export.h"
+#include "util/export.h"
 
 namespace QSS {
 

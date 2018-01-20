@@ -21,7 +21,7 @@
  */
 
 #include "common.h"
-#include "address.h"
+#include "types/address.h"
 
 #include <QHostInfo>
 #include <QtEndian>

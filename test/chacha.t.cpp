@@ -1,7 +1,7 @@
 #include "chacha.t.h"
-#include "../lib/cipher.h"
-#include "../lib/chacha.h"
-#include "../lib/common.h"
+#include "crypto/cipher.h"
+#include "crypto/chacha.h"
+#include "util/common.h"
 
 using namespace QSS;
 

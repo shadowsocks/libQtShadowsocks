@@ -25,7 +25,7 @@
 
 #include <QObject>
 #include <QAbstractSocket>
-#include "export.h"
+#include "util/export.h"
 
 namespace QSS {
 

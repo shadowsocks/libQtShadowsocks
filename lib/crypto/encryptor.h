@@ -31,7 +31,7 @@
 #define ENCRYPTOR_H
 
 #include <memory>
-#include "export.h"
+#include "util/export.h"
 #include "cipher.h"
 
 namespace QSS {

@@ -27,8 +27,8 @@
 #include <QUdpSocket>
 #include <QHostAddress>
 #include <map>
-#include "address.h"
-#include "encryptor.h"
+#include "types/address.h"
+#include "crypto/encryptor.h"
 
 namespace QSS {
 

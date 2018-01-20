@@ -21,7 +21,7 @@
  */
 
 #include "tcprelay.h"
-#include "common.h"
+#include "util/common.h"
 #include <QDebug>
 #include <utility>
 

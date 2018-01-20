@@ -26,7 +26,7 @@
 #include <string>
 #include <cstdint>
 #include <memory>
-#include "export.h"
+#include "util/export.h"
 
 namespace QSS {
 

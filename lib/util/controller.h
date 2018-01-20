@@ -25,11 +25,11 @@
 
 #include <QHostAddress>
 #include <QObject>
-#include "tcpserver.h"
+#include "network/tcpserver.h"
 #include "export.h"
-#include "httpproxy.h"
-#include "profile.h"
-#include "udprelay.h"
+#include "network/httpproxy.h"
+#include "types/profile.h"
+#include "network/udprelay.h"
 
 #ifndef USE_BOTAN2
 namespace Botan {

@@ -29,7 +29,7 @@
 #endif
 
 #include "controller.h"
-#include "encryptor.h"
+#include "crypto/encryptor.h"
 
 namespace QSS {
 
