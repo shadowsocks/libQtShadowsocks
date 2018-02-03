@@ -28,11 +28,31 @@
 #include <QString>
 #include <QHostAddress>
 #include <QHostInfo>
-#include <vector>
+
 #include <functional>
+#include <memory>
+#include <vector>
 #include "util/export.h"
 
 namespace QSS {
+
+class QSS_EXPORT DnsLookup : public QObject
+{
+    // A simple wrapper class to provide asynchronous DNS lookup
+    Q_OBJECT
+public:
+    void lookup(const QString& hostname);
+    const QList<QHostAddress> iplist() const;
+
+signals:
+    void finished();
+
+private slots:
+    void lookedUp(const QHostInfo& info);
+
+private:
+    QList<QHostAddress> m_ips;
+};
 
 class QSS_EXPORT Address
 {
@@ -118,6 +138,7 @@ public:
 private:
     std::pair<std::string, uint16_t> data;//first: address string; second: port
     std::vector<QHostAddress> ipAddrList;
+    std::shared_ptr<DnsLookup> dns;
 };
 
 }

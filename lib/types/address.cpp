@@ -25,10 +25,27 @@
 #include "address.h"
 #include "util/common.h"
 
-#include <QDnsLookup>
-#include <memory>
-
 namespace  QSS {
+
+void DnsLookup::lookup(const QString& hostname)
+{
+    QHostInfo::lookupHost(hostname, this, SLOT(lookedUp(QHostInfo)));
+}
+
+const QList<QHostAddress> DnsLookup::iplist() const
+{
+    return m_ips;
+}
+
+void DnsLookup::lookedUp(const QHostInfo &info)
+{
+    if (info.error() != QHostInfo::NoError) {
+        qWarning("DNS lookup failed: %s", info.errorString().toStdString().data());
+    } else {
+        m_ips = info.addresses();
+    }
+    emit finished();
+}
 
 Address::Address(const std::string &a, uint16_t p)
 {
@@ -75,19 +92,19 @@ void Address::lookUp(Address::LookUpCallback cb)
     if (isIPValid()) {
         return cb(true);
     }
-    std::shared_ptr<QDnsLookup> dns(new QDnsLookup(QDnsLookup::Type::ANY, QString::fromStdString(data.first)));
-    QObject::connect(dns.get(), &QDnsLookup::finished,
-                     [cb, dns, this]() {
-        if (dns->error() != QDnsLookup::NoError) {
-            qDebug("Failed to look up host address: %s", dns->errorString().toStdString().data());
-            cb(false);
-        } else {
-            ipAddrList.clear();
-            for (const QDnsHostAddressRecord& record : dns->hostAddressRecords()) {
-                ipAddrList.push_back(record.value());
-            }
-            cb(true);
-        }});
+
+    if (dns) {
+        // DNS lookup is in-progress
+        return;
+    }
+
+    dns = std::make_shared<DnsLookup>();
+    QObject::connect(dns.get(), &DnsLookup::finished, [cb, this]() {
+        ipAddrList = dns->iplist().toVector().toStdVector();
+        cb(!ipAddrList.empty());
+        dns.reset();
+    });
+    dns->lookup(QString::fromStdString(data.first));
 }
 
 bool Address::blockingLookUp()

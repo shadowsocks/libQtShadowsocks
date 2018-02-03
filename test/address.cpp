@@ -17,6 +17,7 @@ private Q_SLOTS:
     void testSetAddress();
     void testSetIPAddress();
     void testSetPort();
+    void testLookup();
 };
 
 void Address::testConstructor1()
@@ -78,6 +79,18 @@ void Address::testSetPort()
     uint16_t port = 1080;
     a.setPort(port);
     QCOMPARE(a.getPort(), port);
+}
+
+void Address::testLookup()
+{
+    QSS::Address a("www.google.com", 443);
+    a.lookUp([&a](bool success) {
+        if (success) {
+            QVERIFY(a.isIPValid());
+        } else {
+            QVERIFY(!a.isIPValid());
+        }
+    });
 }
 
 QTEST_MAIN(Address)
