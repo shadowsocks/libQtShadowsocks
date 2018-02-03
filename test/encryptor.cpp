@@ -36,7 +36,7 @@ void Encryptor::testAesGcm()
 {
     const std::string method("aes-256-gcm");
     const std::string password("test");
-    const Cipher::CipherInfo cInfo = Cipher::cipherInfoMap.at(method);
+    const auto cInfo = QSS::Cipher::cipherInfoMap.at(method);
     QSS::Encryptor encryptor(method, password);
     QSS::Encryptor decryptor(method, password);
 
@@ -57,7 +57,7 @@ void Encryptor::testAesGcmUdp()
 {
     const std::string method("aes-256-gcm");
     const std::string password("test");
-    const Cipher::CipherInfo cInfo = Cipher::cipherInfoMap.at(method);
+    const auto cInfo = QSS::Cipher::cipherInfoMap.at(method);
     QSS::Encryptor encryptor(method, password);
     QSS::Encryptor decryptor(method, password);
 
