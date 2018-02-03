@@ -44,9 +44,6 @@ public:
 
     UdpRelay(const UdpRelay &) = delete;
 
-    void setup(const QHostAddress &localAddr,
-               const uint16_t &localPort);
-
     bool isListening() const;
 
 public slots:
