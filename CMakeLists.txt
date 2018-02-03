@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(QtShadowsocks
-        VERSION 2.0.1
+        VERSION 2.0.2
         LANGUAGES CXX)
 
 option(BUILD_SHARED_LIBS "Build ${PROJECT_NAME} as a shared library" ON)
