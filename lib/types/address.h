@@ -80,7 +80,7 @@ public:
      * Looks up the network address if the address is a domain name.
      * The callback is invoked whenever the operation is finished.
      */
-    void lookUp(const LookUpCallback&);
+    void lookUp(LookUpCallback);
 
     /**
      * @brief blockingLookUp

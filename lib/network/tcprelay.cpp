@@ -201,8 +201,15 @@ void TcpRelay::onRemoteTcpSocketError()
 
 void TcpRelay::onLocalTcpSocketReadyRead()
 {
-    const QByteArray _data = local->readAll();
-    std::string data(_data.data(), _data.size());
+    std::string data;
+    data.resize(RemoteRecvSize);
+    int64_t readSize = local->read(&data[0], data.size());
+    if (readSize == -1) {
+        qCritical("Attempted to read from closed local socket.");
+        close();
+        return;
+    }
+    data.resize(readSize);
 
     if (data.empty()) {
         qCritical("Local received empty data.");
@@ -256,8 +263,16 @@ void TcpRelay::onLocalTcpSocketReadyRead()
 
 void TcpRelay::onRemoteTcpSocketReadyRead()
 {
-    QByteArray _buf = remote->readAll();
-    std::string buf(_buf.data(), _buf.size());
+    std::string buf;
+    buf.resize(RemoteRecvSize);
+    int64_t readSize = remote->read(&buf[0], buf.size());
+    if (readSize == -1) {
+        qCritical("Attempted to read from closed remote socket.");
+        close();
+        return;
+    }
+    buf.resize(readSize);
+
     if (buf.empty()) {
         qWarning("Remote received empty data.");
         close();

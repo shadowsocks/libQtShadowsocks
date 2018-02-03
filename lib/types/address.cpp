@@ -70,11 +70,10 @@ uint16_t Address::getPort() const
     return data.second;
 }
 
-void Address::lookUp(const Address::LookUpCallback& cb)
+void Address::lookUp(Address::LookUpCallback cb)
 {
     if (isIPValid()) {
-        cb(true);
-        return;
+        return cb(true);
     }
     std::shared_ptr<QDnsLookup> dns(new QDnsLookup(QDnsLookup::Type::ANY, QString::fromStdString(data.first)));
     QObject::connect(dns.get(), &QDnsLookup::finished,
