@@ -42,6 +42,7 @@ private Q_SLOTS:
     void testSetAddress();
     void testSetIPAddress();
     void testSetPort();
+    void testLookup();
 };
 
 #endif // ADDRESS_T_H

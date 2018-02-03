@@ -68,3 +68,16 @@ void Address_T::testSetPort()
     a.setPort(port);
     QCOMPARE(a.getPort(), port);
 }
+
+void Address_T::testLookup()
+{
+    QSS::Address a("www.google.com", 443);
+    a.lookUp([&a](bool success) {
+        if (success) {
+            QVERIFY(a.isIPValid());
+        } else {
+            QVERIFY(!a.isIPValid());
+        }
+    });
+}
+
