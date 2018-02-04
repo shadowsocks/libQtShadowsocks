@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(QtShadowsocks
-        VERSION 2.0.1
+        VERSION 2.1.0
         LANGUAGES CXX)
 
 option(BUILD_SHARED_LIBS "Build ${PROJECT_NAME} as a shared library" ON)
-option(USE_BOTAN2 "Build ${PROJECT_NAME} with Botan-2" OFF)
 
 set(LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib
     CACHE PATH "Installation directory for libraries")
@@ -21,11 +20,12 @@ find_package(Qt5Core 5.5)
 find_package(Qt5Network 5.5)
 find_package(PkgConfig)
 
-if (USE_BOTAN2)
+pkg_search_module(BOTAN REQUIRED botan-2>=2.3.0 botan-1.10)
+if(BOTAN_VERSION VERSION_GREATER 2.0)
+    message(STATUS "Botan-2 is found and will be used in this build")
     add_definitions(-DUSE_BOTAN2)
-    pkg_check_modules(BOTAN REQUIRED botan-2>=2.3.0)
 else()
-    pkg_check_modules(BOTAN REQUIRED botan-1.10)
+    message(DEPRECATION "Botan-1.10 is found and will be used in this build. However, Botan-1.10 is deprecated and should not be used if possible")
 endif()
 find_library(BOTAN_LIBRARY_VAR
              NAMES ${BOTAN_LIBRARIES}
