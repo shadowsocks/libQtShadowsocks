@@ -37,7 +37,7 @@ void Utils::testSpeed(uint32_t data_size_mb)
 void Utils::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
 {
     const std::string timestamp =
-            QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toStdString();
+            QDateTime::currentDateTime().toString("yyyy-MM-ddTHH:mm:ss.zzz").toStdString();
     const std::string message = msg.toStdString();
     switch(type) {
     case QtDebugMsg:
