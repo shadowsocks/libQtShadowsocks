@@ -75,8 +75,7 @@ void Client::setup(const QString &remote_addr,
                    const QString &password,
                    const QString &method,
                    const QString &timeout,
-                   const bool http_proxy,
-                   const bool debug)
+                   const bool http_proxy)
 {
     profile.setServerAddress(remote_addr.toStdString());
     profile.setServerPort(remote_port.toInt());
@@ -86,23 +85,11 @@ void Client::setup(const QString &remote_addr,
     profile.setMethod(method.toStdString());
     profile.setTimeout(timeout.toInt());
     profile.setHttpProxy(http_proxy);
-    if (debug) {
-        profile.enableDebug();
-    }
 }
 
 void Client::setAutoBan(bool ban)
 {
     autoBan = ban;
-}
-
-void Client::setDebug(bool debug)
-{
-    if (debug) {
-        profile.enableDebug();
-    } else {
-        profile.disableDebug();
-    }
 }
 
 void Client::setHttpMode(bool http)

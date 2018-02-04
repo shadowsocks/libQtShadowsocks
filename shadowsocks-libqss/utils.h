@@ -30,6 +30,16 @@ public:
     //test data encrypt/decrypt speed. print result to terminal
     static void testSpeed(const std::string &method, uint32_t data_size_mb);
     static void testSpeed(uint32_t data_size_mb);//test all methods
+
+    /**
+     * @brief messageHandler handles Qt messages/logs
+     * @param type
+     * @param context
+     * @param msg
+     */
+    static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
+
+    static bool debugEnabled;
 };
 
 #endif // UTILS_H

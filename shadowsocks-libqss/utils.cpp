@@ -1,7 +1,10 @@
 #include <QtShadowsocks>
+#include <QDateTime>
 #include <QTime>
 #include <iostream>
 #include "utils.h"
+
+bool Utils::debugEnabled = false;
 
 void Utils::testSpeed(const std::string &method, uint32_t data_size_mb)
 {
@@ -28,5 +31,39 @@ void Utils::testSpeed(uint32_t data_size_mb)
     std::sort(allMethods.begin(), allMethods.end());
     for (const auto& method : allMethods) {
         testSpeed(method, data_size_mb);
+    }
+}
+
+void Utils::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    const std::string timestamp =
+            QDateTime::currentDateTime().toString(Qt::ISODateWithMs).toStdString();
+    const std::string message = msg.toStdString();
+    switch(type) {
+    case QtDebugMsg:
+        if (Utils::debugEnabled) {
+            std::cout << timestamp << " DEBUG: " << message << std::endl;
+        }
+        break;
+    case QtInfoMsg:
+        std::cout << timestamp << " INFO: " << message << std::endl;
+        break;
+    case QtWarningMsg:
+        std::cerr << timestamp << " WARN: " << message
+                  << "(" << context.function << ")"
+                  << std::endl;
+        break;
+    case QtCriticalMsg:
+        std::cerr << timestamp << " ERROR: " << message
+                  << "(" << context.file << ":" << context.line
+                  << ", " << context.function << ")"
+                  << std::endl;
+        break;
+    case QtFatalMsg:
+        std::cerr << timestamp << " FATAL: " << message
+                  << "(" << context.file << ":" << context.line
+                  << ", " << context.function << ")"
+                  << std::endl;
+        abort();
     }
 }

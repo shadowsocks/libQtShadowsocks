@@ -34,17 +34,11 @@ static void onSIGINT_TERM(int sig)
 
 int main(int argc, char *argv[])
 {
+    qInstallMessageHandler(Utils::messageHandler);
+
     QCoreApplication a(argc, argv);
     a.setApplicationName("Shadowsocks-libQtShadowsocks");
     a.setApplicationVersion(Common::version());
-
-    qSetMessagePattern("%{time yyyy-MM-dd h:mm:ss.zzz} "
-                       "%{if-debug}DEBUG%{endif}"
-                       "%{if-info}INFO%{endif}"
-                       "%{if-warning}WARN%{endif}"
-                       "%{if-critical}ERROR%{endif}"
-                       "%{if-fatal}FATAL%{endif}: "
-                       "%{message}");
 
     signal(SIGINT, onSIGINT_TERM);
     signal(SIGTERM, onSIGINT_TERM);
@@ -107,8 +101,8 @@ int main(int argc, char *argv[])
     parser.addOption(autoBan);
     parser.process(a);
 
+    Utils::debugEnabled = parser.isSet(debug);
     Client c;
-
     if (!c.readConfig(parser.value(configFile))) {
         c.setup(parser.value(serverAddress),
                 parser.value(serverPort),
@@ -117,11 +111,10 @@ int main(int argc, char *argv[])
                 parser.value(password),
                 parser.value(encryptionMethod),
                 parser.value(timeout),
-                parser.isSet(http),
-                parser.isSet(debug));
+                parser.isSet(http));
     }
     c.setAutoBan(parser.isSet(autoBan));
-    c.setDebug(parser.isSet(debug));
+
     //command-line option has a higher priority to make H, S, T consistent
     if (parser.isSet(http)) {
         c.setHttpMode(true);

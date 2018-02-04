@@ -38,11 +38,9 @@ public:
                const QString &password,
                const QString &method,
                const QString &timeout,
-               const bool http_proxy,
-               const bool debug);
+               const bool http_proxy);
 
     void setAutoBan(bool ban);
-    void setDebug(bool debug);
     void setHttpMode(bool http);
     const std::string& getMethod() const;
     bool start(bool serverMode = false);
