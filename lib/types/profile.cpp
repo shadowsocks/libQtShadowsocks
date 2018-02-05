@@ -7,6 +7,8 @@ namespace QSS {
 struct ProfilePrivate {
     bool httpProxy = false;
     bool debug = false;
+    std::string pluginExec;
+    std::string pluginOpts;
 };
 
 Profile::Profile() :
@@ -73,6 +75,16 @@ const std::string& Profile::localAddress() const
     return d_localAddress;
 }
 
+const std::string& Profile::pluginExec() const
+{
+    return d_private->pluginExec;
+}
+
+const std::string& Profile::pluginOpts() const
+{
+    return d_private->pluginOpts;
+}
+
 uint16_t Profile::serverPort() const
 {
     return d_serverPort;
@@ -101,6 +113,11 @@ bool Profile::httpProxy() const
 bool Profile::isValid() const
 {
     return !method().empty() && !password().empty() && !serverAddress().empty();
+}
+
+bool Profile::hasPlugin() const
+{
+    return !d_private->pluginExec.empty();
 }
 
 void Profile::setName(const std::string& name)
@@ -156,6 +173,18 @@ void Profile::enableDebug()
 void Profile::disableDebug()
 {
     d_private->debug = false;
+}
+
+void Profile::setPlugin(std::string exec, std::string opts)
+{
+    d_private->pluginExec = std::move(exec);
+    d_private->pluginOpts = std::move(opts);
+}
+
+void Profile::unsetPlugin()
+{
+    d_private->pluginExec.clear();
+    d_private->pluginOpts.clear();
 }
 
 Profile Profile::fromUri(const std::string& ssUri)

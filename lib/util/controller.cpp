@@ -1,7 +1,7 @@
 /*
  * controller.cpp - the source file of Controller class
  *
- * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *

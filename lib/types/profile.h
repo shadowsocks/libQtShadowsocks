@@ -1,7 +1,7 @@
 /*
  * profile.h - defines Profile struct
  *
- * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -44,11 +44,14 @@ public:
     const std::string& password() const;
     const std::string& serverAddress() const;
     const std::string& localAddress() const;
+    const std::string& pluginExec() const;
+    const std::string& pluginOpts() const;
     uint16_t serverPort() const;
     uint16_t localPort() const;
     int timeout() const;
     bool httpProxy() const;
     bool debug() const;
+    bool hasPlugin() const;
 
     /**
      * @brief isValid Whether this profile has essential information.
@@ -72,6 +75,8 @@ public:
     void setHttpProxy(bool);
     void enableDebug();
     void disableDebug();
+    void setPlugin(std::string exec, std::string opts = std::string());
+    void unsetPlugin();
 
     // Both the original schema and the SIP002 are supported by this function
     static Profile fromUri(const std::string&);
