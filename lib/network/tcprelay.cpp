@@ -1,7 +1,7 @@
 /*
  * tcprelay.cpp - the source file of TcpRelay class
  *
- * Copyright (C) 2014-2015 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -31,17 +31,13 @@ TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    int timeout,
                    Address server_addr,
                    const std::string &method,
-                   const std::string &password,
-                   bool is_local,
-                   bool autoBan) :
+                   const std::string &password) :
     stage(INIT),
     serverAddress(std::move(server_addr)),
-    isLocal(is_local),
-    autoBan(autoBan),
+    encryptor(new Encryptor(method, password)),
     local(localSocket),
     remote(new QTcpSocket()),
-    timer(new QTimer()),
-    encryptor(new Encryptor(method, password))
+    timer(new QTimer())
 {
     timer->setInterval(timeout);
     connect(timer.get(), &QTimer::timeout, this, &TcpRelay::onTimeout);
@@ -88,78 +84,6 @@ void TcpRelay::close()
     remote->close();
     stage = DESTROYED;
     emit finished();
-}
-
-void TcpRelay::handleStageAddr(std::string &data)
-{
-    if (isLocal) {
-        auto cmd = static_cast<int>(data.at(1));
-        if (cmd == 3) {//CMD_UDP_ASSOCIATE
-            qDebug("UDP associate");
-            static const char header_data [] = { 5, 0, 0 };
-            QHostAddress addr = local->localAddress();
-            uint16_t port = local->localPort();
-            std::string toWrite = std::string(header_data, 3) + Common::packAddress(addr, port);
-            local->write(toWrite.data(), toWrite.length());
-            stage = UDP_ASSOC;
-            return;
-        } if (cmd == 1) {//CMD_CONNECT
-            data = data.substr(3);
-        } else {
-            qCritical("Unknown command %d", cmd);
-            close();
-            return;
-        }
-    }
-
-    int header_length = 0;
-    Common::parseHeader(data, remoteAddress, header_length);
-    if (header_length == 0) {
-        qCritical("Can't parse header. Wrong encryption method or password?");
-        if (!isLocal && autoBan) {
-            Common::banAddress(local->peerAddress());
-        }
-        close();
-        return;
-    }
-
-    QDebug(QtMsgType::QtInfoMsg).noquote().nospace()
-            << "Connecting " << remoteAddress << " from "
-            << local->peerAddress().toString() << ":" << local->peerPort();
-
-    stage = DNS;
-    if (isLocal) {
-        static const char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
-        static const QByteArray response(res, 10);
-        local->write(response);
-        std::string toWrite = encryptor->encrypt(data);
-        dataToWrite += toWrite;
-        serverAddress.lookUp([this](bool success) {
-            if (success) {
-                stage = CONNECTING;
-                startTime = QTime::currentTime();
-                remote->connectToHost(serverAddress.getFirstIP(), serverAddress.getPort());
-            } else {
-                QDebug(QtMsgType::QtDebugMsg).noquote() << "Failed to lookup server address. Closing TCP connection.";
-                close();
-            }
-        });
-    } else {
-        if (data.size() > header_length) {
-            data = data.substr(header_length);
-            dataToWrite += data;
-        }
-        remoteAddress.lookUp([this](bool success) {
-            if (success) {
-                stage = CONNECTING;
-                startTime = QTime::currentTime();
-                remote->connectToHost(remoteAddress.getFirstIP(), remoteAddress.getPort());
-            } else {
-                QDebug(QtMsgType::QtDebugMsg).noquote() << "Failed to lookup remote address. Closing TCP connection.";
-                close();
-            }
-        });
-    }
 }
 
 void TcpRelay::onLocalTcpSocketError()
@@ -216,49 +140,7 @@ void TcpRelay::onLocalTcpSocketReadyRead()
         close();
         return;
     }
-
-    if (!isLocal) {
-        try {
-            data = encryptor->decrypt(data);
-        } catch (const std::exception &e) {
-            QDebug(QtMsgType::QtCriticalMsg) << "Local:" << e.what();
-            close();
-            return;
-        }
-
-        if (data.empty()) {
-            qWarning("Data is empty after decryption.");
-            return;
-        }
-    }
-
-    if (stage == STREAM) {
-        if (isLocal) {
-            data = encryptor->encrypt(data);
-        }
-        writeToRemote(data.data(), data.size());
-    } else if (isLocal && stage == INIT) {
-        static const char reject_data [] = { 0, 91 };
-        static const char accept_data [] = { 5, 0 };
-        static const QByteArray reject(reject_data, 2);
-        static const QByteArray accept(accept_data, 2);
-        if (data[0] != char(5)) {
-            qCritical("An invalid socket connection was rejected. "
-                      "Please make sure the connection type is SOCKS5.");
-            local->write(reject);
-        } else {
-            local->write(accept);
-        }
-        stage = ADDR;
-    } else if (stage == CONNECTING || stage == DNS) {
-        //take DNS into account, otherwise some data will get lost
-        if (isLocal) {
-            data = encryptor->encrypt(data);
-        }
-        dataToWrite += data;
-    } else if ((isLocal && stage == ADDR) || (!isLocal && stage == INIT)) {
-        handleStageAddr(data);
-    }
+    handleLocalTcpData(data);
 }
 
 void TcpRelay::onRemoteTcpSocketReadyRead()
@@ -280,7 +162,7 @@ void TcpRelay::onRemoteTcpSocketReadyRead()
     }
     emit bytesRead(buf.size());
     try {
-        buf = isLocal ? encryptor->decrypt(buf) : encryptor->encrypt(buf);
+        handleRemoteTcpData(buf);
     } catch (const std::exception &e) {
         QDebug(QtMsgType::QtCriticalMsg) << "Remote:" << e.what();
         close();

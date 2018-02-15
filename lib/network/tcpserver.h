@@ -1,7 +1,7 @@
 /*
  * tcpserver.h - Shadowsocks TCP Server
  *
- * Copyright (C) 2015-2017 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2015-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -28,9 +28,10 @@
 #include <memory>
 #include "types/address.h"
 #include "util/export.h"
-#include "tcprelay.h"
 
 namespace QSS {
+
+class TcpRelay;
 
 class QSS_EXPORT TcpServer : public QTcpServer
 {

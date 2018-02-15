@@ -20,6 +20,9 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+
+#include "tcprelayclient.h"
+#include "tcprelayserver.h"
 #include "tcpserver.h"
 #include "util/common.h"
 #include <QDebug>
@@ -51,7 +54,7 @@ TcpServer::~TcpServer()
 
 void TcpServer::incomingConnection(qintptr socketDescriptor)
 {
-    std::unique_ptr<QTcpSocket> localSocket(new QTcpSocket());
+    auto localSocket = std::make_unique<QTcpSocket>();
     localSocket->setSocketDescriptor(socketDescriptor);
 
     if (!isLocal && autoBan && Common::isAddressBanned(localSocket->peerAddress())) {
@@ -61,13 +64,21 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
     }
 
     //timeout * 1000: convert sec to msec
-    std::shared_ptr<TcpRelay> con(new TcpRelay(localSocket.release(),
+    std::shared_ptr<TcpRelay> con;
+    if (isLocal) {
+        con = std::make_shared<TcpRelayClient>(localSocket.release(),
+                                               timeout * 1000,
+                                               serverAddress,
+                                               method,
+                                               password);
+    } else {
+        con = std::make_shared<TcpRelayServer>(localSocket.release(),
                                                timeout * 1000,
                                                serverAddress,
                                                method,
                                                password,
-                                               isLocal,
-                                               autoBan));
+                                               autoBan);
+    }
     conList.push_back(con);
     connect(con.get(), &TcpRelay::bytesRead, this, &TcpServer::bytesRead);
     connect(con.get(), &TcpRelay::bytesSend, this, &TcpServer::bytesSend);
