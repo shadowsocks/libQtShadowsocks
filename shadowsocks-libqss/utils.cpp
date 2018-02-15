@@ -34,7 +34,7 @@ void Utils::testSpeed(uint32_t data_size_mb)
     }
 }
 
-void Utils::messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+void Utils::messageHandler(QtMsgType type, const QMessageLogContext &, const QString &msg)
 {
     const std::string timestamp =
             QDateTime::currentDateTime().toString("yyyy-MM-ddTHH:mm:ss.zzz").toStdString();
@@ -49,21 +49,13 @@ void Utils::messageHandler(QtMsgType type, const QMessageLogContext &context, co
         std::cout << timestamp << " INFO: " << message << std::endl;
         break;
     case QtWarningMsg:
-        std::cerr << timestamp << " WARN: " << message
-                  << "(" << context.function << ")"
-                  << std::endl;
+        std::cerr << timestamp << " WARN: " << message << std::endl;
         break;
     case QtCriticalMsg:
-        std::cerr << timestamp << " ERROR: " << message
-                  << "(" << context.file << ":" << context.line
-                  << ", " << context.function << ")"
-                  << std::endl;
+        std::cerr << timestamp << " ERROR: " << message << std::endl;
         break;
     case QtFatalMsg:
-        std::cerr << timestamp << " FATAL: " << message
-                  << "(" << context.file << ":" << context.line
-                  << ", " << context.function << ")"
-                  << std::endl;
+        std::cerr << timestamp << " FATAL: " << message << std::endl;
         abort();
     }
 }
