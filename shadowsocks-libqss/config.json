@@ -6,6 +6,5 @@
     "password":"barfoo!",
     "timeout":600,
     "method":"rc4-md5",
-    "http_proxy": false,
-    "auth": false
+    "http_proxy": false
 }
