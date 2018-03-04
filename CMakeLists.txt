@@ -32,9 +32,9 @@ find_library(BOTAN_LIBRARY_VAR
              HINTS ${BOTAN_LIBRARY_DIRS} ${BOTAN_LIBDIR})
 
 if(BUILD_SHARED_LIBS)
-	add_definitions(-DQSS_LIBRARY)
+    add_definitions(-DQSS_LIBRARY)
 else()
-	add_definitions(-DQSS_STATIC)
+    add_definitions(-DQSS_STATIC)
     if (MINGW)
         # This however doesn't fix the problem that the executables are depending on the GCC shared libraries
         # I can't find a solution in CMake so far. The workaround is to manually append "-l:libgcc.a -l:libstdc++.a -l:libwinpthread.a" to the end of executables' linklibs.rsp files (in CMakeFiles directory)
