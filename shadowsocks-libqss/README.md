@@ -28,8 +28,10 @@ Options:
   -H, --http-proxy     run in HTTP(S) proxy mode. ignored in server mode.
   -S, --server-mode    run as shadowsocks server.
   -T, --speed-test     test encrypt/decrypt speed.
-  -D, --debug          debug-level log.
-  --autoban            automatically ban IPs that send malformed header. ignored in local mode.
+  -L <log_level>       logging level. Valid levels are: debug, info, warn,
+                       error, fatal.
+  --autoban            automatically ban IPs that send malformed header.
+                       ignored in local mode.
 ```
 
 If `-T` or `--speed-test` is specified, `shadowsocks-libqss` will do a speed test and print out the time used for specified encryption method. If no method is set, it'll test all encryption methods and print the results. _Note: `shadowsocks-libqss` will exit after the speed test._
@@ -41,7 +43,7 @@ If `config.json` is specified, most command-line options will be **ignored**. Th
 License
 -------
 
-Copyright (C) 2014-2016 Symeon Huang
+Copyright (C) 2014-2018 Symeon Huang
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU Lesser General Public License as

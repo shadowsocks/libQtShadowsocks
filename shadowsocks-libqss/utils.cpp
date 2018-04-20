@@ -4,7 +4,7 @@
 #include <iostream>
 #include "utils.h"
 
-bool Utils::debugEnabled = false;
+Utils::LogLevel Utils::logLevel = Utils::LogLevel::INFO;
 
 void Utils::testSpeed(const std::string &method, uint32_t data_size_mb)
 {
@@ -41,20 +41,27 @@ void Utils::messageHandler(QtMsgType type, const QMessageLogContext &, const QSt
     const std::string message = msg.toStdString();
     switch(type) {
     case QtDebugMsg:
-        if (Utils::debugEnabled) {
+        if (Utils::logLevel <= LogLevel::DEBUG) {
             std::cout << timestamp << " DEBUG: " << message << std::endl;
         }
         break;
     case QtInfoMsg:
-        std::cout << timestamp << " INFO: " << message << std::endl;
+        if (Utils::logLevel <= LogLevel::INFO) {
+            std::cout << timestamp << " INFO: " << message << std::endl;
+        }
         break;
     case QtWarningMsg:
-        std::cerr << timestamp << " WARN: " << message << std::endl;
+        if (Utils::logLevel <= LogLevel::WARN) {
+            std::cerr << timestamp << " WARN: " << message << std::endl;
+        }
         break;
     case QtCriticalMsg:
-        std::cerr << timestamp << " ERROR: " << message << std::endl;
+        if (Utils::logLevel <= LogLevel::ERROR) {
+            std::cerr << timestamp << " ERROR: " << message << std::endl;
+        }
         break;
     case QtFatalMsg:
+        // FATAL is not allowed to skip
         std::cerr << timestamp << " FATAL: " << message << std::endl;
         abort();
     }

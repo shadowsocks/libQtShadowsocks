@@ -24,9 +24,8 @@
 #include <QtGlobal>
 #include <QStringList>
 
-class Utils
+struct Utils
 {
-public:
     //test data encrypt/decrypt speed. print result to terminal
     static void testSpeed(const std::string &method, uint32_t data_size_mb);
     static void testSpeed(uint32_t data_size_mb);//test all methods
@@ -39,7 +38,14 @@ public:
      */
     static void messageHandler(QtMsgType type, const QMessageLogContext &context, const QString &msg);
 
-    static bool debugEnabled;
+    enum class LogLevel {
+        DEBUG,
+        INFO,
+        WARN,
+        ERROR,
+        FATAL
+    };
+    static LogLevel logLevel;
 };
 
 #endif // UTILS_H
