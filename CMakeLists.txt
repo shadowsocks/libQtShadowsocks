@@ -5,6 +5,7 @@ project(QtShadowsocks
         LANGUAGES CXX)
 
 option(BUILD_SHARED_LIBS "Build ${PROJECT_NAME} as a shared library" ON)
+option(USE_CONAN "Use C++ Package Manager Conan" OFF)
 
 set(LIB_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/lib
     CACHE PATH "Installation directory for libraries")
@@ -20,6 +21,12 @@ find_package(Qt5Core 5.5)
 find_package(Qt5Network 5.5)
 find_package(PkgConfig)
 
+if(USE_CONAN)
+    include(${CMAKE_BINARY_DIR}/conanbuildinfo.cmake)
+    conan_basic_setup()
+    add_definitions(-DUSE_BOTAN2)
+    set(BOTAN_LIBRARY_VAR ${CONAN_LIBS})
+else()
 pkg_search_module(BOTAN REQUIRED botan-2>=2.3.0 botan-1.10)
 if(BOTAN_VERSION VERSION_GREATER 2.0)
     message(STATUS "Botan-2 is found and will be used in this build")
@@ -30,7 +37,7 @@ endif()
 find_library(BOTAN_LIBRARY_VAR
              NAMES ${BOTAN_LIBRARIES}
              HINTS ${BOTAN_LIBRARY_DIRS} ${BOTAN_LIBDIR})
-
+endif()
 if(BUILD_SHARED_LIBS)
     add_definitions(-DQSS_LIBRARY)
 else()
