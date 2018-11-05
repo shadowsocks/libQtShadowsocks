@@ -70,20 +70,20 @@ Controller::Controller(Profile _profile,
         }
     }
 
-    tcpServer = std::make_unique<QSS::TcpServer>(profile.method(),
-                                  profile.password(),
-                                  profile.timeout(),
-                                  isLocal,
-                                  autoBan,
-                                  serverAddress);
+    tcpServer = std::make_unique<QSS::TcpServer>(
+                    [this]() { return std::make_unique<Encryptor>(profile.method(), profile.password()); },
+                    profile.timeout(),
+                    isLocal,
+                    autoBan,
+                    serverAddress);
 
     //FD_SETSIZE which is the maximum value on *nix platforms. (1024 by default)
     tcpServer->setMaxPendingConnections(FD_SETSIZE);
-    udpRelay = std::make_unique<QSS::UdpRelay>(profile.method(),
-                                profile.password(),
-                                isLocal,
-                                autoBan,
-                                serverAddress);
+    udpRelay = std::make_unique<QSS::UdpRelay>(
+                   [this]() { return std::make_unique<Encryptor>(profile.method(), profile.password()); },
+                   isLocal,
+                   autoBan,
+                   serverAddress);
 
     connect(tcpServer.get(), &TcpServer::acceptError,
             this, &Controller::onTcpServerError);

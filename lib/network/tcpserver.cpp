@@ -30,14 +30,12 @@
 
 namespace QSS {
 
-TcpServer::TcpServer(std::string method,
-                     std::string password,
+TcpServer::TcpServer(Encryptor::Creator&& ec,
                      int timeout,
                      bool is_local,
                      bool auto_ban,
                      Address serverAddress)
-    : method(std::move(method))
-    , password(std::move(password))
+    : m_encryptorCreator(std::move(ec))
     , isLocal(is_local)
     , autoBan(auto_ban)
     , serverAddress(std::move(serverAddress))
@@ -69,14 +67,12 @@ void TcpServer::incomingConnection(qintptr socketDescriptor)
         con = std::make_shared<TcpRelayClient>(localSocket.release(),
                                                timeout * 1000,
                                                serverAddress,
-                                               method,
-                                               password);
+                                               m_encryptorCreator);
     } else {
         con = std::make_shared<TcpRelayServer>(localSocket.release(),
                                                timeout * 1000,
                                                serverAddress,
-                                               method,
-                                               password,
+                                               m_encryptorCreator,
                                                autoBan);
     }
     conList.push_back(con);

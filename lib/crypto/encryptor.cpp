@@ -53,24 +53,16 @@ std::string evpBytesToKey(const QSS::Cipher::CipherInfo& cipherInfo,
     return ms.substr(0, cipherInfo.keyLen);
 }
 
-}  // namespace
+}  // anonymous namespace
 
 namespace  QSS {
-Encryptor::Encryptor(std::string method,
+Encryptor::Encryptor(const std::string &method,
                      const std::string &password) :
-    m_method(std::move(method)),
+    m_method(method),
     cipherInfo(Cipher::cipherInfoMap.at(m_method)),
     masterKey(evpBytesToKey(cipherInfo, password)),
     incompleteLength(0)
 {
-}
-
-void Encryptor::reset()
-{
-    enCipher.reset();
-    deCipher.reset();
-    incompleteChunk.clear();
-    incompleteLength = 0;
 }
 
 void Encryptor::initEncipher(std::string *header)

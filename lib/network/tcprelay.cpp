@@ -30,11 +30,10 @@ namespace QSS {
 TcpRelay::TcpRelay(QTcpSocket *localSocket,
                    int timeout,
                    Address server_addr,
-                   const std::string &method,
-                   const std::string &password) :
+                   const Encryptor::Creator& ec) :
     stage(INIT),
     serverAddress(std::move(server_addr)),
-    encryptor(new Encryptor(method, password)),
+    encryptor(ec()),
     local(localSocket),
     remote(new QTcpSocket()),
     timer(new QTimer())

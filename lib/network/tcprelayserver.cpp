@@ -30,10 +30,9 @@ namespace QSS {
 TcpRelayServer::TcpRelayServer(QTcpSocket *localSocket,
                                int timeout,
                                Address server_addr,
-                               const std::string& method,
-                               const std::string& password,
+                               const Encryptor::Creator& ec,
                                bool autoBan)
-    : TcpRelay(localSocket, timeout, server_addr, method, password)
+    : TcpRelay(localSocket, timeout, server_addr, ec)
     , autoBan(autoBan)
 {}
 

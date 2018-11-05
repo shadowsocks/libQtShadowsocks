@@ -30,6 +30,7 @@
 #ifndef ENCRYPTOR_H
 #define ENCRYPTOR_H
 
+#include <functional>
 #include <memory>
 #include "util/export.h"
 #include "cipher.h"
@@ -39,12 +40,14 @@ namespace QSS {
 class QSS_EXPORT Encryptor
 {
 public:
+    using Creator = std::function<std::unique_ptr<Encryptor>()>;
+
     /**
      * @brief Encryptor
      * @param method The encryption method in Shadowsocks convention
      * @param password The preshared password
      */
-    Encryptor(std::string method,
+    Encryptor(const std::string& method,
               const std::string& password);
 
     Encryptor(const Encryptor &) = delete;
@@ -71,11 +74,6 @@ public:
 
     std::string encryptAll(const std::string &);
     std::string encryptAll(const uint8_t *data, size_t length);
-
-    /**
-     * @brief reset Resets this Encryptor to initial state
-     */
-    void reset();
 
 private:
     std::string m_method;

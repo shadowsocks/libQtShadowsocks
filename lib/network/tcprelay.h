@@ -42,8 +42,7 @@ public:
     TcpRelay(QTcpSocket *localSocket,
              int timeout,
              Address server_addr,
-             const std::string& method,
-             const std::string& password);
+             const Encryptor::Creator& ec);
 
     TcpRelay(const TcpRelay &) = delete;
 

@@ -27,15 +27,15 @@
 
 namespace QSS {
 
-UdpRelay::UdpRelay(const std::string &method,
-                   const std::string &password,
+UdpRelay::UdpRelay(const Encryptor::Creator& ec,
                    bool is_local,
                    bool auto_ban,
                    Address serverAddress) :
     serverAddress(std::move(serverAddress)),
     isLocal(is_local),
     autoBan(auto_ban),
-    encryptor(new Encryptor(method, password))
+    encryptor(ec()),
+    m_encryptorCreator(ec)
 {
     listenSocket.setReadBufferSize(RemoteRecvSize);
     listenSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
@@ -70,7 +70,7 @@ bool UdpRelay::listen(const QHostAddress& addr, uint16_t port)
 void UdpRelay::close()
 {
     listenSocket.close();
-    encryptor->reset();
+    encryptor = m_encryptorCreator();
     m_cache.clear();
 }
 
