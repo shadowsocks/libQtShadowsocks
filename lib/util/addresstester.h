@@ -3,7 +3,7 @@
  *
  * perform non-blocking address tests
  *
- * Copyright (C) 2015-2017 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2015-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -76,15 +76,15 @@ public slots:
     void startLagTest(int timeout = 3000);//3000 msec by default
 
 private:
-    QHostAddress address;
-    uint16_t port;
-    QTime time;
-    QTcpSocket socket;
-    QTimer timer;
-    bool testingConnectivity;
+    QHostAddress m_address;
+    uint16_t m_port;
+    QTime m_time;
+    QTcpSocket m_socket;
+    QTimer m_timer;
+    bool m_testingConnectivity;
 
-    std::string encryptionMethod;
-    std::string encryptionPassword;
+    std::string m_encryptionMethod;
+    std::string m_encryptionPassword;
 
     void connectToServer(int timeout);
 

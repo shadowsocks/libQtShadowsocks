@@ -31,36 +31,36 @@ UdpRelay::UdpRelay(const Encryptor::Creator& ec,
                    bool is_local,
                    bool auto_ban,
                    Address serverAddress) :
-    serverAddress(std::move(serverAddress)),
-    isLocal(is_local),
-    autoBan(auto_ban),
-    encryptor(ec()),
+    m_serverAddress(std::move(serverAddress)),
+    m_isLocal(is_local),
+    m_autoBan(auto_ban),
+    m_encryptor(ec()),
     m_encryptorCreator(ec)
 {
-    listenSocket.setReadBufferSize(RemoteRecvSize);
-    listenSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    m_listenSocket.setReadBufferSize(RemoteRecvSize);
+    m_listenSocket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
-    connect(&listenSocket, &QUdpSocket::stateChanged,
+    connect(&m_listenSocket, &QUdpSocket::stateChanged,
             this, &UdpRelay::onListenStateChanged);
-    connect(&listenSocket, &QUdpSocket::readyRead,
+    connect(&m_listenSocket, &QUdpSocket::readyRead,
             this, &UdpRelay::onServerUdpSocketReadyRead);
-    connect(&listenSocket,
+    connect(&m_listenSocket,
             static_cast<void (QUdpSocket::*)(QAbstractSocket::SocketError)>
             (&QUdpSocket::error),
             this,
             &UdpRelay::onSocketError);
-    connect(&listenSocket, &QUdpSocket::bytesWritten,
+    connect(&m_listenSocket, &QUdpSocket::bytesWritten,
             this, &UdpRelay::bytesSend);
 }
 
 bool UdpRelay::isListening() const
 {
-    return listenSocket.isOpen();
+    return m_listenSocket.isOpen();
 }
 
 bool UdpRelay::listen(const QHostAddress& addr, uint16_t port)
 {
-    return listenSocket.bind(
+    return m_listenSocket.bind(
               addr,
               port,
               QAbstractSocket::ShareAddress | QAbstractSocket::ReuseAddressHint
@@ -69,8 +69,8 @@ bool UdpRelay::listen(const QHostAddress& addr, uint16_t port)
 
 void UdpRelay::close()
 {
-    listenSocket.close();
-    encryptor = m_encryptorCreator();
+    m_listenSocket.close();
+    m_encryptor = m_encryptorCreator();
     m_cache.clear();
 }
 
@@ -81,7 +81,7 @@ void UdpRelay::onSocketError()
         qFatal("Fatal. A false object calling onSocketError.");
         return;
     }
-    if (sock == &listenSocket) {
+    if (sock == &m_listenSocket) {
         QDebug(QtMsgType::QtCriticalMsg).noquote() << "[UDP] server socket error" << sock->errorString();
     } else {
         QDebug(QtMsgType::QtCriticalMsg).noquote() << "[UDP] client socket error" << sock->errorString();
@@ -95,7 +95,7 @@ void UdpRelay::onListenStateChanged(QAbstractSocket::SocketState s)
 
 void UdpRelay::onServerUdpSocketReadyRead()
 {
-    const size_t packetSize = listenSocket.pendingDatagramSize();
+    const size_t packetSize = m_listenSocket.pendingDatagramSize();
     if (packetSize > RemoteRecvSize) {
         qWarning("[UDP] Datagram is too large. discarded.");
         return;
@@ -105,25 +105,25 @@ void UdpRelay::onServerUdpSocketReadyRead()
     data.resize(packetSize);
     QHostAddress r_addr;
     uint16_t r_port;
-    int64_t readSize = listenSocket.readDatagram(&data[0],
+    int64_t readSize = m_listenSocket.readDatagram(&data[0],
                                                  packetSize,
                                                  &r_addr,
                                                  &r_port);
     emit bytesRead(readSize);
 
-    if (isLocal) {
+    if (m_isLocal) {
         if (static_cast<int>(data[2]) != 0) {
             qWarning("[UDP] Drop a message since frag is not 0");
             return;
         }
         data = data.substr(3);
     } else {
-        if (autoBan && Common::isAddressBanned(r_addr)) {
+        if (m_autoBan && Common::isAddressBanned(r_addr)) {
             QDebug(QtMsgType::QtInfoMsg).noquote() << "[UDP] A banned IP" << r_addr
                                                    << "attempted to access this server";
             return;
         }
-        data = encryptor->decryptAll(data);
+        data = m_encryptor->decryptAll(data);
     }
 
     Address destAddr, remoteAddr(r_addr, r_port);//remote == client
@@ -131,7 +131,7 @@ void UdpRelay::onServerUdpSocketReadyRead()
     Common::parseHeader(data, destAddr, header_length);
     if (header_length == 0) {
         qCritical("[UDP] Can't parse header. Wrong encryption method or password?");
-        if (!isLocal && autoBan) {
+        if (!m_isLocal && m_autoBan) {
             Common::banAddress(r_addr);
         }
         return;
@@ -159,8 +159,8 @@ void UdpRelay::onServerUdpSocketReadyRead()
             sock->readDatagram(&data[0], packetSize, &r_addr, &r_port);
 
             std::string response;
-            if (isLocal) {
-                data = encryptor->decryptAll(data);
+            if (m_isLocal) {
+                data = m_encryptor->decryptAll(data);
                 Address destAddr;
                 int header_length = 0;
 
@@ -173,11 +173,11 @@ void UdpRelay::onServerUdpSocketReadyRead()
                 response = std::string(3, static_cast<char>(0)) + data;
             } else {
                 data = Common::packAddress(r_addr, r_port) + data;
-                response = encryptor->encryptAll(data);
+                response = m_encryptor->encryptAll(data);
             }
 
             if (remoteAddr.getPort() != 0) {
-                listenSocket.writeDatagram(response.data(),
+                m_listenSocket.writeDatagram(response.data(),
                                            response.size(),
                                            remoteAddr.getFirstIP(),
                                            remoteAddr.getPort());
@@ -195,9 +195,9 @@ void UdpRelay::onServerUdpSocketReadyRead()
         QDebug(QtMsgType::QtDebugMsg).noquote() << "[UDP] cache hit:" << destAddr << "<->" << remoteAddr;
     }
 
-    if (isLocal) {
-        data = encryptor->encryptAll(data);
-        destAddr = serverAddress;
+    if (m_isLocal) {
+        data = m_encryptor->encryptAll(data);
+        destAddr = m_serverAddress;
     } else {
         data = data.substr(header_length);
     }

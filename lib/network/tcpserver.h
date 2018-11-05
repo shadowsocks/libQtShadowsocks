@@ -39,10 +39,10 @@ class QSS_EXPORT TcpServer : public QTcpServer
     Q_OBJECT
 public:
     TcpServer(Encryptor::Creator&& ec,
-              int timeout,
+              int m_timeout,
               bool is_local,
               bool auto_ban,
-              Address serverAddress);
+              Address m_serverAddress);
     ~TcpServer() override;
 
     TcpServer(const TcpServer &) = delete;
@@ -57,12 +57,12 @@ protected:
 
 private:
     Encryptor::Creator m_encryptorCreator;
-    const bool isLocal;
-    const bool autoBan;
-    const Address serverAddress;
-    const int timeout;
+    const bool m_isLocal;
+    const bool m_autoBan;
+    const Address m_serverAddress;
+    const int m_timeout;
 
-    std::list<std::shared_ptr<TcpRelay> > conList;
+    std::list<std::shared_ptr<TcpRelay> > m_conList;
 };
 
 }

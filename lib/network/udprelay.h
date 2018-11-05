@@ -1,7 +1,7 @@
 /*
  * udprelay.h - the header file of UdpRelay class
  *
- * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -39,7 +39,7 @@ public:
     UdpRelay(const Encryptor::Creator& ec,
              bool is_local,
              bool auto_ban,
-             Address serverAddress);
+             Address m_serverAddress);
 
     UdpRelay(const UdpRelay &) = delete;
 
@@ -59,13 +59,13 @@ signals:
 
 private:
     //64KB, same as shadowsocks-python (udprelay)
-    static const int64_t RemoteRecvSize = 65536;
+    static constexpr int64_t RemoteRecvSize = 65536;
 
-    const Address serverAddress;
-    const bool isLocal;
-    const bool autoBan;
-    QUdpSocket listenSocket;
-    std::unique_ptr<Encryptor> encryptor;
+    const Address m_serverAddress;
+    const bool m_isLocal;
+    const bool m_autoBan;
+    QUdpSocket m_listenSocket;
+    std::unique_ptr<Encryptor> m_encryptor;
     Encryptor::Creator m_encryptorCreator;
 
     std::map<Address, std::shared_ptr<QUdpSocket> > m_cache;

@@ -35,19 +35,19 @@ AddressTester::AddressTester(const QHostAddress &_address,
                              const uint16_t &_port,
                              QObject *parent) :
     QObject(parent),
-    address(_address),
-    port(_port),
-    testingConnectivity(false)
+    m_address(_address),
+    m_port(_port),
+    m_testingConnectivity(false)
 {
-    timer.setSingleShot(true);
-    time = QTime::currentTime();
-    socket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
+    m_timer.setSingleShot(true);
+    m_time = QTime::currentTime();
+    m_socket.setSocketOption(QAbstractSocket::LowDelayOption, 1);
 
-    connect(&timer, &QTimer::timeout, this, &AddressTester::onTimeout);
-    connect(&socket, &QTcpSocket::connected, this, &AddressTester::onConnected);
-    connect(&socket, &QTcpSocket::readyRead,
+    connect(&m_timer, &QTimer::timeout, this, &AddressTester::onTimeout);
+    connect(&m_socket, &QTcpSocket::connected, this, &AddressTester::onConnected);
+    connect(&m_socket, &QTcpSocket::readyRead,
             this, &AddressTester::onSocketReadyRead);
-    connect(&socket,
+    connect(&m_socket,
             static_cast<void (QTcpSocket::*)(QAbstractSocket::SocketError)>
             (&QTcpSocket::error),
             this,
@@ -56,14 +56,14 @@ AddressTester::AddressTester(const QHostAddress &_address,
 
 void AddressTester::connectToServer(int timeout)
 {
-    time = QTime::currentTime();
-    timer.start(timeout);
-    socket.connectToHost(address, port);
+    m_time = QTime::currentTime();
+    m_timer.start(timeout);
+    m_socket.connectToHost(m_address, m_port);
 }
 
 void AddressTester::startLagTest(int timeout)
 {
-    testingConnectivity = false;
+    m_testingConnectivity = false;
     connectToServer(timeout);
 }
 
@@ -71,34 +71,34 @@ void AddressTester::startConnectivityTest(const std::string &method,
                                           const std::string &password,
                                           int timeout)
 {
-    testingConnectivity = true;
-    encryptionMethod = method;
-    encryptionPassword = password;
+    m_testingConnectivity = true;
+    m_encryptionMethod = method;
+    m_encryptionPassword = password;
     connectToServer(timeout);
 }
 
 void AddressTester::onTimeout()
 {
-    socket.abort();
+    m_socket.abort();
     emit connectivityTestFinished(false);
     emit lagTestFinished(LAG_TIMEOUT);
 }
 
 void AddressTester::onSocketError(QAbstractSocket::SocketError)
 {
-    timer.stop();
-    socket.abort();
+    m_timer.stop();
+    m_socket.abort();
     emit connectivityTestFinished(false);
-    emit testErrorString(socket.errorString());
+    emit testErrorString(m_socket.errorString());
     emit lagTestFinished(LAG_ERROR);
 }
 
 void AddressTester::onConnected()
 {
-    timer.stop();
-    emit lagTestFinished(time.msecsTo(QTime::currentTime()));
-    if (testingConnectivity) {
-        Encryptor encryptor(encryptionMethod, encryptionPassword);
+    m_timer.stop();
+    emit lagTestFinished(m_time.msecsTo(QTime::currentTime()));
+    if (m_testingConnectivity) {
+        Encryptor encryptor(m_encryptionMethod, m_encryptionPassword);
         /*
          * A http request to Google to test connectivity
          * The payload is dumped from
@@ -115,16 +115,16 @@ void AddressTester::onConnected()
                         "4163636570743a202a2f2a0d0a0d0a");
         std::string payload(expected.data(), expected.length());
         std::string toWrite = encryptor.encrypt(dest + payload);
-        socket.write(toWrite.data(), toWrite.size());
+        m_socket.write(toWrite.data(), toWrite.size());
     } else {
-        socket.abort();
+        m_socket.abort();
     }
 }
 
 void AddressTester::onSocketReadyRead()
 {
     emit connectivityTestFinished(true);
-    socket.abort();
+    m_socket.abort();
 }
 
 } // namespace QSS

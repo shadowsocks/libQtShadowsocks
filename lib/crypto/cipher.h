@@ -7,7 +7,7 @@
  * If there is a modification associated with encryption/decryption, it's
  * this class that needs changes instead of messing up lots of classes.
  *
- * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -76,11 +76,11 @@ public:
 
     struct CipherInfo {
         std::string internalName; // internal implementation name in Botan
-        int keyLen;
-        int ivLen;
+        size_t keyLen;
+        size_t ivLen;
         CipherType type;
-        int saltLen; // only for AEAD
-        int tagLen; // only for AEAD
+        size_t saltLen; // only for AEAD
+        size_t tagLen; // only for AEAD
     };
 
     /*
@@ -124,13 +124,13 @@ public:
 #endif
 
 private:
-    Botan::Keyed_Filter *filter;
-    std::unique_ptr<Botan::Pipe> pipe;
-    std::unique_ptr<RC4> rc4;
-    std::unique_ptr<ChaCha> chacha;
+    Botan::Keyed_Filter *m_filter;
+    std::unique_ptr<Botan::Pipe> m_pipe;
+    std::unique_ptr<RC4> m_rc4;
+    std::unique_ptr<ChaCha> m_chacha;
     const std::string m_key; // preshared key
     std::string m_iv; // nonce
-    const CipherInfo cipherInfo;
+    const CipherInfo m_cipherInfo;
 };
 
 }

@@ -3,7 +3,7 @@
  *
  * communicate with lower-level encrytion library
  *
- * Copyright (C) 2014-2017 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2014-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -119,11 +119,11 @@ public:
     std::string toString() const;
 
     inline bool operator< (const Address &o) const {
-        return this->data < o.data;
+        return this->m_data < o.m_data;
     }
 
     inline bool operator== (const Address &o) const {
-        return this->data == o.data;
+        return this->m_data == o.m_data;
     }
 
     friend inline QDataStream& operator<< (QDataStream &os,
@@ -136,9 +136,9 @@ public:
     }
 
 private:
-    std::pair<std::string, uint16_t> data;//first: address string; second: port
-    std::vector<QHostAddress> ipAddrList;
-    std::shared_ptr<DnsLookup> dns;
+    std::pair<std::string, uint16_t> m_data;//first: address string; second: port
+    std::vector<QHostAddress> m_ipAddrList;
+    std::shared_ptr<DnsLookup> m_dns;
 };
 
 }

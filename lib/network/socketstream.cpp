@@ -28,19 +28,19 @@ SocketStream::SocketStream(QAbstractSocket *a,
                            QAbstractSocket *b,
                            QObject *parent) :
     QObject(parent),
-    as(a),
-    bs(b)
+    m_as(a),
+    m_bs(b)
 {
-    connect(as, &QAbstractSocket::readyRead,
+    connect(m_as, &QAbstractSocket::readyRead,
             this, &SocketStream::onSocketAReadyRead);
-    connect(bs, &QAbstractSocket::readyRead,
+    connect(m_bs, &QAbstractSocket::readyRead,
             this, &SocketStream::onSocketBReadyRead);
 }
 
 void SocketStream::onSocketAReadyRead()
 {
-    if (bs->isWritable()) {
-        bs->write(as->readAll());
+    if (m_bs->isWritable()) {
+        m_bs->write(m_as->readAll());
     } else {
         qCritical("The second socket is not writable");
     }
@@ -48,8 +48,8 @@ void SocketStream::onSocketAReadyRead()
 
 void SocketStream::onSocketBReadyRead()
 {
-    if (as->isWritable()) {
-        as->write(bs->readAll());
+    if (m_as->isWritable()) {
+        m_as->write(m_bs->readAll());
     } else {
         qCritical("The first socket is not writable");
     }

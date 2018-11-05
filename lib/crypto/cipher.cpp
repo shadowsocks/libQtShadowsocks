@@ -72,10 +72,10 @@ Cipher::Cipher(const std::string& method,
                bool encrypt) :
     m_key(std::move(key)),
     m_iv(std::move(iv)),
-    cipherInfo(cipherInfoMap.at(method))
+    m_cipherInfo(cipherInfoMap.at(method))
 {
     if (method.find("rc4") != std::string::npos) {
-        rc4 = std::make_unique<QSS::RC4>(m_key, m_iv);
+        m_rc4 = std::make_unique<QSS::RC4>(m_key, m_iv);
         return;
     }
 #ifndef USE_BOTAN2
@@ -91,11 +91,11 @@ Cipher::Cipher(const std::string& method,
         Botan::InitializationVector _iv(
                     reinterpret_cast<const Botan::byte *>(m_iv.data()),
                     m_iv.size());
-        filter = Botan::get_cipher(cipherInfo.internalName, _key, _iv,
+        m_filter = Botan::get_cipher(m_cipherInfo.internalName, _key, _iv,
                     encrypt ? Botan::ENCRYPTION : Botan::DECRYPTION);
         // Botan::pipe will take control over filter
         // we shouldn't deallocate filter externally
-        pipe = std::make_unique<Botan::Pipe>(filter);
+        m_pipe = std::make_unique<Botan::Pipe>(m_filter);
     } catch(const Botan::Exception &e) {
         QDebug(QtMsgType::QtFatalMsg) << "Failed to initialise cipher: " << e.what();
     }
@@ -143,16 +143,16 @@ std::string Cipher::update(const std::string &data)
 
 std::string Cipher::update(const uint8_t *data, size_t length)
 {
-    if (chacha) {
-        return chacha->update(data, length);
+    if (m_chacha) {
+        return m_chacha->update(data, length);
     }
-    if (rc4) {
-        return rc4->update(data, length);
+    if (m_rc4) {
+        return m_rc4->update(data, length);
     }
-    if (pipe) {
-        pipe->process_msg(reinterpret_cast<const Botan::byte *>
+    if (m_pipe) {
+        m_pipe->process_msg(reinterpret_cast<const Botan::byte *>
                           (data), length);
-        SecureByteArray c = pipe->read_all(Botan::Pipe::LAST_MESSAGE);
+        SecureByteArray c = m_pipe->read_all(Botan::Pipe::LAST_MESSAGE);
         return std::string(reinterpret_cast<const char *>(DataOfSecureByteArray(c)),
                            c.size());
     }
@@ -162,7 +162,7 @@ std::string Cipher::update(const uint8_t *data, size_t length)
 void Cipher::incrementIv()
 {
     nonceIncrement(reinterpret_cast<unsigned char*>(&m_iv[0]), m_iv.length());
-    filter->set_iv(Botan::InitializationVector(
+    m_filter->set_iv(Botan::InitializationVector(
                        reinterpret_cast<const Botan::byte *>(m_iv.data()), m_iv.size()
                        ));
 }

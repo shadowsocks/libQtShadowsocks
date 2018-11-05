@@ -46,8 +46,8 @@ public:
     Controller(Profile _profile,
                bool is_local,
                bool auto_ban,
-               QObject *parent = 0);
-    ~Controller();
+               QObject *parent = nullptr);
+    ~Controller() override;
 
     Controller(const Controller&) = delete;
 
@@ -85,20 +85,20 @@ private:
 
 protected:
     // The total bytes recevied or sent by/from all TCP and UDP connections.
-    uint64_t bytesReceived;
-    uint64_t bytesSent;
+    uint64_t m_bytesReceived;
+    uint64_t m_bytesSent;
 
-    Profile profile;
-    Address serverAddress;
-    const bool isLocal; // Run on local-side (client) or server-side (server)
+    Profile m_profile;
+    Address m_serverAddress;
+    const bool m_isLocal; // Run on local-side (client) or server-side (server)
     /*
      * auto ban IPs that use malformed header data as our anti-probe measure
      * (only used when it's a server)
      */
-    const bool autoBan;
-    std::unique_ptr<TcpServer> tcpServer;
-    std::unique_ptr<UdpRelay> udpRelay;
-    std::unique_ptr<HttpProxy> httpProxy;
+    const bool m_autoBan;
+    std::unique_ptr<TcpServer> m_tcpServer;
+    std::unique_ptr<UdpRelay> m_udpRelay;
+    std::unique_ptr<HttpProxy> m_httpProxy;
 
     QHostAddress getLocalAddr();
 

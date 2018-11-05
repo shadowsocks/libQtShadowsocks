@@ -1,7 +1,7 @@
 /*
  * socketstream.h - the header file of SocketStream class
  *
- * Copyright (C) 2015-2016 Symeon Huang <hzwhuang@gmail.com>
+ * Copyright (C) 2015-2018 Symeon Huang <hzwhuang@gmail.com>
  *
  * This file is part of the libQtShadowsocks.
  *
@@ -45,8 +45,8 @@ public:
     SocketStream(const SocketStream &) = delete;
 
 private:
-    QAbstractSocket *as;
-    QAbstractSocket *bs;
+    QAbstractSocket *m_as;
+    QAbstractSocket *m_bs;
 
 private slots:
     void onSocketAReadyRead();

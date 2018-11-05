@@ -64,16 +64,16 @@ signals:
 protected:
     static const int64_t RemoteRecvSize = 65536;
 
-    STAGE stage;
-    Address remoteAddress;
-    Address serverAddress;
-    std::string dataToWrite;
+    STAGE m_stage;
+    Address m_remoteAddress;
+    Address m_serverAddress;
+    std::string m_dataToWrite;
 
-    std::unique_ptr<Encryptor> encryptor;
-    std::unique_ptr<QTcpSocket> local;
-    std::unique_ptr<QTcpSocket> remote;
-    std::unique_ptr<QTimer> timer;
-    QTime startTime;
+    std::unique_ptr<Encryptor> m_encryptor;
+    std::unique_ptr<QTcpSocket> m_local;
+    std::unique_ptr<QTcpSocket> m_remote;
+    std::unique_ptr<QTimer> m_timer;
+    QTime m_startTime;
 
     bool writeToRemote(const char *data, size_t length);
 

@@ -49,42 +49,42 @@ void DnsLookup::lookedUp(const QHostInfo &info)
 
 Address::Address(const std::string &a, uint16_t p)
 {
-    data.second = p;
+    m_data.second = p;
     setAddress(a);
 }
 
 Address::Address(const QHostAddress &ip, uint16_t p)
 {
-    data.second = p;
+    m_data.second = p;
     setIPAddress(ip);
 }
 
 const std::string& Address::getAddress() const
 {
-    return data.first;
+    return m_data.first;
 }
 
 QHostAddress Address::getRandomIP() const
 {
-    if (ipAddrList.empty()) {
+    if (m_ipAddrList.empty()) {
         return QHostAddress();
     }
-    return ipAddrList.at(Common::randomNumber(ipAddrList.size()));
+    return m_ipAddrList.at(Common::randomNumber(m_ipAddrList.size()));
 }
 
 QHostAddress Address::getFirstIP() const
 {
-    return ipAddrList.empty() ? QHostAddress() : ipAddrList.front();
+    return m_ipAddrList.empty() ? QHostAddress() : m_ipAddrList.front();
 }
 
 bool Address::isIPValid() const
 {
-    return !ipAddrList.empty();
+    return !m_ipAddrList.empty();
 }
 
 uint16_t Address::getPort() const
 {
-    return data.second;
+    return m_data.second;
 }
 
 void Address::lookUp(Address::LookUpCallback cb)
@@ -93,58 +93,58 @@ void Address::lookUp(Address::LookUpCallback cb)
         return cb(true);
     }
 
-    if (dns) {
+    if (m_dns) {
         // DNS lookup is in-progress
         return;
     }
 
-    dns = std::make_shared<DnsLookup>();
-    QObject::connect(dns.get(), &DnsLookup::finished, [cb, this]() {
-        ipAddrList = dns->iplist().toVector().toStdVector();
-        cb(!ipAddrList.empty());
-        dns.reset();
+    m_dns = std::make_shared<DnsLookup>();
+    QObject::connect(m_dns.get(), &DnsLookup::finished, [cb, this]() {
+        m_ipAddrList = m_dns->iplist().toVector().toStdVector();
+        cb(!m_ipAddrList.empty());
+        m_dns.reset();
     });
-    dns->lookup(QString::fromStdString(data.first));
+    m_dns->lookup(QString::fromStdString(m_data.first));
 }
 
 bool Address::blockingLookUp()
 {
     if (!isIPValid()) {
-        QHostInfo result = QHostInfo::fromName(QString::fromStdString(data.first));
+        QHostInfo result = QHostInfo::fromName(QString::fromStdString(m_data.first));
         if (result.error() != QHostInfo::NoError) {
             qDebug("Failed to look up host address: %s", result.errorString().toStdString().data());
             return false;
         }
-        ipAddrList = result.addresses().toVector().toStdVector();
+        m_ipAddrList = result.addresses().toVector().toStdVector();
     }
     return true;
 }
 
 void Address::setAddress(const std::string &a)
 {
-    data.first = QString::fromStdString(a).trimmed().toStdString();
-    ipAddrList.clear();
+    m_data.first = QString::fromStdString(a).trimmed().toStdString();
+    m_ipAddrList.clear();
     QHostAddress ipAddress(QString::fromStdString(a));
     if (!ipAddress.isNull()) {
-        ipAddrList.push_back(ipAddress);
+        m_ipAddrList.push_back(ipAddress);
     }
 }
 
 void Address::setIPAddress(const QHostAddress &ip)
 {
-    ipAddrList.clear();
-    ipAddrList.push_back(ip);
-    data.first = ip.toString().toStdString();
+    m_ipAddrList.clear();
+    m_ipAddrList.push_back(ip);
+    m_data.first = ip.toString().toStdString();
 }
 
 void Address::setPort(uint16_t p)
 {
-    data.second = p;
+    m_data.second = p;
 }
 
 Address::ATYP Address::addressType() const
 {
-    QHostAddress ipAddress(QString::fromStdString(data.first));
+    QHostAddress ipAddress(QString::fromStdString(m_data.first));
     if (ipAddress.isNull()) {//it's a domain if it can't be parsed
         return HOST;
     } if (ipAddress.protocol() == QAbstractSocket::IPv4Protocol) {
@@ -155,7 +155,7 @@ Address::ATYP Address::addressType() const
 
 std::string Address::toString() const
 {
-    return data.first + ":" + std::to_string(data.second);
+    return m_data.first + ":" + std::to_string(m_data.second);
 }
 
 }  // namespace QSS
