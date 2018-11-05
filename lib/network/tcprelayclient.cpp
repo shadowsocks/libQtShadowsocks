@@ -69,11 +69,10 @@ void TcpRelayClient::handleStageAddr(std::string &data)
             << local->peerAddress().toString() << ":" << local->peerPort();
 
     stage = DNS;
-    static const char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
+    static constexpr const char res [] = { 5, 0, 0, 1, 0, 0, 0, 0, 16, 16 };
     static const QByteArray response(res, 10);
     local->write(response);
-    std::string toWrite = encryptor->encrypt(data);
-    dataToWrite += toWrite;
+    dataToWrite += encryptor->encrypt(data);
     serverAddress.lookUp([this](bool success) {
         if (success) {
             stage = CONNECTING;
@@ -88,12 +87,15 @@ void TcpRelayClient::handleStageAddr(std::string &data)
 
 void TcpRelayClient::handleLocalTcpData(std::string &data)
 {
-    if (stage == STREAM) {
+    switch (stage) {
+    case STREAM:
         data = encryptor->encrypt(data);
         writeToRemote(data.data(), data.size());
-    } else if (stage == INIT) {
-        static const char reject_data [] = { 0, 91 };
-        static const char accept_data [] = { 5, 0 };
+        break;
+    case INIT:
+    {
+        static constexpr const char reject_data [] = { 0, 91 };
+        static constexpr const char accept_data [] = { 5, 0 };
         static const QByteArray reject(reject_data, 2);
         static const QByteArray accept(accept_data, 2);
         if (data[0] != char(5)) {
@@ -104,12 +106,17 @@ void TcpRelayClient::handleLocalTcpData(std::string &data)
             local->write(accept);
         }
         stage = ADDR;
-    } else if (stage == CONNECTING || stage == DNS) {
+        break;
+    }
+    case CONNECTING:
+    case DNS:
         // take DNS into account, otherwise some data will get lost
         dataToWrite += encryptor->encrypt(data);
-    } else if (stage == ADDR) {
+        break;
+    case ADDR:
         handleStageAddr(data);
-    } else {
+        break;
+    default:
         qCritical("Local unknown stage.");
     }
 }
