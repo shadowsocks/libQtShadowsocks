@@ -37,6 +37,10 @@
 #include <botan/sha160.h>
 #endif
 
+#ifdef USE_BOTAN211P
+#include <botan/filters.h>
+#endif
+
 #include <QCryptographicHash>
 #include <QDebug>
 #include <QMessageAuthenticationCode>

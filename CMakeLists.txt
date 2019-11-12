@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.1)
 
 project(QtShadowsocks
-        VERSION 2.1.0
+        VERSION 2.1.0.1
         LANGUAGES CXX)
 
 option(BUILD_SHARED_LIBS "Build ${PROJECT_NAME} as a shared library" ON)
@@ -31,6 +31,10 @@ pkg_search_module(BOTAN REQUIRED botan-2>=2.3.0 botan-1.10)
 if(BOTAN_VERSION VERSION_GREATER 2.0)
     message(STATUS "Botan-2 is found and will be used in this build")
     add_definitions(-DUSE_BOTAN2)
+    if(BOTAN_VERSION VERSION_GREATER_EQUAL 2.11.0)
+        message(STATUS "Botan-2 Version 2.11+ is found and will be used in this build")
+        add_definitions(-DUSE_BOTAN211P)
+    endif()
 else()
     message(DEPRECATION "Botan-1.10 is found and will be used in this build. However, Botan-1.10 is deprecated and should not be used if possible")
 endif()
